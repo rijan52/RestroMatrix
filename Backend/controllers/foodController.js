@@ -25,12 +25,12 @@ const addFood = async (req, res) => {
 
 // all food list
 const listFood = async (req, res) => {
-    try{
+    try {
         const foods = await foodModel.find({});
-        res.json({success:true, data: foods});
-    } catch(error){
+        res.json({ success: true, data: foods });
+    } catch (error) {
         console.log(error);
-        res.json({success:false, message: "Error"})
+        res.json({ success: false, message: "Error" })
     }
 }
 
@@ -39,10 +39,10 @@ const removeFood = async (req, res) => {
 
     try {
         const foodId = await foodModel.findById(req.body.id);
-        fs.unlink(`uploads/${foodId.image}`,()=>{})
+        fs.unlink(`uploads/${foodId.image}`, () => { })
         await foodModel.findByIdAndDelete(req.body.id);
         res.json({ success: true, message: "Food  Removed Successfully" })
-}
+    }
     catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" })

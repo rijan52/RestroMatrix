@@ -12,6 +12,7 @@ const port = 4000
 //middleware
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 //db connection
 
@@ -20,7 +21,7 @@ connectDB();
 
 //api endpoints
 app.use('/api/food', foodRouter);
-app.use("/images", express.static("uploads")) 
+app.use("/images", express.static("uploads"))
 
 
 app.get('/', (req, res) => {
