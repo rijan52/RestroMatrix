@@ -10,6 +10,7 @@ import facebookIcon from "./facebook-icon.png"
 import twitterIcon from "./twitter-icon.png"
 import whatsappIcon from "./whatsapp-icon.png"
 import crossIcon from "./cross-icon.png"
+import parcelIcon from "./parcel-icon.png"
 
 
 import food1 from "./food1.jpg"
@@ -29,7 +30,8 @@ const assets = {
   facebookIcon, 
   twitterIcon,
   whatsappIcon,
-  crossIcon
+  crossIcon,
+  parcelIcon
 }
 
 export const menu_list = [
