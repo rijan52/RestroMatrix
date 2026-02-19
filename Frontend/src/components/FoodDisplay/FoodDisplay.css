@@ -1,16 +1,19 @@
 .food-display {
-    margin-top: 30px;
+    margin-top: 40px;
 }
 
 .food-display h2 {
-    font-size: clamp(24px, 2vw, 32px); /* safer than max() */
-    font-weight: 600;
+    font-family: var(--display-font);
+    font-size: clamp(24px, 2.6vw, 34px);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
 }
 
 .food-display-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    margin-top: 30px;
-    gap: 30px;
-    row-gap: 50px;
+    margin-top: 28px;
+    gap: 26px;
+    row-gap: 40px;
 }

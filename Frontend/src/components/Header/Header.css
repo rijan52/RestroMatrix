@@ -1,66 +1,89 @@
 .header {
-    height: 50vw;
-    margin: 30px auto;
-    background: url('/header.png') no-repeat;
-    background-size: contain;
+    height: min(520px, 70vw);
+    margin: 26px auto 40px;
+    background: url('/header.png') center / cover no-repeat;
     position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
+.header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, rgba(15, 27, 45, 0.6) 0%, rgba(15, 27, 45, 0.1) 55%, transparent 100%);
+}
 
+.header::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(300px 240px at 15% 20%, rgba(101, 166, 219, 0.35), transparent 70%);
+}
 
 .header-content {
     position: absolute;
     display: flex;
     flex-direction: column;
     align-items: start;
-    gap: 1.5vw;
-    max-width: 50%;
-    bottom: 10%;
-    left: 6vw;
-    animation: fadeIn 3s;
-
+    gap: 18px;
+    max-width: 52%;
+    bottom: 12%;
+    left: 6%;
+    animation: riseUp 1s ease;
+    color: #ffffff;
 }
 
 .header-content h2 {
-    font-weight: 500;
-    color: black;
-    font-size: max(2.5vw, 32px);
+    font-family: var(--display-font);
+    font-weight: 700;
+    color: #ffffff;
+    font-size: clamp(32px, 4vw, 52px);
+    letter-spacing: -0.02em;
 }
 
 .header-content p {
-    font-size: 1.2vw;
+    font-size: clamp(14px, 1.2vw, 18px);
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 90%;
 }
 
 .header-content button {
     border: none;
-    font-weight: 500;
-    padding: 1.2vw 2.8vw;
-    background-color: rgb(225, 241, 248);
-    font-size: max(1.2vw, 16px);
-    border-radius: 50px;
-
+    font-weight: 600;
+    padding: 12px 26px;
+    background-color: #ffffff;
+    color: var(--ink);
+    font-size: 15px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 12px 24px rgba(15, 27, 45, 0.25);
 }
 
+.header-content button:hover {
+    transform: translateY(-2px);
+    background-color: #f1f6fb;
+}
 
-@media (max-width:1050px) {
+@media (max-width: 1050px) {
     .header-content {
         max-width: 65%;
     }
-
 }
 
-
-@media (max-width:750px) {
+@media (max-width: 750px) {
+    .header {
+        height: 70vw;
+        border-radius: 22px;
+    }
 
     .header-content {
-        max-width: 55%;
+        max-width: 80%;
     }
 
     .header-content p {
         display: none;
-    }
-
-    .header-content button {
-        padding: 2vw 4vw;
     }
 }

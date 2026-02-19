@@ -3,7 +3,7 @@ import userModel from "../models/userModel.js";
 import Stripe from "stripe";
 
 
-const stripe = new Stripe(process.env.STRIPE_SECTRT_KEY)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 //placing user order for frontend
 
@@ -11,14 +11,22 @@ const placeOrder = async (req, res) => {
 
     const frontend_url = "http://localhost:5173";
     try {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            return res.json({ success: false, message: "Stripe key missing" })
+        }
+
+        if (!Array.isArray(req.body.items) || req.body.items.length === 0) {
+            return res.json({ success: false, message: "Cart is empty" })
+        }
+
         const newOrder = new orderModel({
-            userId: req.body.userId,
+            userId: req.userId,
             items: req.body.items,
             amount: req.body.amount,
             address: req.body.address
         })
         await newOrder.save();
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
+        await userModel.findByIdAndUpdate(req.userId, { cartData: {} })
 
         const line_items = req.body.items.map((items) => ({
             price_data: {
@@ -26,7 +34,7 @@ const placeOrder = async (req, res) => {
                 product_data: {
                     name: items.name
                 },
-                unit_amount: items.price * 100 * 80
+                unit_amount: Math.round(Number(items.price) * 100)
             },
             quantity: items.quantity
         }))
@@ -36,7 +44,7 @@ const placeOrder = async (req, res) => {
                 product_data: {
                     name: "Delivery Charges"
                 },
-                unit_amount: 2 * 100 * 80
+                unit_amount: 2 * 100
             },
             quantity: 1
 
@@ -54,7 +62,7 @@ const placeOrder = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: error?.message || "Error" })
 
     }
 

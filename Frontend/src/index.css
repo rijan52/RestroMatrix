@@ -1,12 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Sora:wght@300..800&display=swap');
 
-
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --ink: #0f1b2d;
+  --muted: #5c6b82;
+  --brand: #65a6db;
+  --brand-strong: #3e8dcc;
+  --line: #e3ebf5;
+  --shadow: 0 20px 60px rgba(15, 27, 45, 0.08);
+  --radius: 18px;
+  --radius-pill: 999px;
+  --display-font: "Sora", "Outfit", sans-serif;
+  --body-font: "Manrope", "Outfit", sans-serif;
+}
 
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: Outfit;
+  font-family: var(--body-font);
   scroll-behavior: smooth;
 }
 
@@ -17,7 +30,28 @@ body {
 }
 
 body {
-  font-family: sans-serif;
+  color: var(--ink);
+  background: radial-gradient(1200px 600px at 0% -20%, rgba(101, 166, 219, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(62, 141, 204, 0.16), transparent 55%),
+    var(--bg);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  background: radial-gradient(400px 220px at 8% 12%, rgba(101, 166, 219, 0.25), transparent 70%);
+  opacity: 0.6;
+}
+
+body::after {
+  background: radial-gradient(300px 240px at 92% 22%, rgba(15, 27, 45, 0.08), transparent 70%);
 }
 
 a {
@@ -25,18 +59,43 @@ a {
   color: inherit;
 }
 
-.app {
-  width: 80%;
-  margin: auto;
+img {
+  max-width: 100%;
+  display: block;
+}
 
+button {
+  font-family: var(--body-font);
+}
+
+/* --- UPDATED APP CONTAINER --- */
+.app {
+  width: 100%;         /* full width of the page */
+  max-width: 100%;     /* remove previous max-width */
+  margin: 0;           /* remove auto centering */
+  padding: 24px;       /* optional padding from edges */
 }
 
 @keyframes fadeIn {
   0% {
     opacity: 0;
+    transform: translateY(8px);
   }
 
   100% {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes riseUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

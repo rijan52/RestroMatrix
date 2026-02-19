@@ -14,9 +14,15 @@ const MyOrders = () => {
     const [data, setData] = useState([]);
 
     const fetchOrders = async () => {
-        const response = await axios.post(`${url}/api/order/userorders`, {}, { headers: { token } });
-        setData(response.data.data);
-
+        try {
+            const response = await axios.post(`${url}/api/order/userorders`, {}, { headers: { token } });
+            if (response.data.success) {
+                setData(response.data.data || []);
+            }
+        } catch (error) {
+            console.log(error);
+            setData([]);
+        }
     }
 
     useEffect(() => {
@@ -31,28 +37,28 @@ const MyOrders = () => {
         <div className="my-orders">
             <h2>My Orders</h2>
             <div className="container">
-                {data.map((order,index) => (
+                {data && Array.isArray(data) && data.length > 0 ? data.map((order, index) => (
                     <div key={index} className="my-orders-order">
                         <img src={assets.parcelIcon} alt="" />
-                        <p>Items: {order.items.map((item,index)=>{
+                        <p>Items: {order.items.map((item, index) => {
                             if (index === order.items.length - 1) {
-                                return item.name+" x "+item.quantity
+                                return item.name + " x " + item.quantity
                             }
-                            else{
-                                return item.name+" x "+item.quantity+", "
+                            else {
+                                return item.name + " x " + item.quantity + ", "
                             }
                         })}</p>
                         <p>${order.amount}.00</p>
                         <p>Items: {order.items.length}</p>
                         <p><span>&#x25cf;</span><b>{order.status}</b></p>
                         <button onClick={fetchOrders}>Track Order</button>
-                       
+
                     </div>
-                ))}
+                )) : <p>No orders found. Start ordering now!</p>}
 
             </div>
 
-            
+
         </div>
     )
 }
