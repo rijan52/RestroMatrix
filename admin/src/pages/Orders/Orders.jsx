@@ -7,6 +7,7 @@ import assets from '../../assets/assets'
 
 const Orders = ({ url }) => {
   const [orders, setOrders] = useState([])
+  const [filter, setFilter] = useState("all")
 
   const fetchAllOrders = async () => {
     const response = await axios.get(`${url}/api/order/list`)
@@ -34,13 +35,49 @@ const Orders = ({ url }) => {
     fetchAllOrders()
   }, [])
 
+  const sortedOrders = [...orders].sort((a, b) => {
+    const aDate = new Date(a.date || 0).getTime()
+    const bDate = new Date(b.date || 0).getTime()
+    return bDate - aDate
+  })
+
+  const filteredOrders = sortedOrders.filter((order) => {
+    if (filter === "all") return true
+    const isWalkIn = Boolean(order.tableNumber) || order.source === "qr"
+    const isOnline = Boolean(order.address) && !isWalkIn
+    return filter === "online" ? isOnline : isWalkIn
+  })
+
   return (
     <div className="order add">
       <h3>Order Page</h3>
+      <div className="order-filters">
+        <button
+          type="button"
+          className={`order-filter-btn ${filter === "all" ? "active" : ""}`}
+          onClick={() => setFilter("all")}
+        >
+          All
+        </button>
+        <button
+          type="button"
+          className={`order-filter-btn ${filter === "online" ? "active" : ""}`}
+          onClick={() => setFilter("online")}
+        >
+          Online
+        </button>
+        <button
+          type="button"
+          className={`order-filter-btn ${filter === "walkin" ? "active" : ""}`}
+          onClick={() => setFilter("walkin")}
+        >
+          Walk-in
+        </button>
+      </div>
 
       <div className="order-list">
-        {orders.map((order, index) => (
-          <div key={index} className="order-item">
+        {filteredOrders.map((order) => (
+          <div key={order._id} className="order-item">
             <img src={assets.parcelIcon} alt="" />
 
             <div>
@@ -54,12 +91,18 @@ const Orders = ({ url }) => {
                   }
                 })}
               </p>
-              <p className="order-item-name">{order.address.firstName + " " + order.address.lastName} </p>
-              <div className="order-item-address">
-                <p>{order.address.street + ","}</p>
-                <p>{order.address.city + ", " + order.address.state + ", " + order.address.country}</p>
-              </div>
-              <p className="order-item-phone">{order.address.phone}</p>
+              <p className="order-item-name">
+                {order.address
+                  ? `${order.address.firstName} ${order.address.lastName}`
+                  : `Table ${order.tableNumber || "N/A"}`}
+              </p>
+              {order.address ? (
+                <div className="order-item-address">
+                  <p>{order.address.street + ","}</p>
+                  <p>{order.address.city + ", " + order.address.state + ", " + order.address.country}</p>
+                </div>
+              ) : null}
+              {order.address ? <p className="order-item-phone">{order.address.phone}</p> : null}
             </div>
             <p>Items : {order.items.length}</p>
             <p>${order.amount}</p>
