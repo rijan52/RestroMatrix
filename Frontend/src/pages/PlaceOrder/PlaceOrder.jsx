@@ -47,8 +47,26 @@ const PlaceOrder = () => {
       }
       let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
       if (response.data.success) {
-        const { session_url } = response.data;
-        window.location.replace(session_url);
+        const { payment } = response.data;
+        if (!payment?.endpoint || !payment?.params) {
+          alert("Payment configuration missing. Please try again.")
+          return
+        }
+
+        const form = document.createElement("form")
+        form.method = "POST"
+        form.action = payment.endpoint
+
+        Object.entries(payment.params).forEach(([key, value]) => {
+          const input = document.createElement("input")
+          input.type = "hidden"
+          input.name = key
+          input.value = String(value)
+          form.appendChild(input)
+        })
+
+        document.body.appendChild(form)
+        form.submit()
       }
       else {
         alert(response.data.message || "Error placing order. Please try again.")
