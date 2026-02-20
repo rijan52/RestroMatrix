@@ -1,0 +1,12 @@
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.app-content {
+  display: flex;
+  min-height: calc(100vh - 72px);
+  gap: 0;
+}

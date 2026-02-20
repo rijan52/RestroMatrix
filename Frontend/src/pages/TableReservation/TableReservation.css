@@ -1,0 +1,200 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Space+Grotesk:wght@400..700&display=swap");
+
+.reservation {
+    font-family: "Manrope", sans-serif;
+    padding: 80px 6vw 90px;
+    background: radial-gradient(circle at top right, #fef3c7, transparent 40%),
+        radial-gradient(circle at bottom left, #dbeafe, transparent 38%),
+        #f8fafc;
+    color: #0f172a;
+    position: relative;
+    overflow: hidden;
+}
+
+.reservation::before {
+    content: "";
+    position: absolute;
+    top: -140px;
+    right: -120px;
+    width: 320px;
+    height: 320px;
+    background: linear-gradient(130deg, rgba(59, 130, 246, 0.2), rgba(14, 116, 144, 0));
+    border-radius: 50%;
+    filter: blur(4px);
+}
+
+.reservation-hero {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(320px, 520px);
+    gap: 40px;
+    align-items: start;
+}
+
+.reservation-title h2 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    margin-bottom: 16px;
+}
+
+.reservation-kicker {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 12px;
+}
+
+.reservation-lead {
+    font-size: 1.05rem;
+    color: #475569;
+    max-width: 420px;
+}
+
+.reservation-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+    border: 1px solid #e2e8f0;
+}
+
+.reservation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.reservation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field label {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.field input,
+.field select,
+.field textarea {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+    background: #f8fafc;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    outline: none;
+    background: #ffffff;
+}
+
+.field-full {
+    grid-column: 1 / -1;
+}
+
+.reservation-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.primary {
+    background: linear-gradient(135deg, #1d4ed8, #0f172a);
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(37, 99, 235, 0.25);
+}
+
+.ghost {
+    background: transparent;
+    color: #0f172a;
+    border: 1px solid #cbd5f5;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.reservation-summary {
+    margin-top: 36px;
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 24px;
+    padding: 24px 28px;
+    display: grid;
+    gap: 16px;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: all 0.3s ease;
+}
+
+.reservation-summary.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reservation-summary h3 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.4rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+}
+
+.summary-grid span {
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-grid strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 15px;
+}
+
+@media (max-width: 900px) {
+    .reservation-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .reservation-card {
+        padding: 22px;
+    }
+}
+
+@media (max-width: 600px) {
+    .reservation {
+        padding: 60px 6vw 70px;
+    }
+
+    .reservation-grid {
+        grid-template-columns: 1fr;
+    }
+}

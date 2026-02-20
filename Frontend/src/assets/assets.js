@@ -13,77 +13,62 @@ import crossIcon from "./cross-icon.png"
 import parcelIcon from "./parcel-icon.png"
 
 
-import food1 from "./food1.jpg"
+import appetizers from "./appetizers.jpg"
 import food2 from "./food2.jpg"
 import food3 from "./food3.jpg"
 
 const assets = {
-  logo,
-  searchIcon,
-  basketIcon,
-  tempLogo,
-  food1,
-  food2,
-  food3,
-  addIcon,
-  removeIcon,
-  facebookIcon, 
-  twitterIcon,
-  whatsappIcon,
-  crossIcon,
-  parcelIcon
+    logo,
+    searchIcon,
+    basketIcon,
+    tempLogo,
+    appetizers,
+    food2,
+    food3,
+    addIcon,
+    removeIcon,
+    facebookIcon,
+    twitterIcon,
+    whatsappIcon,
+    crossIcon,
+    parcelIcon
 }
 
 export const menu_list = [
     {
-        menu_name:"Salad", 
-        menu_image: food1
+        menu_name: "Appetizer",
+        menu_image: appetizers
     },
-     {
-        menu_name:"Fried", 
+    {
+        menu_name: "Fried Items",
         menu_image: food3
     },
-     {
-        menu_name:"Salad", 
-        menu_image: food1
+    {
+        menu_name: "Noodles",
+        menu_image: food2
     },
-     {
-        menu_name:"Fried", 
+    {
+        menu_name: "Chilly Items",
+        menu_image: appetizers
+    },
+    {
+        menu_name: "Cheesy",
+        menu_image: food2
+    },
+    {
+        menu_name: "Main Course",
         menu_image: food3
+    },
+    {
+        menu_name: "Salad",
+        menu_image: appetizers
+    },
+    {
+        menu_name: "Dessert",
+        menu_image: food2
     }
 ]
 
-export const food_list =[
-    {
-        _id: "1",
-        name: "Greek salad",
-        image: food1,
-        price: 12,
-        description: "Food provides essential nutrients for overall health",
-        category: "Salad"
-    },
-    {
-        _id: "2",
-        name: "Chicken Fried",
-        image: food1,
-        price: 15,
-        description: "Food provides essential nutrients for overall health",
-        category: "Fried"
-    },{
-        _id: "3",
-        name: "Prawan",
-        image: food2,
-        price: 16,
-        description: "Food provides essential nutrients for overall health",
-        category: "Salad"
-    },
-    {
-        _id: "4",
-        name: "Chips",
-        image: food2,
-        price: 16,
-        description: "Food provides essential nutrients for overall health",
-        category: "Salad"
-    }
-]
+
+
 export default assets;
