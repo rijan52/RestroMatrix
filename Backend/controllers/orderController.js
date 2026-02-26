@@ -176,7 +176,15 @@ const userOrders = async (req, res) => {
 
 const listOrders = async (req, res) => {
     try {
-        const orders = await orderModel.find({ payment: true }).sort({ date: -1 });
+        const orders = await orderModel
+            .find({
+                $or: [
+                    { payment: true },
+                    { source: "qr" },
+                    { tableNumber: { $exists: true, $ne: "" } }
+                ]
+            })
+            .sort({ date: -1 });
         res.json({ success: true, data: orders })
     } catch (error) {
         console.log(error);

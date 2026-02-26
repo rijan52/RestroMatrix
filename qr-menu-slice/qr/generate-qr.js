@@ -2,7 +2,7 @@ import QRCode from "qrcode";
 import { mkdir } from "fs/promises";
 import { fileURLToPath } from "url";
 
-const menuBaseUrl = process.env.MENU_URL || "https://your-frontend.vercel.app/menu";
+const menuBaseUrl = process.env.MENU_URL || "https://restro-matrix.vercel.app";
 const outputDir = new URL("./output/", import.meta.url);
 
 await mkdir(fileURLToPath(outputDir), { recursive: true });

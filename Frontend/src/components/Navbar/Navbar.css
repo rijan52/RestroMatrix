@@ -104,6 +104,15 @@
     position: relative;
 }
 
+.navbar-profile-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
 .nav-profile-dropdown {
     position: absolute;
     display: none;
@@ -113,7 +122,8 @@
     min-width: 180px;
 }
 
-.navbar-profile:hover .nav-profile-dropdown {
+.navbar-profile:hover .nav-profile-dropdown,
+.nav-profile-dropdown.open {
     display: flex;
     flex-direction: column;
     gap: 10px;

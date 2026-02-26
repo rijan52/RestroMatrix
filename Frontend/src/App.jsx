@@ -11,6 +11,7 @@ import Verify from "./pages/Verify/Verify";
 import MyOrders from "./pages/MyOrders/MyOrders";
 import TableReservation from "./pages/TableReservation/TableReservation";
 import Menu from "./pages/Menu/Menu";
+import Contact from "./pages/Contact/Contact";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false)
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/myorders" element={<MyOrders />} />
           <Route path="/reservation" element={<TableReservation />} />
           <Route path="/menu" element={<Menu />} />
+          <Route path="/contact" element={<Contact />} />
 
 
         </Routes>
