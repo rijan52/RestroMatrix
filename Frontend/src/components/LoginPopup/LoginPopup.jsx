@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import './LoginPopup.css'
 import assets from '../../assets/assets'
 import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
 
@@ -9,7 +10,8 @@ import axios from 'axios'
 
 const LoginPopup = ({ setShowLogin }) => {
 
-  const { url, setToken } = useContext(StoreContext)
+  const navigate = useNavigate()
+  const { url, setToken, setRole } = useContext(StoreContext)
   const [currState, setCurrState] = useState("Login")
   const [data, setData] = useState({
     name: "",
@@ -41,7 +43,18 @@ const LoginPopup = ({ setShowLogin }) => {
     if (response.data.success) {
       setToken(response.data.token);
       localStorage.setItem("token", response.data.token)
+
+      // Save role
+      const userRole = response.data.role || "customer";
+      setRole(userRole);
+      localStorage.setItem("role", userRole)
+
       setShowLogin(false);
+
+      // Redirect driver to driver dashboard
+      if (userRole === "driver") {
+        navigate("/driver-dashboard");
+      }
     }
     else {
       alert(response.data.message)

@@ -26,7 +26,15 @@ const Sidebar = () => {
                     <p>Reservations</p>
                 </NavLink>
 
+                <NavLink to='/driver-tracking' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Driver Tracking</p>
+                </NavLink>
 
+                <NavLink to='/drivers' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Manage Drivers</p>
+                </NavLink>
 
             </div>
         </div>

@@ -77,6 +77,12 @@
     color: var(--muted);
 }
 
+.order-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .order-item select {
     background-color: #f1f5f9;
     border: 1px solid var(--border);
@@ -86,6 +92,77 @@
     outline: none;
     font-weight: 600;
     color: #0f172a;
+}
+
+.driver-name-input {
+    background-color: #f8fafc;
+    border: 2px solid #0f172a;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    outline: none;
+    font-weight: 500;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.driver-name-input::placeholder {
+    color: #94a3b8;
+}
+
+.driver-select {
+    background-color: #f8fafc;
+    border: 2px solid #0f172a;
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    outline: none;
+    font-weight: 500;
+    color: #0f172a;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.driver-select:hover {
+    border-color: #1e293b;
+}
+
+.driver-select:focus {
+    background-color: #ffffff;
+    border-color: #1e293b;
+    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+}
+
+.driver-assignment {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.driver-assignment input {
+    flex: 1;
+}
+
+.assign-btn {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: 1px solid #0f172a;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+.assign-btn:hover {
+    background-color: #1e293b;
+    border-color: #1e293b;
+}
+
+.assign-btn:active {
+    transform: scale(0.98);
 }
 
 @media (max-width: 1000px) {

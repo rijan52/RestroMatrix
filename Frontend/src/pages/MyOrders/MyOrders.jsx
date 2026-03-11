@@ -8,10 +8,12 @@ import { useState } from 'react'
 import axios from 'axios'
 import parcelIcon from '../../assets/parcel-icon.png'
 import assets from '../../assets/assets'
+import { useNavigate } from 'react-router-dom'
 
 const MyOrders = () => {
     const { url, token } = useContext(StoreContext);
     const [data, setData] = useState([]);
+    const navigate = useNavigate();
 
     const fetchOrders = async () => {
         try {
@@ -51,8 +53,17 @@ const MyOrders = () => {
                         <p>${order.amount}.00</p>
                         <p>Items: {order.items.length}</p>
                         <p><span>&#x25cf;</span><b>{order.status}</b></p>
-                        <button onClick={fetchOrders}>Track Order</button>
-
+                        <div className="order-actions">
+                            <button onClick={fetchOrders}>Track Order</button>
+                            {order.status === "Out for delivery" && (
+                                <button
+                                    className="live-tracking-btn"
+                                    onClick={() => navigate(`/livetracking?orderId=${order._id}`)}
+                                >
+                                    🚗 Live Tracking
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )) : <p>No orders found. Start ordering now!</p>}
 

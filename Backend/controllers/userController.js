@@ -6,7 +6,7 @@ import validator from "validator"
 // login user
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
-    
+
     try {
         const user = await userModel.findOne({ email });
         if (!user) {
@@ -19,7 +19,7 @@ const loginUser = async (req, res) => {
         }
 
         const token = createToken(user._id);
-        return res.json({ success: true, data: user, token });
+        return res.json({ success: true, data: user, token, role: user.role });
     } catch (error) {
         console.log(error);
         return res.json({ success: false, message: "Error" });
@@ -30,9 +30,35 @@ const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET)
 }
 
+// Get all drivers
+const getDrivers = async (req, res) => {
+    try {
+        const drivers = await userModel.find({ role: "driver" }).select("-password");
+        res.json({ success: true, data: drivers });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error fetching drivers" });
+    }
+}
+
+// Delete driver
+const deleteDriver = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const driver = await userModel.findByIdAndDelete(id);
+        if (!driver) {
+            return res.json({ success: false, message: "Driver not found" });
+        }
+        res.json({ success: true, message: "Driver deleted successfully" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error deleting driver" });
+    }
+}
+
 //  register user
 const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role = "customer", driverPhone, driverVehicle } = req.body;
     try {
 
         // checking is user already exists
@@ -54,12 +80,15 @@ const registerUser = async (req, res) => {
         const newUser = new userModel({
             name: name,
             email: email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: role,
+            driverPhone: role === "driver" ? driverPhone : null,
+            driverVehicle: role === "driver" ? driverVehicle : null
         })
 
         const user = await newUser.save()
         const token = createToken(user._id)
-        res.json({ success: true, data: user, token });
+        res.json({ success: true, data: user, token, role: user.role });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" })
@@ -68,4 +97,4 @@ const registerUser = async (req, res) => {
     }
 }
 
-export { loginUser, registerUser };
+export { loginUser, registerUser, getDrivers, deleteDriver };

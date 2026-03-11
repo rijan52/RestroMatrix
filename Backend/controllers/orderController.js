@@ -196,7 +196,14 @@ const listOrders = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
     try {
         console.log("Updating order:", req.body.orderId, "to status:", req.body.status);
-        const result = await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status })
+        const updateData = { status: req.body.status }
+
+        // If status is "Out for delivery" and driverName is provided, add it
+        if (req.body.status === "Out for delivery" && req.body.driverName) {
+            updateData.driverName = req.body.driverName
+        }
+
+        const result = await orderModel.findByIdAndUpdate(req.body.orderId, updateData)
         if (!result) {
             return res.json({ success: false, message: "Order not found" })
         }
@@ -208,4 +215,21 @@ const updateOrderStatus = async (req, res) => {
     }
 }
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus }
+// Get a single order by ID
+const getOrderById = async (req, res) => {
+    try {
+        const { orderId } = req.params
+        const order = await orderModel.findById(orderId)
+
+        if (!order) {
+            return res.json({ success: false, message: "Order not found" })
+        }
+
+        res.json({ success: true, data: order })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: "Error fetching order" })
+    }
+}
+
+export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById }
