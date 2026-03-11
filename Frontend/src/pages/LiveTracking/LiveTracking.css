@@ -4,6 +4,8 @@
     margin: 0 auto;
 }
 
+/* Header */
+
 .tracking-header {
     display: flex;
     align-items: center;
@@ -35,6 +37,8 @@
     font-size: 14px;
 }
 
+/* Layout */
+
 .tracking-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -43,60 +47,23 @@
 }
 
 /* Map Section */
+
 .map-section {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 10px;
     overflow: hidden;
-    min-height: 400px;
+    height: 400px;   /* IMPORTANT */
     position: relative;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 #map {
     width: 100%;
-    height: 100%;
+    height: 400px;  /* IMPORTANT */
     z-index: 1;
 }
 
-.map-placeholder {
-    text-align: center;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-}
-
-.map-icon {
-    font-size: 60px;
-    margin-bottom: 15px;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-.map-placeholder p {
-    margin: 10px 0 5px;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.map-placeholder small {
-    display: block;
-    font-size: 12px;
-    opacity: 0.9;
-}
+/* Tracking status overlay */
 
 .tracking-status {
     position: absolute;
@@ -112,6 +79,7 @@
 }
 
 /* Tracking Info */
+
 .tracking-info {
     display: flex;
     flex-direction: column;
@@ -119,6 +87,7 @@
 }
 
 /* Progress Section */
+
 .progress-section {
     background: white;
     border: 1px solid #e0e0e0;
@@ -143,14 +112,14 @@
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #ff7700, #ffab00);
+    background: linear-gradient(90deg,#ff7700,#ffab00);
     border-radius: 10px;
     transition: width 0.3s ease;
 }
 
 .progress-steps {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4,1fr);
     gap: 10px;
 }
 
@@ -169,35 +138,11 @@
 }
 
 .step span {
-    display: block;
     font-size: 12px;
 }
 
-/* Location Section */
-.location-section {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 20px;
-}
-
-.location-section h3 {
-    margin: 0 0 12px;
-    color: #262626;
-    font-size: 16px;
-}
-
-.location-section p {
-    margin: 8px 0;
-    font-size: 13px;
-    color: #555;
-    font-family: 'Courier New', monospace;
-    background: #f5f5f5;
-    padding: 8px;
-    border-radius: 5px;
-}
-
 /* Driver Section */
+
 .driver-section {
     background: white;
     border: 1px solid #e0e0e0;
@@ -206,9 +151,7 @@
 }
 
 .driver-section h3 {
-    margin: 0 0 15px;
-    color: #262626;
-    font-size: 16px;
+    margin-bottom: 15px;
 }
 
 .driver-info {
@@ -221,10 +164,10 @@
     font-size: 40px;
     width: 50px;
     height: 50px;
+    background: #f5f5f5;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
     border-radius: 50%;
 }
 
@@ -235,11 +178,10 @@
 .driver-name {
     margin: 0;
     font-weight: 600;
-    color: #262626;
 }
 
 .driver-vehicle {
-    margin: 3px 0 5px;
+    margin: 3px 0;
     font-size: 13px;
     color: #808080;
 }
@@ -250,7 +192,6 @@
 
 .stars {
     color: #ff7700;
-    font-weight: 600;
 }
 
 .driver-actions {
@@ -268,9 +209,8 @@
     justify-content: center;
     font-size: 18px;
     text-decoration: none;
-    cursor: pointer;
     color: white;
-    transition: background 0.3s ease;
+    transition: 0.3s;
 }
 
 .call-btn:hover {
@@ -278,17 +218,12 @@
 }
 
 /* Items Section */
+
 .items-section {
     background: white;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     padding: 20px;
-}
-
-.items-section h3 {
-    margin: 0 0 15px;
-    color: #262626;
-    font-size: 16px;
 }
 
 .items-list {
@@ -300,10 +235,8 @@
 .item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
     border-bottom: 1px solid #f1f1f1;
-    font-size: 14px;
-    color: #262626;
+    padding: 10px 0;
 }
 
 .item:last-child {
@@ -311,6 +244,7 @@
 }
 
 /* Time Section */
+
 .time-section {
     background: white;
     border: 1px solid #e0e0e0;
@@ -319,20 +253,14 @@
     text-align: center;
 }
 
-.time-section h3 {
-    margin: 0 0 10px;
-    color: #262626;
-    font-size: 16px;
-}
-
 .estimated-time {
-    margin: 0;
     font-size: 24px;
     font-weight: 700;
     color: #ff7700;
 }
 
-/* Support Section */
+/* Support */
+
 .support-section {
     background: white;
     border: 1px solid #e0e0e0;
@@ -342,15 +270,14 @@
 }
 
 .support-btn {
-    background: white;
     border: 2px solid #ff7700;
+    background: white;
     color: #ff7700;
     padding: 12px 30px;
     border-radius: 8px;
-    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .support-btn:hover {
@@ -359,49 +286,37 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .tracking-container {
-        grid-template-columns: 1fr;
+
+@media (max-width:768px){
+
+    .tracking-container{
+        grid-template-columns:1fr;
     }
 
-    .progress-steps {
-        grid-template-columns: repeat(2, 1fr);
+    .map-section{
+        height:300px;
     }
 
-    .tracking-header {
-        flex-wrap: wrap;
+    #map{
+        height:300px;
     }
 
-    .tracking-header h2 {
-        width: 100%;
-        order: 2;
+    .progress-steps{
+        grid-template-columns:repeat(2,1fr);
     }
 
-    .back-btn {
-        order: 1;
-    }
-
-    .order-id {
-        order: 3;
-        width: 100%;
-    }
-
-    .map-section {
-        min-height: 300px;
-    }
 }
 
-/* Leaflet map overrides */
+/* Leaflet adjustments */
+
 .leaflet-container {
     font-family: inherit;
 }
 
 .leaflet-popup-content-wrapper {
-    background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .leaflet-popup-tip {
-    background-color: white;
+    background: white;
 }

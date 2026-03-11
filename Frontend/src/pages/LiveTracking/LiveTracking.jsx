@@ -1,263 +1,359 @@
-import React, { useState, useEffect, useRef } from 'react'
-import './LiveTracking.css'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import io from 'socket.io-client'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-
-// Fix leaflet markers
-import leafletIcon from 'leaflet/dist/images/marker-icon.png'
-import leafletIconShadow from 'leaflet/dist/images/marker-shadow.png'
-
-// Driver marker (Red)
-const driverIcon = L.icon({
-    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MSA0MSI+PGNpcmNsZSBjeD0iMjAuNSIgY3k9IjIwLjUiIHI9IjE4IiBmaWxsPSIjZmYzMzMzIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=',
-    iconSize: [25, 25],
-    iconAnchor: [12, 12],
-    popupAnchor: [1, -34]
-})
-
-// Customer marker (Blue)
-const customerIcon = L.icon({
-    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MSA0MSI+PGNpcmNsZSBjeD0iMjAuNSIgY3k9IjIwLjUiIHI9IjE4IiBmaWxsPSIjMzMzM2ZmIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=',
-    iconSize: [25, 25],
-    iconAnchor: [12, 12],
-    popupAnchor: [1, -34]
-})
+import React, { useEffect, useRef, useState, useContext } from "react";
+import { useSearchParams } from "react-router-dom";
+import "./LiveTracking.css";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import axios from "axios";
+import io from "socket.io-client";
+import { StoreContext } from "../../context/StoreContext";
 
 const LiveTracking = () => {
-    const [searchParams] = useSearchParams()
-    const navigate = useNavigate()
-    const orderId = searchParams.get('orderId')
-    const url = "http://localhost:4000"
 
-    const mapContainer = useRef(null)
-    const mapRef = useRef(null)
-    const socketRef = useRef(null)
+    const mapRef = useRef(null);
+    const mapContainer = useRef(null);
+    const socketRef = useRef(null);
+    const driverMarkerRef = useRef(null);
+    const customerMarkerRef = useRef(null);
+    const routeRef = useRef(null);
 
-    const driverMarkerRef = useRef(null)
-    const customerMarkerRef = useRef(null)
-    const polylineRef = useRef(null)
+    const [searchParams] = useSearchParams();
+    const { url } = useContext(StoreContext);
 
-    const [order, setOrder] = useState(null)
-    const [driverInfo, setDriverInfo] = useState(null)
-    const [driverLocation, setDriverLocation] = useState(null)
-    const [deliveryProgress, setDeliveryProgress] = useState(0)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState("")
-    const [distance, setDistance] = useState(null)
+    const [order, setOrder] = useState(null);
+    const [driver, setDriver] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [driverLocation, setDriverLocation] = useState(null);
+    const [customerLocation, setCustomerLocation] = useState(null);
 
-    // Fetch order details
+    // Fetch order and driver data
     useEffect(() => {
-        const fetchOrderDetails = async () => {
-            if (!orderId) {
-                setError("No order ID provided")
-                setLoading(false)
-                return
-            }
-
+        const fetchOrderData = async () => {
             try {
-                const response = await axios.get(`${url}/api/order/${orderId}`)
-                if (response.data.success) {
-                    setOrder(response.data.data)
-                    setDeliveryProgress(getProgressFromStatus(response.data.data.status))
+                const orderId = searchParams.get("orderId");
+                if (!orderId) {
+                    setError("Order ID not provided");
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch order details
+                const orderResponse = await axios.get(`${url}/api/order/${orderId}`);
+                if (orderResponse.data.success) {
+                    const orderData = orderResponse.data.data;
+                    setOrder(orderData);
+
+                    // Extract customer location from order address
+                    if (orderData.address) {
+                        const custLat = parseFloat(orderData.address.latitude) || 27.7172;
+                        const custLng = parseFloat(orderData.address.longitude) || 85.324;
+                        setCustomerLocation({ lat: custLat, lng: custLng });
+                    }
+
+                    // Fetch driver details if driverName exists
+                    if (orderData.driverName) {
+                        try {
+                            setDriver(orderData);
+                        } catch (driverError) {
+                            console.log("Could not fetch driver details:", driverError);
+                        }
+                    }
                 } else {
-                    setError("Order not found")
+                    setError("Order not found");
                 }
             } catch (err) {
-                setError("Failed to load order details")
-                console.error(err)
+                console.error("Error fetching order:", err);
+                setError("Failed to fetch order details");
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchOrderDetails()
-    }, [orderId])
+        fetchOrderData();
+    }, [searchParams, url]);
 
-    // Get progress percentage from status
-    const getProgressFromStatus = (status) => {
-        switch (status) {
-            case "Food Processing":
-                return 25
-            case "Out for delivery":
-                return 75
-            case "Delivered":
-                return 100
-            default:
-                return 0
-        }
-    }
-
-    // Initialize map
+    // Initialize map after order data is loaded
     useEffect(() => {
-        if (mapContainer.current && !mapRef.current) {
-            mapRef.current = L.map(mapContainer.current).setView([27.7172, 85.3240], 13)
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(mapRef.current)
+
+        if (!mapRef.current && order && customerLocation) {
+
+            mapRef.current = L.map(mapContainer.current).setView([customerLocation.lat, customerLocation.lng], 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap contributors",
+                maxZoom: 19,
+            }).addTo(mapRef.current);
+
+            // Customer marker - use order address
+            const customerIcon = L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png",
+                iconSize: [35, 35]
+            });
+
+            customerMarkerRef.current = L.marker([customerLocation.lat, customerLocation.lng], { icon: customerIcon })
+                .addTo(mapRef.current)
+                .bindPopup(`📍 Delivery: ${order.address?.street || "Delivery Location"}`);
+
+            // Driver marker - will be updated via socket
+            const driverIcon = L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+                iconSize: [35, 35]
+            });
+
+            if (driverLocation) {
+                driverMarkerRef.current = L.marker([driverLocation.lat, driverLocation.lng], { icon: driverIcon })
+                    .addTo(mapRef.current)
+                    .bindPopup(`🚗 Driver: ${order.driverName || "In Transit"}`);
+            }
+
+            setTimeout(() => {
+                mapRef.current.invalidateSize();
+            }, 200);
         }
 
         return () => {
             if (mapRef.current) {
-                mapRef.current.remove()
-                mapRef.current = null
+                mapRef.current.remove();
+                mapRef.current = null;
             }
-        }
-    }, [])
+        };
 
-    // Setup customer location marker when order loads
+    }, [order, customerLocation, driverLocation]);
+
+    // Socket connection for real-time driver location
     useEffect(() => {
-        if (order && order.address && mapRef.current) {
-            const { latitude = 27.7172, longitude = 85.3240 } = order.address
+        if (!url || !order) return;
 
-            if (customerMarkerRef.current) {
-                customerMarkerRef.current.setLatLng([latitude, longitude])
-            } else {
-                customerMarkerRef.current = L.marker([latitude, longitude], { icon: customerIcon })
-                    .addTo(mapRef.current)
-                    .bindPopup(`Delivery to ${order.address.firstName} ${order.address.lastName}`)
-            }
-
-            mapRef.current.setView([latitude, longitude], 14)
-        }
-    }, [order])
-
-    // Initialize Socket.io for real-time driver location
-    useEffect(() => {
-        socketRef.current = io('http://localhost:4000', {
+        socketRef.current = io(url, {
+            transports: ["websocket", "polling"],
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
-            reconnectionAttempts: 10
-        })
+            reconnectionAttempts: 5,
+        });
 
-        // Receive driver location updates
-        socketRef.current.on('receive-location', (data) => {
-            const { id, latitude, longitude } = data
-            setDriverLocation({ lat: latitude, lng: longitude })
+        socketRef.current.on("driver-location", (data) => {
+            if (!mapRef.current) return;
 
-            if (mapRef.current) {
-                if (driverMarkerRef.current) {
-                    driverMarkerRef.current.setLatLng([latitude, longitude])
-                } else {
-                    driverMarkerRef.current = L.marker([latitude, longitude], { icon: driverIcon })
-                        .addTo(mapRef.current)
-                        .bindPopup('Delivery Driver')
-                }
+            const { latitude, longitude } = data;
+            setDriverLocation({ lat: latitude, lng: longitude });
 
-                // Draw polyline between driver and customer
-                if (customerMarkerRef.current) {
-                    const customerLat = customerMarkerRef.current.getLatLng().lat
-                    const customerLng = customerMarkerRef.current.getLatLng().lng
+            // Update or create driver marker
+            const driverIcon = L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+                iconSize: [35, 35]
+            });
 
-                    if (polylineRef.current) {
-                        polylineRef.current.setLatLngs([[latitude, longitude], [customerLat, customerLng]])
-                    } else {
-                        polylineRef.current = L.polyline([[latitude, longitude], [customerLat, customerLng]], {
-                            color: '#ff7800',
-                            weight: 2,
-                            opacity: 0.7
-                        }).addTo(mapRef.current)
-                    }
-
-                    // Calculate distance
-                    const dist = calculateDistance(latitude, longitude, customerLat, customerLng)
-                    setDistance(dist.toFixed(2))
-                }
+            if (driverMarkerRef.current) {
+                driverMarkerRef.current.setLatLng([latitude, longitude]);
+                driverMarkerRef.current.setPopupContent(`🚗 Driver: ${order.driverName || "In Transit"}`);
+            } else {
+                driverMarkerRef.current = L.marker([latitude, longitude], { icon: driverIcon })
+                    .addTo(mapRef.current)
+                    .bindPopup(`🚗 Driver: ${order.driverName || "In Transit"}`);
             }
-        })
+
+            // Update polyline between driver and customer
+            if (customerLocation) {
+                if (routeRef.current) {
+                    routeRef.current.setLatLngs([
+                        [latitude, longitude],
+                        [customerLocation.lat, customerLocation.lng],
+                    ]);
+                } else {
+                    routeRef.current = L.polyline(
+                        [
+                            [latitude, longitude],
+                            [customerLocation.lat, customerLocation.lng],
+                        ],
+                        { color: "blue", weight: 3, dashArray: "5,5" }
+                    ).addTo(mapRef.current);
+                }
+
+                // Fit both markers in view
+                const bounds = L.latLngBounds([
+                    [latitude, longitude],
+                    [customerLocation.lat, customerLocation.lng],
+                ]);
+                mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+            }
+        });
+
+        socketRef.current.on("connect_error", (error) => {
+            console.error("Socket connection error:", error);
+        });
 
         return () => {
-            socketRef.current?.disconnect()
-        }
-    }, [])
-
-    // Calculate distance between two coordinates (Haversine formula)
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371 // Radius of the Earth in km
-        const dLat = (lat2 - lat1) * Math.PI / 180
-        const dLon = (lon2 - lon1) * Math.PI / 180
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2)
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-        return R * c
-    }
+            if (socketRef.current) socketRef.current.disconnect();
+        };
+    }, [url, order, customerLocation]);
 
     if (loading) {
-        return <div className="live-tracking"><p>Loading order details...</p></div>
+        return <div className="live-tracking"><p>Loading order details...</p></div>;
     }
 
-    if (error || !order) {
-        return (
-            <div className="live-tracking">
-                <p>{error || "No order found"}</p>
-                <button onClick={() => navigate('/myorders')}>Go Back to Orders</button>
-            </div>
-        )
+    if (error) {
+        return <div className="live-tracking"><p style={{ color: 'red' }}>{error}</p></div>;
     }
+
+    if (!order) {
+        return <div className="live-tracking"><p>Order not found</p></div>;
+    }
+
+    const getProgressSteps = (status) => {
+        const steps = ["Order Placed", "Preparing", "Out for Delivery", "Delivered"];
+        const currentIndex = steps.findIndex(s => s.replace(" ", "") === status.replace(" ", ""));
+        return currentIndex >= 0 ? currentIndex : 2;
+    };
+
+    const progressIndex = getProgressSteps(order.status);
+    const progressPercentage = ((progressIndex + 1) / 4) * 100;
 
     return (
         <div className="live-tracking">
+
             <div className="tracking-header">
-                <button className="back-btn" onClick={() => navigate('/myorders')}>← Back</button>
-                <h2>Live Delivery Tracking</h2>
-                <p className="order-id">Order ID: {order?._id}</p>
+                <button className="back-btn">← Back</button>
+                <h2>Live Order Tracking</h2>
+                <p className="order-id">Order #{order._id.slice(-4).toUpperCase()}</p>
             </div>
 
             <div className="tracking-container">
+
+                {/* Map */}
                 <div className="map-section">
-                    <div ref={mapContainer} className="map-container"></div>
+                    <div id="map" ref={mapContainer}></div>
+
+                    <div className="tracking-status">
+                        🚚 {order.driverName ? `${order.driverName} is on the way to your location` : "Driver assigned to your order"}
+                    </div>
                 </div>
 
+                {/* Tracking Info */}
                 <div className="tracking-info">
-                    <div className="order-details">
-                        <h3>Order Details</h3>
-                        <p><strong>Status:</strong> {order?.status || 'Processing'}</p>
-                        <p><strong>Amount:</strong> ${order?.amount}</p>
-                        <p><strong>Items:</strong> {order?.items?.length || 0} items</p>
-                        {distance && <p><strong>Distance to Delivery:</strong> {distance} km</p>}
+
+                    {/* Progress */}
+                    <div className="progress-section">
+                        <h3>Order Progress</h3>
+
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${progressPercentage}%` }}></div>
+                        </div>
+
+                        <div className="progress-steps">
+                            <div className={`step ${progressIndex >= 0 ? 'active' : ''}`}><span>Order Placed</span></div>
+                            <div className={`step ${progressIndex >= 1 ? 'active' : ''}`}><span>Preparing</span></div>
+                            <div className={`step ${progressIndex >= 2 ? 'active' : ''}`}><span>Out for Delivery</span></div>
+                            <div className={`step ${progressIndex >= 3 ? 'active' : ''}`}><span>Delivered</span></div>
+                        </div>
                     </div>
 
-                    {order?.status === "Out for delivery" && (
-                        <div className="driver-details">
-                            <h3>Driver Information</h3>
-                            <p><strong>Driver:</strong> {order?.driverName || 'Not assigned'}</p>
-                            <p className="driver-status">🟢 Driver is on the way</p>
-                            <div className="progress-bar">
-                                <div className="progress-fill" style={{ width: `${deliveryProgress}%` }}></div>
+                    {/* Locations */}
+                    {(driverLocation || customerLocation) && (
+                        <div className="locations-section" style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '10px',
+                            padding: '15px',
+                            backgroundColor: '#f5f5f5',
+                            borderRadius: '8px',
+                            marginBottom: '15px'
+                        }}>
+                            {driverLocation && (
+                                <div style={{
+                                    padding: '12px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '6px',
+                                    border: '1px solid #ddd'
+                                }}>
+                                    <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: '#666' }}>🚗 Driver Location</p>
+                                    <p style={{ margin: '0', fontSize: '13px', fontFamily: 'monospace', color: '#333' }}>
+                                        {driverLocation.lat.toFixed(4)}, {driverLocation.lng.toFixed(4)}
+                                    </p>
+                                </div>
+                            )}
+                            {customerLocation && (
+                                <div style={{
+                                    padding: '12px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '6px',
+                                    border: '1px solid #ddd'
+                                }}>
+                                    <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: '#666' }}>📍 Your Location</p>
+                                    <p style={{ margin: '0', fontSize: '13px', fontFamily: 'monospace', color: '#333' }}>
+                                        {customerLocation.lat.toFixed(4)}, {customerLocation.lng.toFixed(4)}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Driver */}
+                    <div className="driver-section">
+                        <h3>Driver Details</h3>
+
+                        <div className="driver-info">
+
+                            <div className="driver-avatar">🚴</div>
+
+                            <div className="driver-details">
+                                <p className="driver-name">{order.driverName || 'Driver not assigned'}</p>
+                                <p className="driver-vehicle">
+                                    {order.driverVehicle ? `${order.driverVehicle}` : 'Vehicle not specified'}
+                                </p>
+                                <div className="driver-rating">
+                                    <span className="stars">⭐ {order.driverRating ? order.driverRating.toFixed(1) : 'N/A'}</span>
+                                </div>
                             </div>
-                            <p className="progress-text">{deliveryProgress}% Complete</p>
-                        </div>
-                    )}
 
-                    {order?.status === "Delivered" && (
-                        <div className="driver-details delivered">
-                            <h3>✓ Delivery Complete</h3>
-                            <p>Your order has been delivered</p>
-                        </div>
-                    )}
+                            <div className="driver-actions">
+                                {order.driverPhone ? (
+                                    <a href={`tel:${order.driverPhone}`} className="call-btn">📞</a>
+                                ) : (
+                                    <span className="call-btn" style={{ opacity: 0.5 }}>📞</span>
+                                )}
+                            </div>
 
-                    {order?.status === "Food Processing" && (
-                        <div className="driver-details processing">
-                            <h3>Preparing Your Order</h3>
-                            <p>Your food is being prepared in the restaurant</p>
                         </div>
-                    )}
-
-                    <div className="delivery-address">
-                        <h3>Delivery Address</h3>
-                        <p>{order?.address?.firstName} {order?.address?.lastName}</p>
-                        <p>{order?.address?.street}</p>
-                        <p>{order?.address?.city}, {order?.address?.state}</p>
                     </div>
+
+                    {/* Items */}
+                    <div className="items-section">
+                        <h3>Order Items</h3>
+
+                        <div className="items-list">
+
+                            {order.items && order.items.length > 0 ? (
+                                order.items.map((item, index) => (
+                                    <div key={index} className="item">
+                                        <span>{item.name} x{item.quantity}</span>
+                                        <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No items found</p>
+                            )}
+
+                        </div>
+                    </div>
+
+                    {/* ETA */}
+                    <div className="time-section">
+                        <h3>Order Total</h3>
+                        <p className="estimated-time">Rs {order.amount.toFixed(2)}</p>
+                    </div>
+
+                    {/* Support */}
+                    <div className="support-section">
+                        <button className="support-btn">
+                            Contact Support
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LiveTracking
+export default LiveTracking;

@@ -198,9 +198,25 @@ const updateOrderStatus = async (req, res) => {
         console.log("Updating order:", req.body.orderId, "to status:", req.body.status);
         const updateData = { status: req.body.status }
 
-        // If status is "Out for delivery" and driverName is provided, add it
+        // If status is "Out for delivery" and driverName is provided, add driver details
         if (req.body.status === "Out for delivery" && req.body.driverName) {
             updateData.driverName = req.body.driverName
+
+            // Fetch driver details from user model
+            try {
+                const driver = await userModel.findOne({
+                    name: req.body.driverName,
+                    role: 'driver'
+                })
+
+                if (driver) {
+                    updateData.driverPhone = driver.driverPhone
+                    updateData.driverVehicle = driver.driverVehicle
+                    updateData.driverRating = driver.driverRating || 0
+                }
+            } catch (driverError) {
+                console.log("Error fetching driver details:", driverError)
+            }
         }
 
         const result = await orderModel.findByIdAndUpdate(req.body.orderId, updateData)
@@ -232,4 +248,27 @@ const getOrderById = async (req, res) => {
     }
 }
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById }
+// Get assigned orders for a specific driver
+const getDriverAssignedOrders = async (req, res) => {
+    try {
+        // Get driver's name from user model
+        const driver = await userModel.findById(req.userId)
+
+        if (!driver) {
+            return res.json({ success: false, message: "Driver not found" })
+        }
+
+        // Find orders assigned to this driver
+        const orders = await orderModel.find({
+            driverName: driver.name,
+            status: { $in: ["Confirmed", "Out for delivery"] }
+        }).sort({ date: -1 })
+
+        res.json({ success: true, data: orders })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: "Error fetching assigned orders" })
+    }
+}
+
+export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById, getDriverAssignedOrders }
