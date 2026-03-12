@@ -5,7 +5,8 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { connectDB } from "./config/db.js"
 import foodRouter from "./routes/foodRoute.js"
-import userRouter from "./routes/userRoute.js"
+import customerRouter from "./routes/customerRoute.js"
+import driverRouter from "./routes/driverRoute.js"
 import cartRouter from "./routes/cartRoute.js"
 import orderRouter from "./routes/orderRoute.js"
 import reservationRouter from "./routes/reservationRoute.js"
@@ -13,13 +14,25 @@ import reservationRouter from "./routes/reservationRoute.js"
 
 const app = express()
 const httpServer = createServer(app)
+
+// Define allowed origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://restromatrix-1.onrender.com",
+  process.env.FRONTEND_URL,
+  process.env.DRIVER_URL,
+  process.env.ADMIN_URL
+].filter(Boolean)
+
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    origin: allowedOrigins,
     credentials: true
   }
 })
-const port = 4000
+const port = process.env.PORT || 4000
 
 // Store active driver-customer relationships
 const activeDeliveries = new Map()
@@ -29,7 +42,7 @@ const userSockets = new Map()
 //middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    origin: allowedOrigins,
     credentials: true
   })
 )
@@ -44,7 +57,8 @@ connectDB();
 //api endpoints
 app.use('/api/food', foodRouter)
 app.use("/images", express.static("uploads"))
-app.use('/api/user', userRouter)
+app.use('/api/customer', customerRouter)
+app.use('/api/driver', driverRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/order', orderRouter)
 app.use('/api/reservation', reservationRouter)
@@ -62,29 +76,76 @@ io.on('connection', (socket) => {
   // Register user socket
   userSockets.set(socket.id, { socketId: socket.id, type: null, orderId: null })
 
+  // Customer watches an order for live tracking
+  socket.on('watch-order', (data) => {
+    const { orderId } = data
+
+    if (orderId) {
+      // Store customer socket info for this order
+      if (!activeDeliveries.has(orderId)) {
+        activeDeliveries.set(orderId, {
+          orderId,
+          customerSocketId: socket.id,
+          status: 'watching',
+          createdAt: new Date(),
+          driverLocation: null,
+          customerLocation: null
+        })
+      } else {
+        const delivery = activeDeliveries.get(orderId)
+        delivery.customerSocketId = socket.id
+      }
+
+      // Join socket to a room for this order
+      socket.join(`order-${orderId}`)
+      console.log(`Customer ${socket.id} is now watching order ${orderId}`)
+    }
+  })
+
   // Driver sends his location
   socket.on('driver-location', (data) => {
-    const { driverId, orderId, latitude, longitude } = data
+    const { latitude, longitude } = data
 
-    // Update delivery tracking info
-    if (orderId && activeDeliveries.has(orderId)) {
-      const delivery = activeDeliveries.get(orderId)
-      delivery.driverLocation = { latitude, longitude }
-      delivery.lastUpdate = new Date()
+    // Broadcast to all customers watching any order
+    // We'll broadcast to all orders this driver might be delivering
+    socket.broadcast.emit('driver-location', { latitude, longitude })
+  })
 
-      // Broadcast driver location to customer
-      if (delivery.customerSocketId) {
-        io.to(delivery.customerSocketId).emit('driver-location-update', {
+  // Driver updates location with order ID (more specific)
+  socket.on('driver-location-update', (data) => {
+    const { orderId, latitude, longitude, driverId } = data
+
+    if (orderId) {
+      // Update delivery tracking info
+      if (!activeDeliveries.has(orderId)) {
+        activeDeliveries.set(orderId, {
+          orderId,
+          driverSocketId: socket.id,
           driverId,
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString()
+          status: 'delivering',
+          createdAt: new Date(),
+          driverLocation: { latitude, longitude },
+          lastUpdate: new Date()
         })
+      } else {
+        const delivery = activeDeliveries.get(orderId)
+        delivery.driverLocation = { latitude, longitude }
+        delivery.driverSocketId = socket.id
+        delivery.driverId = driverId
+        delivery.lastUpdate = new Date()
       }
-    }
 
-    // Also broadcast to all connected clients (for general tracking)
-    socket.broadcast.emit('receive-location', { driverId, latitude, longitude })
+      // Broadcast driver location to customers watching this specific order
+      io.to(`order-${orderId}`).emit('driver-location', {
+        latitude,
+        longitude,
+        driverId,
+        orderId,
+        timestamp: new Date().toISOString()
+      })
+
+      console.log(`Driver location updated for order ${orderId}: ${latitude}, ${longitude}`)
+    }
   })
 
   // Customer sends his location
@@ -96,16 +157,6 @@ io.on('connection', (socket) => {
       const delivery = activeDeliveries.get(orderId)
       delivery.customerLocation = { latitude, longitude }
       delivery.lastUpdate = new Date()
-
-      // Broadcast customer location to driver
-      if (delivery.driverSocketId) {
-        io.to(delivery.driverSocketId).emit('customer-location', {
-          customerId,
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString()
-        })
-      }
     }
   })
 
@@ -129,10 +180,9 @@ io.on('connection', (socket) => {
         delivery.status = status
       }
 
+      // Notify customers watching this order
+      io.to(`order-${orderId}`).emit('delivery-status-update', { status: 'on-way' })
       console.log(`Delivery ${orderId} started by driver ${socket.id}`)
-
-      // Notify the driver
-      socket.emit('delivery-status-update', { status: 'on-way' })
     }
   })
 
@@ -145,14 +195,12 @@ io.on('connection', (socket) => {
       delivery.status = 'delivered'
       delivery.completedAt = new Date()
 
-      // Notify customer
-      if (delivery.customerSocketId) {
-        io.to(delivery.customerSocketId).emit('delivery-completed', {
-          orderId,
-          status: 'delivered',
-          completedAt: new Date().toISOString()
-        })
-      }
+      // Notify customers watching this order
+      io.to(`order-${orderId}`).emit('delivery-completed', {
+        orderId,
+        status: 'delivered',
+        completedAt: new Date().toISOString()
+      })
 
       console.log(`Delivery ${orderId} completed`)
 
@@ -161,33 +209,6 @@ io.on('connection', (socket) => {
         activeDeliveries.delete(orderId)
       }, 5 * 60 * 1000)
     }
-  })
-
-  // Link driver to customer for an order
-  socket.on('assign-order-to-driver', (data) => {
-    const { orderId, driverSocketId, customerSocketId } = data
-
-    if (driverSocketId && customerSocketId) {
-      activeDeliveries.set(orderId, {
-        orderId,
-        driverSocketId,
-        customerSocketId,
-        status: 'ready',
-        createdAt: new Date(),
-        driverLocation: null,
-        customerLocation: null
-      })
-
-      // Notify both driver and customer
-      io.to(driverSocketId).emit('order-assigned', { orderId })
-      io.to(customerSocketId).emit('driver-assigned', { orderId, driverSocketId })
-    }
-  })
-
-  // Listen for location updates from drivers (backward compatibility)
-  socket.on('send-location', (data) => {
-    // Broadcast to all connected clients
-    io.emit('receive-location', data)
   })
 
   // Get active deliveries

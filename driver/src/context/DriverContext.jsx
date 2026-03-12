@@ -6,7 +6,7 @@ export const DriverProvider = ({ children }) => {
     const [driverToken, setDriverToken] = useState(null)
     const [driverRole, setDriverRole] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const url = "http://localhost:4000"
+    const url = "https://restromatrix-1.onrender.com"
 
     useEffect(() => {
         // Check if driver is already logged in

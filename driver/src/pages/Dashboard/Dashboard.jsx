@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { DriverContext } from "../../context/DriverContext";
 import "./Dashboard.css";
 
-// Fix Leaflet default marker
+// Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -20,18 +20,16 @@ L.Icon.Default.mergeOptions({
 
 // Customer marker
 const customerIcon = L.icon({
-  iconUrl:
-    "https://cdn-icons-png.flaticon.com/512/854/854894.png",
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  iconSize: [35, 35],
+  iconAnchor: [17, 35],
 });
 
 // Driver marker
 const driverIcon = L.icon({
-  iconUrl:
-    "https://cdn-icons-png.flaticon.com/512/854/854894.png",
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/744/744465.png",
+  iconSize: [35, 35],
+  iconAnchor: [17, 35],
 });
 
 const Dashboard = () => {
@@ -57,7 +55,8 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  // Fetch assigned orders
+  /* ---------------- FETCH ASSIGNED ORDERS ---------------- */
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -67,22 +66,23 @@ const Dashboard = () => {
 
         if (res.data.success) {
           setAssignedOrders(res.data.data);
+
           if (res.data.data.length > 0) {
             setSelectedOrder(res.data.data[0]);
           }
         }
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error("Fetch orders error:", error);
       }
     };
 
     if (driverToken) fetchOrders();
   }, [url, driverToken]);
 
-  // Initialize Map
+  /* ---------------- MAP INIT ---------------- */
+
   useEffect(() => {
-    if (!mapContainer.current) return;
-    if (mapRef.current) return;
+    if (!mapContainer.current || mapRef.current) return;
 
     const map = L.map(mapContainer.current).setView([27.7172, 85.324], 13);
 
@@ -92,20 +92,21 @@ const Dashboard = () => {
 
     mapRef.current = map;
 
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 300);
+    setTimeout(() => map.invalidateSize(), 500);
   }, []);
 
-  // Show customer marker
+  /* ---------------- CUSTOMER MARKER ---------------- */
+
   useEffect(() => {
     if (!selectedOrder || !mapRef.current) return;
 
     const lat = parseFloat(selectedOrder.address?.latitude) || 27.7172;
     const lng = parseFloat(selectedOrder.address?.longitude) || 85.324;
 
-    setCustomerLocation({ lat, lng });
-    customerLocationRef.current = { lat, lng };
+    const customerLoc = { lat, lng };
+
+    setCustomerLocation(customerLoc);
+    customerLocationRef.current = customerLoc;
 
     if (customerMarkerRef.current) {
       customerMarkerRef.current.setLatLng([lat, lng]);
@@ -113,123 +114,120 @@ const Dashboard = () => {
       customerMarkerRef.current = L.marker([lat, lng], {
         icon: customerIcon,
       }).addTo(mapRef.current);
-      customerMarkerRef.current.bindPopup("📍 Customer");
+
+      customerMarkerRef.current.bindPopup("Customer Location");
     }
 
-    // Fit both markers in view if driver location exists
-    if (driverLocation) {
-      const bounds = L.latLngBounds([
-        [driverLocation.lat, driverLocation.lng],
-        [lat, lng],
-      ]);
-      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
-    } else {
-      mapRef.current.setView([lat, lng], 14);
-    }
-  }, [selectedOrder, driverLocation]);
+    mapRef.current.setView([lat, lng], 14);
+  }, [selectedOrder]);
 
-  // Socket connection - only create once
+  /* ---------------- SOCKET CONNECTION ---------------- */
+
   useEffect(() => {
     if (!url || !driverToken) return;
 
     socketRef.current = io(url, {
-      auth: {
-        token: driverToken,
-      },
-      transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
+      auth: { token: driverToken },
+      transports: ["websocket"],
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket connected");
+      console.log("Socket Connected");
     });
 
-    socketRef.current.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
-
-    socketRef.current.on("driver-location", (data) => {
-      if (!mapRef.current) return;
-
-      const { latitude, longitude } = data;
-      setDriverLocation({ lat: latitude, lng: longitude });
-
-      if (driverMarkerRef.current) {
-        driverMarkerRef.current.setLatLng([latitude, longitude]);
-      } else {
-        driverMarkerRef.current = L.marker([latitude, longitude], {
-          icon: driverIcon,
-        }).addTo(mapRef.current);
-        driverMarkerRef.current.bindPopup("🚗 You (Driver)");
-      }
-
-      // Update polyline using ref
-      const customerLoc = customerLocationRef.current;
-      if (customerLoc && mapRef.current) {
-        if (routeRef.current) {
-          routeRef.current.setLatLngs([
-            [latitude, longitude],
-            [customerLoc.lat, customerLoc.lng],
-          ]);
-        } else {
-          routeRef.current = L.polyline(
-            [
-              [latitude, longitude],
-              [customerLoc.lat, customerLoc.lng],
-            ],
-            { color: "blue", weight: 3, dashArray: "5,5" }
-          ).addTo(mapRef.current);
-        }
-
-        // Fit both markers in view
-        const bounds = L.latLngBounds([
-          [latitude, longitude],
-          [customerLoc.lat, customerLoc.lng],
-        ]);
-        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
-      }
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket error:", err.message);
     });
 
     return () => {
-      socketRef.current.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, [url, driverToken]);
 
-  // Get driver's real-time location
+  /* ---------------- DRIVER LOCATION ---------------- */
+
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      console.error("Geolocation not supported");
+      return;
+    }
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setDriverLocation({ lat: latitude, lng: longitude });
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-        if (socketRef.current) {
-          socketRef.current.emit("driver-location", {
-            latitude,
-            longitude,
-          });
+        const driverLoc = { lat: latitude, lng: longitude };
+        setDriverLocation(driverLoc);
+
+        /* DRIVER MARKER */
+
+        if (mapRef.current) {
+          if (driverMarkerRef.current) {
+            driverMarkerRef.current.setLatLng([latitude, longitude]);
+          } else {
+            driverMarkerRef.current = L.marker([latitude, longitude], {
+              icon: driverIcon,
+            }).addTo(mapRef.current);
+
+            driverMarkerRef.current.bindPopup("You (Driver)");
+          }
         }
 
-        // Fit both markers in view
+        /* SEND LOCATION TO SERVER */
+
+        if (socketRef.current && selectedOrder?._id) {
+          const payload = {
+            orderId: selectedOrder._id,
+            latitude,
+            longitude,
+          };
+
+          console.log("Sending driver location:", payload);
+
+          socketRef.current.emit("driver-location-update", payload);
+        }
+
+        /* DRAW ROUTE */
+
         const customerLoc = customerLocationRef.current;
+
         if (mapRef.current && customerLoc) {
+          if (routeRef.current) {
+            routeRef.current.setLatLngs([
+              [latitude, longitude],
+              [customerLoc.lat, customerLoc.lng],
+            ]);
+          } else {
+            routeRef.current = L.polyline(
+              [
+                [latitude, longitude],
+                [customerLoc.lat, customerLoc.lng],
+              ],
+              { color: "blue", weight: 3 }
+            ).addTo(mapRef.current);
+          }
+
           const bounds = L.latLngBounds([
             [latitude, longitude],
             [customerLoc.lat, customerLoc.lng],
           ]);
+
           mapRef.current.fitBounds(bounds, { padding: [50, 50] });
         }
       },
-      (err) => console.error("Geolocation error:", err),
+      (error) => {
+        console.error("Geolocation error:", error);
+      },
       { enableHighAccuracy: true }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [selectedOrder]);
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="driver-dashboard">
@@ -242,32 +240,34 @@ const Dashboard = () => {
 
       <div className="driver-dashboard-content">
         <h2>Delivery Dashboard</h2>
-        <p>Real-time order tracking and delivery management</p>
 
         <div className="dashboard-layout">
-          {/* Map */}
+          {/* MAP */}
           <div className="map-section">
             <div ref={mapContainer} className="map-container"></div>
           </div>
 
-          {/* Orders */}
+          {/* ORDERS */}
           <div className="info-section">
             <div className="section-card">
-              <div className="section-header">
-                <h3>📦 Assigned Orders</h3>
-              </div>
+              <h3>Assigned Orders</h3>
 
               <div className="orders">
                 {assignedOrders.map((order) => (
                   <div
                     key={order._id}
-                    className={`order-item ${selectedOrder?._id === order._id ? "active" : ""}`}
+                    className={`order-item ${
+                      selectedOrder?._id === order._id ? "active" : ""
+                    }`}
                     onClick={() => setSelectedOrder(order)}
                   >
                     <strong>#{order._id.slice(-6)}</strong>
-                    <p>👤 {order.address?.firstName}</p>
-                    <p>📞 {order.address?.phone}</p>
-                    <span>💰 Rs {order.amount}</span>
+
+                    <p>{order.address?.firstName}</p>
+
+                    <p>{order.address?.phone}</p>
+
+                    <span>Rs {order.amount}</span>
                   </div>
                 ))}
               </div>
@@ -278,28 +278,20 @@ const Dashboard = () => {
         {driverLocation && customerLocation && (
           <div className="dashboard-cards">
             <div className="dashboard-card">
-              <h3>🚗 Your Location</h3>
-              <p className="card-number">
-                {driverLocation.lat.toFixed(4)}°
-              </p>
-              <p style={{ fontSize: '12px', color: '#808080', margin: '4px 0 0 0' }}>
-                {driverLocation.lng.toFixed(4)}°
-              </p>
+              <h3>Your Location</h3>
+              <p>{driverLocation.lat.toFixed(4)}</p>
+              <small>{driverLocation.lng.toFixed(4)}</small>
             </div>
 
             <div className="dashboard-card">
-              <h3>📍 Customer Location</h3>
-              <p className="card-number">
-                {customerLocation.lat.toFixed(4)}°
-              </p>
-              <p style={{ fontSize: '12px', color: '#808080', margin: '4px 0 0 0' }}>
-                {customerLocation.lng.toFixed(4)}°
-              </p>
+              <h3>Customer Location</h3>
+              <p>{customerLocation.lat.toFixed(4)}</p>
+              <small>{customerLocation.lng.toFixed(4)}</small>
             </div>
 
             <div className="dashboard-card">
-              <h3>📋 Active Orders</h3>
-              <p className="card-number">{assignedOrders.length}</p>
+              <h3>Active Orders</h3>
+              <p>{assignedOrders.length}</p>
             </div>
           </div>
         )}

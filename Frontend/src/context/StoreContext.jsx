@@ -11,6 +11,10 @@ const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [role, setRole] = useState("");
 
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = async (itemId) => {
     if (!cartItems[itemId]) {
@@ -47,14 +51,27 @@ const StoreContextProvider = (props) => {
     setFoodList(response.data.data)
   }
   const loadCartData = async (tokenValue) => {
-    const response = await axios.get(url + "/api/cart/get", { headers: { token: tokenValue } });
-    if (response.data.success) {
-      setCartItems(response.data.cartData || {});
+    try {
+      const response = await axios.get(url + "/api/cart/get", { headers: { token: tokenValue } });
+      if (response.data.success && response.data.cartData && Object.keys(response.data.cartData).length > 0) {
+        // Only use backend cart if it has items
+        setCartItems(response.data.cartData);
+      }
+      // If backend cart is empty, keep the localStorage cart that was already loaded
+    } catch (error) {
+      console.log("Error loading cart from backend:", error);
+      // Keep localStorage cart on error
     }
   }
 
 
   useEffect(() => {
+    // Load cart from localStorage first
+    const savedCart = localStorage.getItem("cartItems");
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+
     if (localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
     }
@@ -64,12 +81,25 @@ const StoreContextProvider = (props) => {
     async function loadData() {
       await fetchFoodList();
       if (localStorage.getItem("token")) {
-        setToken(localStorage.getItem("token"));
-        await loadCartData(localStorage.getItem("token"));
+        const tokenValue = localStorage.getItem("token");
+        setToken(tokenValue);
+        await loadCartData(tokenValue);
       }
     }
     loadData();
   }, [])
+
+  // Sync cart to backend whenever it changes and user is logged in
+  useEffect(() => {
+    if (token && Object.keys(cartItems).length > 0) {
+      // Sync each item to backend
+      Object.entries(cartItems).forEach(([itemId, quantity]) => {
+        if (quantity > 0) {
+          axios.post(url + "/api/cart/add", { itemId }, { headers: { token } }).catch(err => console.log(err));
+        }
+      });
+    }
+  }, [token])
 
   const contextValue = {
     food_list,

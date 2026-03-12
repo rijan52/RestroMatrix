@@ -13,7 +13,7 @@ const Orders = ({ url }) => {
 
   const fetchAllDrivers = async () => {
     try {
-      const response = await axios.get(`${url}/api/user/drivers`);
+      const response = await axios.get(`${url}/api/driver/all`);
       if (response.data.success) {
         setDrivers(response.data.data || []);
       }
@@ -209,32 +209,32 @@ const Orders = ({ url }) => {
 
               {(pendingStatuses[order._id] === "Out for delivery" ||
                 order.status === "Out for delivery") && (
-                <div className="driver-assignment">
-                  <select
-                    value={driverNames[order._id] || ""}
-                    onChange={(e) =>
-                      handleDriverNameChange(order._id, e.target.value)
-                    }
-                    className="driver-select"
-                  >
-                    <option value="">Select a driver</option>
+                  <div className="driver-assignment">
+                    <select
+                      value={driverNames[order._id] || ""}
+                      onChange={(e) =>
+                        handleDriverNameChange(order._id, e.target.value)
+                      }
+                      className="driver-select"
+                    >
+                      <option value="">Select a driver</option>
 
-                    {drivers.map((driver) => (
-                      <option key={driver._id} value={driver.name}>
-                        {driver.name} -{" "}
-                        {driver.driverPhone ? driver.driverPhone : "No phone"}
-                      </option>
-                    ))}
-                  </select>
+                      {drivers.map((driver) => (
+                        <option key={driver._id} value={driver.name}>
+                          {driver.name} -{" "}
+                          {driver.driverPhone ? driver.driverPhone : "No phone"}
+                        </option>
+                      ))}
+                    </select>
 
-                  <button
-                    className="assign-btn"
-                    onClick={() => updateWithDriverName(order._id)}
-                  >
-                    Assign
-                  </button>
-                </div>
-              )}
+                    <button
+                      className="assign-btn"
+                      onClick={() => updateWithDriverName(order._id)}
+                    >
+                      Assign
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         ))}

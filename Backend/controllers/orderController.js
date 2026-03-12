@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import orderModel from "../models/orderModel.js";
-import userModel from "../models/userModel.js";
+import customerModel from "../models/customerModel.js";
+import driverModel from "../models/driverModel.js";
 
 const MIN_CHARGE_NPR = 50
 
@@ -70,7 +71,7 @@ const placeOrder = async (req, res) => {
             address: req.body.address
         })
         await newOrder.save();
-        await userModel.findByIdAndUpdate(req.userId, { cartData: {} })
+        await customerModel.findByIdAndUpdate(req.userId, { cartData: {} })
 
         const deliveryFeeNpr = 2
         const totals = calculateOrderTotals(req.body.items, deliveryFeeNpr)
@@ -202,17 +203,16 @@ const updateOrderStatus = async (req, res) => {
         if (req.body.status === "Out for delivery" && req.body.driverName) {
             updateData.driverName = req.body.driverName
 
-            // Fetch driver details from user model
+            // Fetch driver details from driver model
             try {
-                const driver = await userModel.findOne({
-                    name: req.body.driverName,
-                    role: 'driver'
+                const driver = await driverModel.findOne({
+                    name: req.body.driverName
                 })
 
                 if (driver) {
-                    updateData.driverPhone = driver.driverPhone
-                    updateData.driverVehicle = driver.driverVehicle
-                    updateData.driverRating = driver.driverRating || 0
+                    updateData.driverPhone = driver.phone
+                    updateData.driverVehicle = driver.vehicle
+                    updateData.driverRating = driver.rating || 0
                 }
             } catch (driverError) {
                 console.log("Error fetching driver details:", driverError)
@@ -251,8 +251,8 @@ const getOrderById = async (req, res) => {
 // Get assigned orders for a specific driver
 const getDriverAssignedOrders = async (req, res) => {
     try {
-        // Get driver's name from user model
-        const driver = await userModel.findById(req.userId)
+        // Get driver's details from driver model
+        const driver = await driverModel.findById(req.userId)
 
         if (!driver) {
             return res.json({ success: false, message: "Driver not found" })

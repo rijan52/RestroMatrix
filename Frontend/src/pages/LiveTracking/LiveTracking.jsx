@@ -23,7 +23,7 @@ const LiveTracking = () => {
     const [driver, setDriver] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [driverLocation, setDriverLocation] = useState(null);
+    const [driverLocation, setDriverLocation] = useState({ lat: 27.74294, lng: 85.33014 });
     const [customerLocation, setCustomerLocation] = useState(null);
 
     // Fetch order and driver data
@@ -72,6 +72,32 @@ const LiveTracking = () => {
         fetchOrderData();
     }, [searchParams, url]);
 
+    // Get customer's current real-time location
+    useEffect(() => {
+        if (!navigator.geolocation) {
+            console.log("Geolocation not supported");
+            return;
+        }
+
+        const watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setCustomerLocation({ lat: latitude, lng: longitude });
+            },
+            (error) => {
+                console.error("Error getting customer location:", error);
+                // Use default/order location if geolocation fails
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, []);
+
     // Initialize map after order data is loaded
     useEffect(() => {
 
@@ -84,7 +110,7 @@ const LiveTracking = () => {
                 maxZoom: 19,
             }).addTo(mapRef.current);
 
-            // Customer marker - use order address
+            // Customer marker - use current location
             const customerIcon = L.icon({
                 iconUrl: "https://cdn-icons-png.flaticon.com/512/3177/3177361.png",
                 iconSize: [35, 35]
@@ -92,7 +118,7 @@ const LiveTracking = () => {
 
             customerMarkerRef.current = L.marker([customerLocation.lat, customerLocation.lng], { icon: customerIcon })
                 .addTo(mapRef.current)
-                .bindPopup(`📍 Delivery: ${order.address?.street || "Delivery Location"}`);
+                .bindPopup(`📍 You: ${order.address?.street || "Your Location"}`);
 
             // Driver marker - will be updated via socket
             const driverIcon = L.icon({
@@ -109,6 +135,10 @@ const LiveTracking = () => {
             setTimeout(() => {
                 mapRef.current.invalidateSize();
             }, 200);
+        } else if (mapRef.current && customerLocation && customerMarkerRef.current) {
+            // Update customer marker position in real-time
+            customerMarkerRef.current.setLatLng([customerLocation.lat, customerLocation.lng]);
+            customerMarkerRef.current.setPopupContent(`📍 You: ${order?.address?.street || "Your Location"}`);
         }
 
         return () => {
@@ -130,6 +160,14 @@ const LiveTracking = () => {
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             reconnectionAttempts: 5,
+        });
+
+        // Register to watch this order
+        socketRef.current.emit('watch-order', { orderId: order._id });
+
+        socketRef.current.on("connect", () => {
+            console.log("Socket connected to live tracking");
+            socketRef.current.emit('watch-order', { orderId: order._id });
         });
 
         socketRef.current.on("driver-location", (data) => {
@@ -177,6 +215,15 @@ const LiveTracking = () => {
                 ]);
                 mapRef.current.fitBounds(bounds, { padding: [50, 50] });
             }
+        });
+
+        socketRef.current.on("delivery-status-update", (data) => {
+            console.log("Delivery status:", data);
+        });
+
+        socketRef.current.on("delivery-completed", (data) => {
+            console.log("Delivery completed:", data);
+            // You can update UI here to show delivery complete
         });
 
         socketRef.current.on("connect_error", (error) => {

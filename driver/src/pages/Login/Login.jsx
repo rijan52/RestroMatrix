@@ -30,7 +30,7 @@ const Login = () => {
         setError("")
 
         try {
-            const newUrl = url + "/api/user/login"
+            const newUrl = url + "/api/driver/login"
             const response = await axios.post(newUrl, data)
 
             if (response.data.success) {
