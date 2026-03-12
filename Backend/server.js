@@ -17,10 +17,16 @@ const httpServer = createServer(app)
 
 // Define allowed origins
 const allowedOrigins = [
+  // Local development
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
+  // Render deployment
   "https://restromatrix-1.onrender.com",
+  // Vercel deployments
+  "https://restro-matrix-te9i.vercel.app",
+  "https://restro-matrix-admin.vercel.app",
+  // Environment variables
   process.env.FRONTEND_URL,
   process.env.DRIVER_URL,
   process.env.ADMIN_URL
@@ -53,6 +59,11 @@ app.use(express.urlencoded({ extended: true }))
 
 connectDB();
 
+// Validate environment variables
+if (!process.env.JWT_SECRET) {
+  console.error("ERROR: JWT_SECRET is not defined in environment variables");
+  console.error("Please set JWT_SECRET in your .env file or Render environment settings");
+}
 
 //api endpoints
 app.use('/api/food', foodRouter)

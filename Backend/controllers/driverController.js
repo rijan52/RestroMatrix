@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import validator from "validator";
 
 const createToken = (id) => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined in environment variables");
+    }
     return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
@@ -158,8 +161,8 @@ const getDriverById = async (req, res) => {
         const { id } = req.params;
 
         const driver = await driverModel
-        .findById(id)
-        .select("-password");
+            .findById(id)
+            .select("-password");
 
         if (!driver) {
             return res.json({
@@ -195,19 +198,19 @@ const updateDriver = async (req, res) => {
         const { name, phone, vehicle, vehicleNumber, isOnline } = req.body;
 
         const driver = await driverModel
-        .findByIdAndUpdate(
-            id,
-            {
-                name,
-                phone,
-                vehicle,
-                vehicleNumber,
-                isOnline,
-                updatedAt: Date.now()
-            },
-            { new: true }
-        )
-        .select("-password");
+            .findByIdAndUpdate(
+                id,
+                {
+                    name,
+                    phone,
+                    vehicle,
+                    vehicleNumber,
+                    isOnline,
+                    updatedAt: Date.now()
+                },
+                { new: true }
+            )
+            .select("-password");
 
         if (!driver) {
             return res.json({
@@ -249,18 +252,18 @@ const updateDriverLocation = async (req, res) => {
         }
 
         const driver = await driverModel
-        .findByIdAndUpdate(
-            id,
-            {
-                location: {
-                    latitude,
-                    longitude
+            .findByIdAndUpdate(
+                id,
+                {
+                    location: {
+                        latitude,
+                        longitude
+                    },
+                    updatedAt: Date.now()
                 },
-                updatedAt: Date.now()
-            },
-            { new: true }
-        )
-        .select("-password");
+                { new: true }
+            )
+            .select("-password");
 
         if (!driver) {
             return res.json({
@@ -320,11 +323,11 @@ const deleteDriver = async (req, res) => {
 };
 
 export {
-loginDriver,
-registerDriver,
-getAllDrivers,
-getDriverById,
-updateDriver,
-updateDriverLocation,
-deleteDriver
+    loginDriver,
+    registerDriver,
+    getAllDrivers,
+    getDriverById,
+    updateDriver,
+    updateDriverLocation,
+    deleteDriver
 };
