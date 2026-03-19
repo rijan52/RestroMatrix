@@ -9,10 +9,13 @@ import Footer from "./components/Footer/Footer";
 import LoginPopup from "./components/LoginPopup/LoginPopup";
 import Verify from "./pages/Verify/Verify";
 import MyOrders from "./pages/MyOrders/MyOrders";
+import LiveTracking from "./pages/LiveTracking/LiveTracking";
 import TableReservation from "./pages/TableReservation/TableReservation";
 import Menu from "./pages/Menu/Menu";
 import Contact from "./pages/Contact/Contact";
-import LiveTracking from "./pages/LiveTracking/LiveTracking";
+import Payment from "./pages/Payment/Payment";
+import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure/PaymentFailure";
 
 // Protected Route Component
 const ProtectedDriverRoute = ({ children }) => {
@@ -35,12 +38,14 @@ const App = () => {
   }, [location])
 
   const isDriverPage = location.pathname === "/driver-tracking"
+  const isTrackingPage = location.pathname === "/live-tracking"
+  const isPaymentPage = location.pathname.startsWith("/pay/") || location.pathname.startsWith("/payment/")
 
   return (
     <>
       {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <div className="app">
-        {!isDriverPage && <Navbar setShowLogin={setShowLogin} />}
+        {!isDriverPage && !isTrackingPage && !isPaymentPage && <Navbar setShowLogin={setShowLogin} />}
 
         <Routes>
           <Route path="/" element={<Home />} />
@@ -48,15 +53,17 @@ const App = () => {
           <Route path="/order" element={<PlaceOrder />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/myorders" element={<MyOrders />} />
-          <Route path="/livetracking" element={<LiveTracking />} />
-
-
+          <Route path="/live-tracking" element={<LiveTracking />} />
           <Route path="/reservation" element={<TableReservation />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/pay/:billId" element={<Payment />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failure" element={<PaymentFailure />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        {!isDriverPage && <Footer />}
+        {!isDriverPage && !isTrackingPage && !isPaymentPage && <Footer />}
       </div>
     </>
   );

@@ -1,25 +1,25 @@
 .header {
     height: min(520px, 70vw);
-    margin: 26px auto 40px;
+    margin: 0;
     background: url('/header.png') center / cover no-repeat;
     position: relative;
-    border-radius: 28px;
+    border-radius: 0;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 24px 48px rgba(37, 99, 235, 0.25);
 }
 
 .header::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(110deg, rgba(15, 27, 45, 0.6) 0%, rgba(15, 27, 45, 0.1) 55%, transparent 100%);
+    background: linear-gradient(110deg, rgba(29, 78, 216, 0.35) 0%, rgba(29, 78, 216, 0.08) 55%, transparent 100%);
 }
 
 .header::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(300px 240px at 15% 20%, rgba(101, 166, 219, 0.35), transparent 70%);
+    background: radial-gradient(400px 240px at 15% 20%, rgba(37, 99, 235, 0.2), transparent 70%);
 }
 
 .header-content {

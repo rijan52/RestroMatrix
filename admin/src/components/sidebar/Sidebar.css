@@ -26,14 +26,15 @@
 }
 
 .sidebar-option:hover {
-    background: #f1f5f9;
+    background: #dbeafe;
     color: var(--text);
+    border-color: #38bdf8;
 }
 
 .sidebar-option.active {
-    background: #e0f2fe;
-    color: #1e3a8a;
-    border-color: #bae6fd;
+    background: #dbeafe;
+    color: #0f172a;
+    border-color: #38bdf8;
     box-shadow: inset 4px 0 0 #2563eb;
 }
 

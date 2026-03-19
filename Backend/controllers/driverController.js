@@ -242,7 +242,16 @@ const updateDriverLocation = async (req, res) => {
     try {
 
         const { id } = req.params;
+        const driverId = id || req.userId;  // ✅ Get ID from params or token
         const { latitude, longitude } = req.body;
+
+        console.log("📍 Location update request:", {
+            driverId,
+            latitude,
+            longitude,
+            fromParams: !!id,
+            fromToken: !!req.userId
+        });
 
         if (!latitude || !longitude) {
             return res.json({
@@ -251,9 +260,16 @@ const updateDriverLocation = async (req, res) => {
             });
         }
 
+        if (!driverId) {
+            return res.json({
+                success: false,
+                message: "Driver ID not found"
+            });
+        }
+
         const driver = await driverModel
             .findByIdAndUpdate(
-                id,
+                driverId,
                 {
                     location: {
                         latitude,
@@ -272,6 +288,12 @@ const updateDriverLocation = async (req, res) => {
             });
         }
 
+        console.log("✅ Driver location updated:", {
+            driverId: driver._id,
+            lat: driver.location.latitude,
+            lng: driver.location.longitude
+        });
+
         res.json({
             success: true,
             data: driver
@@ -279,7 +301,7 @@ const updateDriverLocation = async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error("❌ Location update error:", error);
 
         res.json({
             success: false,

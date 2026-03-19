@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import "./LiveTracking.css";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -17,13 +17,14 @@ const LiveTracking = () => {
     const routeRef = useRef(null);
 
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const { url } = useContext(StoreContext);
 
     const [order, setOrder] = useState(null);
     const [driver, setDriver] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [driverLocation, setDriverLocation] = useState({ lat: 27.74294, lng: 85.33014 });
+    const [driverLocation, setDriverLocation] = useState(null);
     const [customerLocation, setCustomerLocation] = useState(null);
 
     // Fetch order and driver data
@@ -42,13 +43,6 @@ const LiveTracking = () => {
                 if (orderResponse.data.success) {
                     const orderData = orderResponse.data.data;
                     setOrder(orderData);
-
-                    // Extract customer location from order address
-                    if (orderData.address) {
-                        const custLat = parseFloat(orderData.address.latitude) || 27.7172;
-                        const custLng = parseFloat(orderData.address.longitude) || 85.324;
-                        setCustomerLocation({ lat: custLat, lng: custLng });
-                    }
 
                     // Fetch driver details if driverName exists
                     if (orderData.driverName) {
@@ -75,18 +69,18 @@ const LiveTracking = () => {
     // Get customer's current real-time location
     useEffect(() => {
         if (!navigator.geolocation) {
-            console.log("Geolocation not supported");
+            console.error("Geolocation not supported");
             return;
         }
 
         const watchId = navigator.geolocation.watchPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
+                console.log("Customer real-time location updated:", latitude, longitude);
                 setCustomerLocation({ lat: latitude, lng: longitude });
             },
             (error) => {
-                console.error("Error getting customer location:", error);
-                // Use default/order location if geolocation fails
+                console.error("Error getting customer location:", error.message);
             },
             {
                 enableHighAccuracy: true,
@@ -95,7 +89,10 @@ const LiveTracking = () => {
             }
         );
 
-        return () => navigator.geolocation.clearWatch(watchId);
+        return () => {
+            console.log("Cleaning up geolocation watch");
+            navigator.geolocation.clearWatch(watchId);
+        };
     }, []);
 
     // Initialize map after order data is loaded
@@ -148,7 +145,7 @@ const LiveTracking = () => {
             }
         };
 
-    }, [order, customerLocation, driverLocation]);
+    }, [order, customerLocation]);
 
     // Socket connection for real-time driver location
     useEffect(() => {
@@ -162,30 +159,41 @@ const LiveTracking = () => {
             reconnectionAttempts: 5,
         });
 
-        // Register to watch this order
-        socketRef.current.emit('watch-order', { orderId: order._id });
-
         socketRef.current.on("connect", () => {
-            console.log("Socket connected to live tracking");
-            socketRef.current.emit('watch-order', { orderId: order._id });
+            console.log("✅ Socket connected to live tracking");
+
+            // Join order room to receive driver location updates
+            socketRef.current.emit('join-order-room', {
+                orderId: order._id,
+                customerId: order.userId || 'unknown',
+                role: "customer"
+            });
         });
 
-        socketRef.current.on("driver-location", (data) => {
-            if (!mapRef.current) return;
+        socketRef.current.on("driver-location-updated", (data) => {
+            console.log("📍 Received driver-location-updated event:", data);
+
+            if (!mapRef.current) {
+                console.log("⚠️ Map not ready, buffering driver location");
+                return;
+            }
 
             const { latitude, longitude } = data;
+            console.log("✅ Updating driver location:", latitude, longitude);
             setDriverLocation({ lat: latitude, lng: longitude });
 
             // Update or create driver marker
             const driverIcon = L.icon({
                 iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-                iconSize: [35, 35]
+                iconSize: [35, 35],
+                iconAnchor: [17, 35]
             });
 
             if (driverMarkerRef.current) {
+                console.log("🔄 Updating existing driver marker");
                 driverMarkerRef.current.setLatLng([latitude, longitude]);
-                driverMarkerRef.current.setPopupContent(`🚗 Driver: ${order.driverName || "In Transit"}`);
             } else {
+                console.log("🆕 Creating new driver marker");
                 driverMarkerRef.current = L.marker([latitude, longitude], { icon: driverIcon })
                     .addTo(mapRef.current)
                     .bindPopup(`🚗 Driver: ${order.driverName || "In Transit"}`);
@@ -217,23 +225,57 @@ const LiveTracking = () => {
             }
         });
 
-        socketRef.current.on("delivery-status-update", (data) => {
-            console.log("Delivery status:", data);
-        });
-
-        socketRef.current.on("delivery-completed", (data) => {
-            console.log("Delivery completed:", data);
-            // You can update UI here to show delivery complete
+        socketRef.current.on("delivery-status-updated", (data) => {
+            console.log("📦 Delivery status:", data);
         });
 
         socketRef.current.on("connect_error", (error) => {
-            console.error("Socket connection error:", error);
+            console.error("❌ Socket connection error:", error);
         });
 
         return () => {
-            if (socketRef.current) socketRef.current.disconnect();
+            if (socketRef.current) {
+                socketRef.current.emit("leave-order-room", {
+                    orderId: order._id,
+                    role: "customer"
+                });
+                socketRef.current.disconnect();
+            }
         };
     }, [url, order, customerLocation]);
+
+    /* ============ SEND CUSTOMER LOCATION VIA SOCKET ============ */
+
+    useEffect(() => {
+        if (!socketRef.current || !customerLocation || !order?._id) return;
+
+        console.log("📡 Starting customer location broadcast for order:", order._id);
+
+        // Send customer location every 5 seconds
+        const locationInterval = setInterval(() => {
+            if (socketRef.current?.connected) {
+                socketRef.current.emit('customer-location-update', {
+                    orderId: order._id,
+                    customerId: order.customerId || 'unknown',
+                    latitude: customerLocation.lat,
+                    longitude: customerLocation.lng
+                });
+
+                console.log("📤 Sent customer location via socket:", {
+                    orderId: order._id,
+                    lat: customerLocation.lat,
+                    lng: customerLocation.lng
+                });
+            } else {
+                console.warn("⚠️ Socket not connected, retrying...");
+            }
+        }, 5000);
+
+        return () => {
+            console.log("🛑 Stopping customer location broadcast");
+            clearInterval(locationInterval);
+        };
+    }, [customerLocation, order]);
 
     if (loading) {
         return <div className="live-tracking"><p>Loading order details...</p></div>;
@@ -260,7 +302,7 @@ const LiveTracking = () => {
         <div className="live-tracking">
 
             <div className="tracking-header">
-                <button className="back-btn">← Back</button>
+                <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
                 <h2>Live Order Tracking</h2>
                 <p className="order-id">Order #{order._id.slice(-4).toUpperCase()}</p>
             </div>

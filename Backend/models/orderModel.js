@@ -8,8 +8,29 @@ const orderSchema = new mongoose.Schema({
     status: { type: String, default: "Food Processing" },
     driverName: { type: String, default: null },
     driverPhone: { type: String, default: null },
+    driverId: { type: String, default: null },
     driverVehicle: { type: String, default: null },
     driverRating: { type: Number, default: 0 },
+    driverLocation: {
+        latitude: {
+            type: Number,
+            default: null
+        },
+        longitude: {
+            type: Number,
+            default: null
+        }
+    },
+    customerLocation: {
+        latitude: {
+            type: Number,
+            default: null
+        },
+        longitude: {
+            type: Number,
+            default: null
+        }
+    },
     date: { type: Date, default: Date.now() },
     payment: { type: Boolean, default: false }
 })

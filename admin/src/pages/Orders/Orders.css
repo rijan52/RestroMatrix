@@ -25,12 +25,18 @@
     border-radius: 999px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.order-filter-btn:hover {
+    border-color: #38bdf8;
+    background: #dbeafe;
 }
 
 .order-filter-btn.active {
-    background: #0f172a;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: #ffffff;
-    border-color: #0f172a;
+    border-color: #2563eb;
 }
 
 .order-list {
@@ -96,14 +102,26 @@
 
 .driver-name-input {
     background-color: #f8fafc;
-    border: 2px solid #0f172a;
+    border: 1px solid #e2e8f0;
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-radius: 10px;
     outline: none;
     font-weight: 500;
     color: #0f172a;
     font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.driver-name-input:hover {
+    border-color: #38bdf8;
+    background: #ffffff;
+}
+
+.driver-name-input:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .driver-name-input::placeholder {
@@ -112,25 +130,27 @@
 
 .driver-select {
     background-color: #f8fafc;
-    border: 2px solid #0f172a;
+    border: 1px solid #e2e8f0;
     flex: 1;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-radius: 10px;
     outline: none;
     font-weight: 500;
     color: #0f172a;
     font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .driver-select:hover {
-    border-color: #1e293b;
+    border-color: #38bdf8;
+    background: #ffffff;
 }
 
 .driver-select:focus {
     background-color: #ffffff;
-    border-color: #1e293b;
-    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .driver-assignment {

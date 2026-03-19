@@ -34,7 +34,7 @@ const driverIcon = L.icon({
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { logout, url, driverToken } = useContext(DriverContext);
+  const { logout, url, driverToken, driverId } = useContext(DriverContext);
 
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
@@ -43,44 +43,43 @@ const Dashboard = () => {
   const driverMarkerRef = useRef(null);
   const customerMarkerRef = useRef(null);
   const routeRef = useRef(null);
-  const customerLocationRef = useRef(null);
 
   const [assignedOrders, setAssignedOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [driverLocation, setDriverLocation] = useState(null);
   const [customerLocation, setCustomerLocation] = useState(null);
+  const [socketStatus, setSocketStatus] = useState("disconnected");
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  /* ---------------- FETCH ASSIGNED ORDERS ---------------- */
-
+  /* ============ FETCH ASSIGNED ORDERS ============ */
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get(`${url}/api/order/driver/assigned`, {
           headers: { token: driverToken },
         });
-
         if (res.data.success) {
           setAssignedOrders(res.data.data);
-
-          if (res.data.data.length > 0) {
+          if (res.data.data.length > 0 && !selectedOrder) {
             setSelectedOrder(res.data.data[0]);
           }
         }
       } catch (error) {
-        console.error("Fetch orders error:", error);
+        console.error("Fetch orders error:", error.response?.data || error.message);
       }
     };
-
     if (driverToken) fetchOrders();
-  }, [url, driverToken]);
+    const interval = setInterval(() => {
+      if (driverToken) fetchOrders();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [url, driverToken, selectedOrder]);
 
-  /* ---------------- MAP INIT ---------------- */
-
+  /* ============ INITIALIZE MAP ============ */
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
@@ -88,151 +87,210 @@ const Dashboard = () => {
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19,
     }).addTo(map);
 
     mapRef.current = map;
-
-    setTimeout(() => map.invalidateSize(), 500);
+    setTimeout(() => map.invalidateSize(), 200);
   }, []);
 
-  /* ---------------- CUSTOMER MARKER ---------------- */
-
+  /* ============ SOCKET CONNECTION ============ */
   useEffect(() => {
-    if (!selectedOrder || !mapRef.current) return;
-
-    const lat = parseFloat(selectedOrder.address?.latitude) || 27.7172;
-    const lng = parseFloat(selectedOrder.address?.longitude) || 85.324;
-
-    const customerLoc = { lat, lng };
-
-    setCustomerLocation(customerLoc);
-    customerLocationRef.current = customerLoc;
-
-    if (customerMarkerRef.current) {
-      customerMarkerRef.current.setLatLng([lat, lng]);
-    } else {
-      customerMarkerRef.current = L.marker([lat, lng], {
-        icon: customerIcon,
-      }).addTo(mapRef.current);
-
-      customerMarkerRef.current.bindPopup("Customer Location");
-    }
-
-    mapRef.current.setView([lat, lng], 14);
-  }, [selectedOrder]);
-
-  /* ---------------- SOCKET CONNECTION ---------------- */
-
-  useEffect(() => {
-    if (!url || !driverToken) return;
+    if (!url || !selectedOrder || selectedOrder.status !== "Out for delivery") return;
 
     socketRef.current = io(url, {
-      auth: { token: driverToken },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket Connected");
+      setSocketStatus("connected");
+      socketRef.current.emit("join-order-room", {
+        orderId: selectedOrder._id,
+        driverId: driverId,
+        role: "driver",
+      });
     });
 
-    socketRef.current.on("connect_error", (err) => {
-      console.error("Socket error:", err.message);
+    socketRef.current.on("delivery-status-updated", (data) => {
+      setSocketStatus("status-updated");
+      console.log("Delivery status updated:", data);
+    });
+
+    socketRef.current.on("disconnect", () => setSocketStatus("disconnected"));
+
+    socketRef.current.on("connect_error", () => setSocketStatus("connection-error"));
+
+    socketRef.current.on("error", () => setSocketStatus("error"));
+
+    socketRef.current.on("customer-location-updated", (data) => {
+      const { latitude, longitude } = data;
+      setCustomerLocation({ lat: latitude, lng: longitude });
     });
 
     return () => {
       if (socketRef.current) {
+        socketRef.current.emit("leave-order-room", {
+          orderId: selectedOrder._id,
+          role: "driver",
+        });
         socketRef.current.disconnect();
       }
     };
-  }, [url, driverToken]);
+  }, [url, selectedOrder, driverId]);
 
-  /* ---------------- DRIVER LOCATION ---------------- */
-
+  /* ============ DRIVER LOCATION TRACKING ============ */
   useEffect(() => {
-    if (!navigator.geolocation) {
-      console.error("Geolocation not supported");
-      return;
-    }
+    if (!navigator.geolocation || !selectedOrder || selectedOrder.status !== "Out for delivery") return;
 
     const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
         const driverLoc = { lat: latitude, lng: longitude };
         setDriverLocation(driverLoc);
 
-        /* DRIVER MARKER */
-
+        // Update driver marker on map
         if (mapRef.current) {
           if (driverMarkerRef.current) {
             driverMarkerRef.current.setLatLng([latitude, longitude]);
           } else {
-            driverMarkerRef.current = L.marker([latitude, longitude], {
-              icon: driverIcon,
-            }).addTo(mapRef.current);
-
-            driverMarkerRef.current.bindPopup("You (Driver)");
+            driverMarkerRef.current = L.marker([latitude, longitude], { icon: driverIcon })
+              .addTo(mapRef.current)
+              .bindPopup(`You (Driver)\nAccuracy: ${accuracy.toFixed(0)}m`);
           }
+          mapRef.current.setView([latitude, longitude], 15);
         }
 
-        /* SEND LOCATION TO SERVER */
-
-        if (socketRef.current && selectedOrder?._id) {
-          const payload = {
+        // Emit driver location to customers in this order room (only if "Out for delivery")
+        if (socketRef.current && socketRef.current.connected && selectedOrder?._id && selectedOrder.status === "Out for delivery") {
+          socketRef.current.emit("driver-location-update", {
             orderId: selectedOrder._id,
+            driverId,
             latitude,
             longitude,
-          };
-
-          console.log("Sending driver location:", payload);
-
-          socketRef.current.emit("driver-location-update", payload);
-        }
-
-        /* DRAW ROUTE */
-
-        const customerLoc = customerLocationRef.current;
-
-        if (mapRef.current && customerLoc) {
-          if (routeRef.current) {
-            routeRef.current.setLatLngs([
-              [latitude, longitude],
-              [customerLoc.lat, customerLoc.lng],
-            ]);
-          } else {
-            routeRef.current = L.polyline(
-              [
-                [latitude, longitude],
-                [customerLoc.lat, customerLoc.lng],
-              ],
-              { color: "blue", weight: 3 }
-            ).addTo(mapRef.current);
-          }
-
-          const bounds = L.latLngBounds([
-            [latitude, longitude],
-            [customerLoc.lat, customerLoc.lng],
-          ]);
-
-          mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+          });
         }
       },
-      (error) => {
-        console.error("Geolocation error:", error);
+      (err) => {
+        // Handle specific geolocation errors
+        if (err.code === err.PERMISSION_DENIED) {
+          console.error("Location permission denied. Please enable location access in browser settings.");
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          console.error("Location unavailable. Device cannot get GPS signal.");
+        } else if (err.code === err.TIMEOUT) {
+          console.error("Location timeout. Getting position is taking too long.");
+        } else {
+          console.error("Geolocation error:", err);
+        }
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
     );
 
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [selectedOrder]);
+    return () => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [selectedOrder, driverId]);
+
+  /* ============ UPDATE CUSTOMER MARKER ============ */
+  useEffect(() => {
+    if (!customerLocation || !mapRef.current) return;
+    const { lat, lng } = customerLocation;
+
+    if (customerMarkerRef.current) {
+      customerMarkerRef.current.setLatLng([lat, lng]);
+    } else {
+      customerMarkerRef.current = L.marker([lat, lng], { icon: customerIcon })
+        .addTo(mapRef.current)
+        .bindPopup("Customer Location");
+    }
+
+    if (driverLocation) {
+      const driverLat = driverLocation.lat;
+      const driverLng = driverLocation.lng;
+
+      if (routeRef.current) {
+        routeRef.current.setLatLngs([
+          [driverLat, driverLng],
+          [lat, lng],
+        ]);
+      } else {
+        routeRef.current = L.polyline([[driverLat, driverLng], [lat, lng]], {
+          color: "blue",
+          weight: 3,
+          dashArray: "5,5",
+        }).addTo(mapRef.current);
+      }
+
+      const bounds = L.latLngBounds([
+        [driverLat, driverLng],
+        [lat, lng],
+      ]);
+      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [customerLocation, driverLocation]);
 
   /* ---------------- UI ---------------- */
-
   return (
-    <div className="driver-dashboard">
+    <div className="driver-dashboard-container">
       <nav className="driver-navbar">
-        <h1>🚗 RestroMatrix Driver</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <h1>RestroMatrix Driver</h1>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              backgroundColor:
+                socketStatus === "joined-order"
+                  ? "rgba(59, 130, 246, 0.1)"
+                  : socketStatus === "connected"
+                    ? "rgba(34, 197, 94, 0.1)"
+                    : "rgba(239, 68, 68, 0.1)",
+              fontSize: "11px",
+              fontWeight: "bold",
+              color:
+                socketStatus === "joined-order"
+                  ? "#1e40af"
+                  : socketStatus === "connected"
+                    ? "#065f46"
+                    : "#7f1d1d",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              border:
+                socketStatus === "joined-order"
+                  ? "1px solid rgba(59, 130, 246, 0.3)"
+                  : socketStatus === "connected"
+                    ? "1px solid rgba(34, 197, 94, 0.3)"
+                    : "1px solid rgba(239, 68, 68, 0.3)",
+            }}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor:
+                  socketStatus === "joined-order"
+                    ? "#3b82f6"
+                    : socketStatus === "connected"
+                      ? "#22c55e"
+                      : "#ef4444",
+                animation:
+                  socketStatus === "connected" || socketStatus === "joined-order"
+                    ? "pulse 2s infinite"
+                    : "none",
+              }}
+            ></span>
+            {socketStatus}
+          </div>
+        </div>
         <button className="logout-btn" onClick={handleLogout}>
           Logout
         </button>
@@ -242,36 +300,131 @@ const Dashboard = () => {
         <h2>Delivery Dashboard</h2>
 
         <div className="dashboard-layout">
-          {/* MAP */}
           <div className="map-section">
             <div ref={mapContainer} className="map-container"></div>
           </div>
 
-          {/* ORDERS */}
           <div className="info-section">
-            <div className="section-card">
-              <h3>Assigned Orders</h3>
-
-              <div className="orders">
-                {assignedOrders.map((order) => (
-                  <div
-                    key={order._id}
-                    className={`order-item ${
-                      selectedOrder?._id === order._id ? "active" : ""
-                    }`}
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    <strong>#{order._id.slice(-6)}</strong>
-
-                    <p>{order.address?.firstName}</p>
-
-                    <p>{order.address?.phone}</p>
-
-                    <span>Rs {order.amount}</span>
+            {selectedOrder ? (
+              <div className="order-details-container">
+                {/* Order Header */}
+                <div className="order-details-header">
+                  <div className="order-id-section">
+                    <h3>Order #{selectedOrder._id.slice(-6).toUpperCase()}</h3>
+                    <span className={`status-badge status-${selectedOrder.status?.toLowerCase().replace(/\s+/g, "-")}`}>
+                      {selectedOrder.status || "Pending"}
+                    </span>
                   </div>
-                ))}
+                  <p className="order-date">
+                    {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString() : "N/A"}
+                  </p>
+                </div>
+
+                {/* Customer Info Card */}
+                <div className="details-card">
+                  <h4 className="card-title">👤 Customer</h4>
+                  <div className="info-row">
+                    <span className="label">Name:</span>
+                    <span className="value">{selectedOrder.address?.firstName || "N/A"}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Phone:</span>
+                    <span className="value">{selectedOrder.address?.phone || "N/A"}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Address:</span>
+                    <span className="value">{selectedOrder.address?.street || "N/A"}</span>
+                  </div>
+                </div>
+
+                {/* Delivery Info Card */}
+                <div className="details-card">
+                  <h4 className="card-title">🚚 Delivery</h4>
+                  <div className="info-row">
+                    <span className="label">Status:</span>
+                    <span className={`status-text status-${selectedOrder.status?.toLowerCase().replace(/\s+/g, "-")}`}>
+                      {selectedOrder.status || "Pending"}
+                    </span>
+                  </div>
+                  {customerLocation && driverLocation && (
+                    <div className="info-row">
+                      <span className="label">Distance:</span>
+                      <span className="value">
+                        {(
+                          Math.sqrt(
+                            Math.pow(customerLocation.lat - driverLocation.lat, 2) +
+                            Math.pow(customerLocation.lng - driverLocation.lng, 2)
+                          ) * 111
+                        ).toFixed(1)} km
+                      </span>
+                    </div>
+                  )}
+                  <div className="info-row">
+                    <span className="label">ETA:</span>
+                    <span className="value">~15 mins</span>
+                  </div>
+                </div>
+
+                {/* Items Card */}
+                {selectedOrder.items && selectedOrder.items.length > 0 && (
+                  <div className="details-card">
+                    <h4 className="card-title">📦 Items</h4>
+                    <div className="items-list">
+                      {selectedOrder.items.map((item, idx) => (
+                        <div key={idx} className="item-row">
+                          <div className="item-info">
+                            <span className="item-name">{item.name}</span>
+                            <span className="item-qty">x{item.quantity}</span>
+                          </div>
+                          <span className="item-price">Rs {(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="items-total">
+                      <span>Total:</span>
+                      <span className="total-price">Rs {selectedOrder.amount}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Order Lists */}
+                <div className="section-card">
+                  <h3>📋 Other Assigned Orders</h3>
+                  <div className="orders">
+                    {assignedOrders.map((order) => (
+                      <div
+                        key={order._id}
+                        className={`order-item ${selectedOrder?._id === order._id ? "active" : ""}`}
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <strong>#{order._id.slice(-6)}</strong>
+                        <p>{order.address?.firstName}</p>
+                        <p>{order.address?.phone}</p>
+                        <span>Rs {order.amount}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="section-card">
+                <h3>📋 Assigned Orders</h3>
+                <div className="orders">
+                  {assignedOrders.map((order) => (
+                    <div
+                      key={order._id}
+                      className={`order-item ${selectedOrder?._id === order._id ? "active" : ""}`}
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <strong>#{order._id.slice(-6)}</strong>
+                      <p>{order.address?.firstName}</p>
+                      <p>{order.address?.phone}</p>
+                      <span>Rs {order.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

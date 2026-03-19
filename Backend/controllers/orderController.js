@@ -18,8 +18,8 @@ const getEsewaConfig = () => {
         env,
         endpoint,
         statusEndpoint,
-        productCode: process.env.ESEWA_PRODUCT_CODE,
-        secretKey: process.env.ESEWA_SECRET_KEY
+        productCode: process.env.ESEWA_PRODUCT_CODE || "EPAYTEST",
+        secretKey: process.env.ESEWA_SECRET_KEY || "8gBm/:&EnhH.1/q"
     }
 }
 
@@ -52,8 +52,9 @@ const signEsewaPayload = ({ total_amount, transaction_uuid, product_code }, secr
 //placing user order for frontend
 
 const placeOrder = async (req, res) => {
+    const frontend_url = process.env.FRONTEND_URL || "http://localhost:5173";
+    const backend_url = process.env.BACKEND_URL || "http://localhost:4000";
 
-    const frontend_url = "http://localhost:5173";
     try {
         const esewaConfig = getEsewaConfig()
         if (!esewaConfig.productCode || !esewaConfig.secretKey) {
@@ -83,18 +84,40 @@ const placeOrder = async (req, res) => {
             })
         }
 
+        // eSewa v2 REQUIRED FIELDS - all amounts as strings with 2 decimal places
+        const itemAmount = formatAmount(totals.itemsTotal);
+        const taxAmount = formatAmount(0);
+        const deliveryCharge = formatAmount(totals.deliveryFee);
+        const serviceCharge = formatAmount(0);
+
+        // CRITICAL: total_amount = amount + tax_amount + product_service_charge + product_delivery_charge
+        const totalAmountCalculated = formatAmount(
+            parseFloat(itemAmount) +
+            parseFloat(taxAmount) +
+            parseFloat(serviceCharge) +
+            parseFloat(deliveryCharge)
+        );
+
         const paymentPayload = {
-            amount: formatAmount(totals.itemsTotal),
-            tax_amount: formatAmount(0),
-            total_amount: formatAmount(totals.totalAmount),
+            // REQUIRED CORE FIELDS (all as strings with 2 decimals)
+            amount: itemAmount,
+            tax_amount: taxAmount,
+            total_amount: totalAmountCalculated,
             transaction_uuid: String(newOrder._id),
             product_code: esewaConfig.productCode,
-            product_service_charge: formatAmount(0),
-            product_delivery_charge: formatAmount(totals.deliveryFee),
-            success_url: `${frontend_url}/verify`,
-            failure_url: `${frontend_url}/verify`,
+            product_name: `Food Order #${newOrder._id.toString().slice(-6).toUpperCase()}`,
+
+            // REQUIRED CHARGE FIELDS
+            product_service_charge: serviceCharge,
+            product_delivery_charge: deliveryCharge,
+
+            // REQUIRED CALLBACK URLs (properly encoded)
+            success_url: `${backend_url}/api/payment/success?transaction_uuid=${encodeURIComponent(String(newOrder._id))}`,
+            failure_url: `${backend_url}/api/payment/failure?transaction_uuid=${encodeURIComponent(String(newOrder._id))}`,
+
+            // REQUIRED SIGNATURE FIELD
             signed_field_names: "total_amount,transaction_uuid,product_code"
-        }
+        };
 
         const signature = signEsewaPayload(
             {
@@ -103,27 +126,42 @@ const placeOrder = async (req, res) => {
                 product_code: paymentPayload.product_code
             },
             esewaConfig.secretKey
-        )
+        );
+
+        console.log('Order Payment Debug Info:');
+        console.log('Order ID:', newOrder._id);
+        console.log('Item Amount:', itemAmount);
+        console.log('Delivery Charge:', deliveryCharge);
+        console.log('Total Amount:', totalAmountCalculated);
+        console.log('Signature Message:', `total_amount=${paymentPayload.total_amount},transaction_uuid=${paymentPayload.transaction_uuid},product_code=${paymentPayload.product_code}`);
+        console.log('Signature:', signature);
 
         res.json({
             success: true,
+            message: "Order placed successfully. Redirecting to payment...",
             payment: {
                 endpoint: esewaConfig.endpoint,
                 params: {
-                    ...paymentPayload,
-                    signature
+                    amount: paymentPayload.amount,
+                    tax_amount: paymentPayload.tax_amount,
+                    total_amount: paymentPayload.total_amount,
+                    transaction_uuid: paymentPayload.transaction_uuid,
+                    product_code: paymentPayload.product_code,
+                    product_name: paymentPayload.product_name,
+                    product_service_charge: paymentPayload.product_service_charge,
+                    product_delivery_charge: paymentPayload.product_delivery_charge,
+                    success_url: paymentPayload.success_url,
+                    failure_url: paymentPayload.failure_url,
+                    signed_field_names: paymentPayload.signed_field_names,
+                    signature: signature
                 }
             }
         })
 
-
-
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error?.message || "Error" })
-
+        console.error("Order Placement Error:", error);
+        res.json({ success: false, message: error?.message || "Error placing order. Please check that cart is not empty and all details are filled." })
     }
-
 }
 
 const verifyOrder = async (req, res) => {
@@ -157,6 +195,153 @@ const verifyOrder = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" })
+    }
+}
+
+// Handle eSewa payment success callback (GET request from eSewa redirect)
+const paymentSuccess = async (req, res) => {
+    try {
+        console.log("\n=== Payment Success Callback ===");
+        console.log("All Query Params:", req.query);
+
+        let transaction_uuid, status, total_amount, transaction_code;
+
+        // eSewa sometimes sends data as base64-encoded JSON in a 'data' parameter
+        if (req.query.data) {
+            try {
+                const decodedData = Buffer.from(req.query.data, 'base64').toString('utf8');
+                const paymentData = JSON.parse(decodedData);
+
+                transaction_uuid = paymentData.transaction_uuid;
+                status = paymentData.status;
+                total_amount = paymentData.total_amount;
+                transaction_code = paymentData.transaction_code;
+
+                console.log("Decoded from data parameter:");
+                console.log("Transaction UUID:", transaction_uuid);
+                console.log("Status:", status);
+                console.log("Total Amount:", total_amount);
+                console.log("Transaction Code:", transaction_code);
+            } catch (decodeError) {
+                console.error("❌ Failed to decode data parameter:", decodeError);
+            }
+        } else {
+            // Fallback to query parameters
+            transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+            status = req.query.status;
+            total_amount = req.query.total_amount;
+            transaction_code = req.query.transaction_code;
+        }
+
+        // Clean up transaction_uuid (remove any appended query strings)
+        if (transaction_uuid && transaction_uuid.includes('?')) {
+            transaction_uuid = transaction_uuid.split('?')[0];
+            console.log("Cleaned transaction UUID:", transaction_uuid);
+        }
+
+        console.log("================================\n");
+
+        if (!transaction_uuid) {
+            console.error("❌ No transaction UUID found in query params or data");
+            console.error("Query params were:", req.query);
+            return res.json({ success: false, message: "Payment not found" });
+        }
+
+        // Try to find the order by ID
+        let order = await orderModel.findById(transaction_uuid);
+
+        if (!order) {
+            console.error("❌ Order not found for ID:", transaction_uuid);
+            console.error("Searching with transaction_uuid:", transaction_uuid);
+            return res.json({ success: false, message: "Payment not found" });
+        }
+
+        // Check if already paid
+        if (order.payment === true) {
+            console.log("⚠️ Order already marked as paid");
+            return res.json({ success: true, message: "Payment already processed" });
+        }
+
+        // Update order as paid (eSewa sends COMPLETE in lowercase or uppercase)
+        const validStatus = status === "COMPLETE" || status === "Completed" || status === "COMPLETE";
+
+        if (!validStatus) {
+            console.error("❌ Invalid payment status:", status);
+            order.payment = false;
+            order.paymentStatus = "failed";
+            await order.save();
+            return res.json({ success: false, message: `Payment ${status}` });
+        }
+
+        // Mark order as paid
+        order.payment = true;
+        order.paymentStatus = "completed";
+        order.esewaTransactionCode = transaction_code || "";
+        order.esewaTransactionId = transaction_uuid;
+        await order.save();
+
+        console.log("✅ Order marked as paid:", transaction_uuid);
+
+        res.json({
+            success: true,
+            message: "Payment verified successfully",
+            orderId: transaction_uuid
+        });
+
+    } catch (error) {
+        console.error("[Payment Success Error]", error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// Handle eSewa payment failure callback
+const paymentFailure = async (req, res) => {
+    try {
+        console.log("[Payment Failure] Query params:", req.query);
+
+        let transaction_uuid;
+
+        // Handle data parameter if present (base64-encoded JSON)
+        if (req.query.data) {
+            try {
+                const decodedData = Buffer.from(req.query.data, 'base64').toString('utf8');
+                const paymentData = JSON.parse(decodedData);
+                transaction_uuid = paymentData.transaction_uuid;
+                console.log("[Payment Failure] Decoded transaction UUID:", transaction_uuid);
+            } catch (decodeError) {
+                console.error("[Payment Failure] Failed to decode data:", decodeError);
+                transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+            }
+        } else {
+            transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+        }
+
+        // Clean up if appended with query string
+        if (transaction_uuid && transaction_uuid.includes('?')) {
+            transaction_uuid = transaction_uuid.split('?')[0];
+        }
+
+        console.log("[Payment Failure] Cleaned transaction UUID:", transaction_uuid);
+
+        if (!transaction_uuid) {
+            return res.json({ success: false, message: "Transaction ID not found" });
+        }
+
+        // Mark order as payment failed (keep order for retry)
+        await orderModel.findByIdAndUpdate(transaction_uuid, {
+            payment: false,
+            paymentStatus: "failed"
+        });
+
+        res.json({
+            success: false,
+            message: "Payment failed. Please retry",
+            orderId: transaction_uuid
+        });
+
+    } catch (error) {
+        console.error("[Payment Failure Error]", error);
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -210,6 +395,7 @@ const updateOrderStatus = async (req, res) => {
                 })
 
                 if (driver) {
+                    updateData.driverId = driver._id.toString();
                     updateData.driverPhone = driver.phone
                     updateData.driverVehicle = driver.vehicle
                     updateData.driverRating = driver.rating || 0
@@ -264,11 +450,18 @@ const getDriverAssignedOrders = async (req, res) => {
             status: { $in: ["Confirmed", "Out for delivery"] }
         }).sort({ date: -1 })
 
-        res.json({ success: true, data: orders })
+        // ✅ Add driverId to each order for socket communication
+        const ordersWithDriver = orders.map(order => ({
+            ...order.toObject(),
+            driverId: req.userId  // Include driver ID for socket emit
+        }))
+
+        console.log(`✅ Fetched ${ordersWithDriver.length} assigned orders for driver ${req.userId}`)
+        res.json({ success: true, data: ordersWithDriver })
     } catch (error) {
         console.log(error)
         res.json({ success: false, message: "Error fetching assigned orders" })
     }
 }
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById, getDriverAssignedOrders }
+export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById, getDriverAssignedOrders, paymentSuccess, paymentFailure }

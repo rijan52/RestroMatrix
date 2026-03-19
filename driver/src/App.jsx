@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useContext } from 'react'
 import { DriverContext } from './context/DriverContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import ScrollToTop from './components/ScrollToTop'
 import Login from './pages/Login/Login'
 import Dashboard from './pages/Dashboard/Dashboard'
 import './App.css'
@@ -11,25 +12,19 @@ function App() {
 
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Routes>
-                {/* Redirect root to login or dashboard based on auth status */}
-                <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+                {/* Redirect root to login */}
+                <Route path="/" element={<Navigate to="/login" />} />
 
                 {/* Public login route */}
-                <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
+                <Route path="/login" element={<Login />} />
 
-                {/* Protected routes */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
-                    }
-                />
+                {/* Protected dashboard route */}
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
                 {/* Catch all - redirect to login */}
-                <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+                <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </BrowserRouter>
     )

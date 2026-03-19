@@ -8,6 +8,16 @@ const customerSchema = new mongoose.Schema({
     phone: { type: String, default: null },
     cartData: { type: Object, default: {} },
     address: { type: String, default: null },
+    location: {
+        latitude: {
+            type: Number,
+            default: null
+        },
+        longitude: {
+            type: Number,
+            default: null
+        }
+    },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 }, { minimize: false })

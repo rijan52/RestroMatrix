@@ -36,6 +36,11 @@ const Sidebar = () => {
                     <p>Manage Drivers</p>
                 </NavLink>
 
+                <NavLink to='/bill-qr' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Bill QR Generator</p>
+                </NavLink>
+
             </div>
         </div>
     )

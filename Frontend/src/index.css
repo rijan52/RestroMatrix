@@ -1,13 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Sora:wght@300..800&display=swap');
 
 :root {
-  --bg: #f4f7fb;
+  --bg: #f8fafc;
   --surface: #ffffff;
-  --ink: #0f1b2d;
-  --muted: #5c6b82;
-  --brand: #65a6db;
-  --brand-strong: #3e8dcc;
-  --line: #e3ebf5;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --brand: #2563eb;
+  --brand-strong: #1d4ed8;
+  --brand-light: #dbeafe;
+  --accent: #38bdf8;
+  --line: #e2e8f0;
   --shadow: 0 20px 60px rgba(15, 27, 45, 0.08);
   --radius: 18px;
   --radius-pill: 999px;
@@ -31,8 +33,8 @@ body {
 
 body {
   color: var(--ink);
-  background: radial-gradient(1200px 600px at 0% -20%, rgba(101, 166, 219, 0.18), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(62, 141, 204, 0.16), transparent 55%),
+  background: radial-gradient(1200px 600px at 0% -20%, rgba(37, 99, 235, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(29, 78, 216, 0.1), transparent 55%),
     var(--bg);
 }
 
@@ -46,12 +48,12 @@ body::after {
 }
 
 body::before {
-  background: radial-gradient(400px 220px at 8% 12%, rgba(101, 166, 219, 0.25), transparent 70%);
+  background: radial-gradient(400px 220px at 8% 12%, rgba(37, 99, 235, 0.2), transparent 70%);
   opacity: 0.6;
 }
 
 body::after {
-  background: radial-gradient(300px 240px at 92% 22%, rgba(15, 27, 45, 0.08), transparent 70%);
+  background: radial-gradient(300px 240px at 92% 22%, rgba(37, 99, 235, 0.08), transparent 70%);
 }
 
 a {
@@ -70,10 +72,14 @@ button {
 
 /* --- UPDATED APP CONTAINER --- */
 .app {
-  width: 100%;         /* full width of the page */
-  max-width: 100%;     /* remove previous max-width */
-  margin: 0;           /* remove auto centering */
-  padding: 24px;       /* optional padding from edges */
+  width: 100%;
+  /* full width of the page */
+  max-width: 100%;
+  /* remove previous max-width */
+  margin: 0;
+  /* remove auto centering */
+  padding: 0;
+  /* remove padding to allow full-width sections */
 }
 
 @keyframes fadeIn {

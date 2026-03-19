@@ -27,6 +27,10 @@ const MyOrders = () => {
         }
     }
 
+    const handleTrackOrder = (orderId) => {
+        navigate(`/live-tracking?orderId=${orderId}`);
+    }
+
     useEffect(() => {
         if (token) {
             fetchOrders();
@@ -50,18 +54,14 @@ const MyOrders = () => {
                                 return item.name + " x " + item.quantity + ", "
                             }
                         })}</p>
-                        <p>${order.amount}.00</p>
+                        <p>Rs{order.amount}.00</p>
                         <p>Items: {order.items.length}</p>
                         <p><span>&#x25cf;</span><b>{order.status}</b></p>
                         <div className="order-actions">
-                            <button onClick={fetchOrders}>Track Order</button>
-                            {order.status === "Out for delivery" && (
-                                <button
-                                    className="live-tracking-btn"
-                                    onClick={() => navigate(`/livetracking?orderId=${order._id}`)}
-                                >
-                                    🚗 Live Tracking
-                                </button>
+                            {order.status === "Out for delivery" ? (
+                                <button onClick={() => handleTrackOrder(order._id)}>Track Order</button>
+                            ) : (
+                                <button disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>Track Order</button>
                             )}
                         </div>
                     </div>

@@ -1,12 +1,13 @@
 import express from "express";
+import authMiddleware from "../middleware/auth.js";
 import {
-loginDriver,
-registerDriver,
-getAllDrivers,
-getDriverById,
-updateDriver,
-updateDriverLocation,
-deleteDriver
+    loginDriver,
+    registerDriver,
+    getAllDrivers,
+    getDriverById,
+    updateDriver,
+    updateDriverLocation,
+    deleteDriver
 } from "../controllers/driverController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get("/:id", getDriverById);
 
 router.put("/update/:id", updateDriver);
 router.put("/location/:id", updateDriverLocation);
+router.put("/location", authMiddleware, updateDriverLocation);  // ✅ Auto-extract driver ID from token
 
 router.delete("/:id", deleteDriver);
 

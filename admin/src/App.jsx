@@ -1,13 +1,13 @@
 import React from 'react'
 import Navbar from './components/navbar/navbar'
 import Sidebar from './components/sidebar/sidebar'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import Add from './pages/Add/Add'
 import List from './pages/List/List'
 import Orders from './pages/Orders/Orders'
 import Reservations from './pages/Reservations/Reservations'
-import DriverTracking from './pages/DriverTracking/DriverTracking'
 import Drivers from './pages/Drivers/Drivers'
+import BillQR from './pages/BillQR/BillQR'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -23,12 +23,13 @@ const App = () => {
       <div className="app-content">
         <Sidebar />
         <Routes>
+          <Route path="/" element={<Navigate to="/add" replace />} />
           <Route path="/add" element={<Add url={url} />} />
           <Route path="/list" element={<List url={url} />} />
           <Route path="/orders" element={<Orders url={url} />} />
           <Route path="/reservations" element={<Reservations url={url} />} />
-          <Route path="/driver-tracking" element={<DriverTracking url={url} />} />
           <Route path="/drivers" element={<Drivers url={url} />} />
+          <Route path="/bill-qr" element={<BillQR url={url} />} />
         </Routes>
       </div>
     </div>

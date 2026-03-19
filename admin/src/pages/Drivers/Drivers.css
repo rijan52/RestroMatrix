@@ -1,6 +1,6 @@
 .drivers-container {
     padding: 20px;
-    background: #f5f5f5;
+    background: #f8fafc;
     min-height: 100vh;
 }
 
@@ -10,37 +10,45 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .drivers-header h1 {
     font-size: 28px;
-    color: #333;
+    color: #0f172a;
     margin: 0;
+    font-weight: 700;
 }
 
 .add-driver-btn {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
 }
 
 .add-driver-btn:hover {
-    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+}
+
+.add-driver-btn:active {
+    transform: translateY(0);
 }
 
 .driver-form-wrapper {
     background: white;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
 }
 
 .driver-form {
@@ -50,7 +58,8 @@
 .driver-form h2 {
     font-size: 20px;
     margin-bottom: 20px;
-    color: #333;
+    color: #0f172a;
+    font-weight: 700;
 }
 
 .form-group {
@@ -62,59 +71,76 @@
 .form-group label {
     margin-bottom: 5px;
     font-weight: 600;
-    color: #555;
+    color: #0f172a;
     font-size: 14px;
 }
 
 .form-group input {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     font-size: 14px;
-    font-family: Arial, sans-serif;
-    transition: border-color 0.3s;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.form-group input:hover {
+    border-color: #38bdf8;
+    background: #ffffff;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: #ffffff;
 }
 
 .submit-btn {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
     padding: 12px 24px;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
     width: 100%;
     margin-top: 10px;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
 }
 
 .submit-btn:hover:not(:disabled) {
-    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+}
+
+.submit-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .submit-btn:disabled {
-    background: #ccc;
+    background: #cbd5e1;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .drivers-list {
     background: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e2e8f0;
 }
 
 .drivers-list h2 {
     font-size: 20px;
     margin-bottom: 20px;
-    color: #333;
+    color: #0f172a;
+    font-weight: 700;
 }
 
 .no-drivers {
@@ -130,23 +156,23 @@
 }
 
 .drivers-table thead {
-    background: #f9f9f9;
-    border-bottom: 2px solid #ddd;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .drivers-table th {
     padding: 12px;
     text-align: left;
     font-weight: 600;
-    color: #555;
+    color: #0f172a;
     font-size: 14px;
 }
 
 .drivers-table td {
     padding: 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #e2e8f0;
     font-size: 14px;
-    color: #333;
+    color: #0f172a;
 }
 
 .drivers-table tbody tr:hover {

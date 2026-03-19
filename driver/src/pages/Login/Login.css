@@ -1,110 +1,162 @@
+/* GLOBAL RESET (important for full screen) */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Container */
 .driver-login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  min-height: 100vh;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb 0%,
+    #1d4ed8 50%,
+    #0f172a 100%
+  );
+
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Login Box */
 .driver-login-box {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(15, 27, 45, 0.15);
+
+  width: 100%;
+  max-width: 400px;
+
+  border: 1px solid #e2e8f0;
 }
 
+/* Title */
 .driver-login-title {
-    text-align: center;
-    color: #333;
-    margin: 0 0 5px 0;
-    font-size: 28px;
-    font-weight: bold;
+  text-align: center;
+  color: #0f172a;
+  margin-bottom: 5px;
+  font-size: 28px;
+  font-weight: 700;
 }
 
+/* Subtitle */
 .driver-login-subtitle {
-    text-align: center;
-    color: #666;
-    margin: 0 0 30px 0;
-    font-size: 14px;
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 30px;
+  font-size: 14px;
 }
 
+/* Form */
 .driver-login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
+/* Form Group */
 .form-group {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Input Fields */
 .form-group input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: border-color 0.3s;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+
+  background: #f8fafc;
+  color: #0f172a;
+
+  transition: all 0.2s ease;
+}
+
+.form-group input:hover {
+  border-color: #38bdf8;
+  background: #ffffff;
 }
 
 .form-group input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+  outline: none;
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+  background: #ffffff;
 }
 
+/* Error Message */
 .driver-error-message {
-    background-color: #fee;
-    color: #c33;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 13px;
-    border-left: 4px solid #c33;
+  background-color: #fee2e2;
+  color: #dc2626;
+
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+
+  border-left: 4px solid #dc2626;
 }
 
+/* Login Button */
 .driver-login-btn {
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+  padding: 12px 18px;
+
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
+  color: white;
+  border: none;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
 }
 
 .driver-login-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
 }
 
 .driver-login-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
+/* Footer Info */
 .driver-login-info {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    font-size: 12px;
-    color: #999;
-    text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+
+  border-top: 1px solid #e2e8f0;
+
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
 }
 
+/* Responsive */
 @media (max-width: 600px) {
-    .driver-login-box {
-        padding: 30px;
-        margin: 15px;
-        max-width: none;
-    }
+  .driver-login-box {
+    padding: 30px;
+    margin: 15px;
+  }
 
-    .driver-login-title {
-        font-size: 24px;
-    }
+  .driver-login-title {
+    font-size: 24px;
+  }
 }
