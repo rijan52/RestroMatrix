@@ -32,7 +32,10 @@ const orderSchema = new mongoose.Schema({
         }
     },
     date: { type: Date, default: Date.now() },
-    payment: { type: Boolean, default: false }
+    payment: { type: Boolean, default: false },
+    paymentStatus: { type: String, default: "Pending" }, // Added: Pending, Completed, Failed
+    esewaTransactionId: { type: String, default: null }, // Added: to store eSewa transaction UUID
+    esewaTransactionCode: { type: String, default: null } // Added: to store eSewa transaction code
 })
 
 const orderModel = mongoose.models.order || mongoose.model("order", orderSchema);

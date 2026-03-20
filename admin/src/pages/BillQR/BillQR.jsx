@@ -147,21 +147,21 @@ const BillQR = ({ url }) => {
 
                         <div className="info-guide">
                             <div className="guide-item">
-                                <div className="guide-icon">📋</div>
+                                <div className="guide-icon"></div>
                                 <div>
                                     <h4>Table Number</h4>
                                     <p>Identify which table this bill is for</p>
                                 </div>
                             </div>
                             <div className="guide-item">
-                                <div className="guide-icon">💰</div>
+                                <div className="guide-icon"></div>
                                 <div>
                                     <h4>Bill Amount</h4>
                                     <p>Enter the total bill amount in NPR</p>
                                 </div>
                             </div>
                             <div className="guide-item">
-                                <div className="guide-icon">📱</div>
+                                <div className="guide-icon"></div>
                                 <div>
                                     <h4>QR Code</h4>
                                     <p>Generate a scannable QR for customers</p>
@@ -214,7 +214,7 @@ const BillQR = ({ url }) => {
                                     className="link-input"
                                 />
                                 <button onClick={handleCopyLink} className="btn-copy">
-                                    📋 Copy
+                                    Copy
                                 </button>
                             </div>
                         </div>
@@ -222,13 +222,13 @@ const BillQR = ({ url }) => {
                         {/* Action Buttons */}
                         <div className="button-group">
                             <button onClick={handlePrintQR} className="btn-print">
-                                🖨️ Print QR
+                                Print QR
                             </button>
                             <button
                                 onClick={() => setBillData(null)}
                                 className="btn-new"
                             >
-                                ➕ Generate New Bill
+                                 Generate New Bill
                             </button>
                         </div>
                     </div>

@@ -18,22 +18,8 @@ const billRouter = express.Router();
 // 1. CREATE BILL - POST /api/bills/create
 billRouter.post('/create', createBill);
 
-// Payment routes (must be before /:billId to avoid route conflicts)
-// 3. INITIATE ESEWA PAYMENT - POST /api/payment/esewa/initiate
-billRouter.post('/payment/esewa/initiate', initiateEsewaPayment);
-
-// 4. PAYMENT SUCCESS VERIFICATION - GET /api/payment/success
-billRouter.get('/payment/success', verifyPayment);
-
-// Payment failure callback
-billRouter.get('/payment/failure', (req, res) => {
-    const { transaction_uuid } = req.query;
-    return res.status(400).json({
-        success: false,
-        message: 'Payment failed',
-        transactionId: transaction_uuid
-    });
-});
+// Note: Payment routes are now registered directly in server.js
+// to avoid path conflicts (at /api/payment/esewa/initiate)
 
 // ===== ADDITIONAL HELPER APIs =====
 

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import { initiateOrderPayment } from '../../services/orderService'
 
 const PlaceOrder = () => {
 
@@ -23,14 +24,54 @@ const PlaceOrder = () => {
 
   })
 
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
   const onChangeHandler = (event) => {
     const name = event.target.name;
     const value = event.target.value;
     setData((data) => ({ ...data, [name]: value }))
   }
 
+  const submitEsewaForm = (paymentData) => {
+    console.log('📝 Creating and submitting eSewa form...');
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = paymentData.paymentEndpoint;
+
+    const fields = {
+      amount: paymentData.amount,
+      tax_amount: paymentData.tax_amount,
+      total_amount: paymentData.total_amount,
+      transaction_uuid: paymentData.transaction_uuid,
+      product_code: paymentData.product_code,
+      product_name: paymentData.product_name,
+      product_service_charge: paymentData.product_service_charge,
+      product_delivery_charge: paymentData.product_delivery_charge,
+      success_url: paymentData.success_url,
+      failure_url: paymentData.failure_url,
+      signed_field_names: paymentData.signed_field_names,
+      signature: paymentData.signature
+    };
+
+    for (const [key, value] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    console.log('✅ Submitting form to eSewa...');
+    form.submit();
+  }
+
   const placeOrder = async (event) => {
     event.preventDefault();
+    setLoading(true)
+    setError("")
+
     try {
       let orderItems = [];
       food_list.map((item) => {
@@ -40,39 +81,51 @@ const PlaceOrder = () => {
           orderItems.push(itemInfo);
         }
       })
+
+      const totalAmount = getTotalCartAmount() + 2;
+
       let orderData = {
         address: data,
         items: orderItems,
-        amount: getTotalCartAmount() + 2,
+        amount: totalAmount,
       }
+
+      console.log('📦 Placing order with data:', orderData);
+
       let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
+
       if (response.data.success) {
-        const { payment } = response.data;
-        if (!payment?.endpoint || !payment?.params) {
-          alert("Payment configuration missing. Please try again.")
-          return
+        console.log('✅ Order placed successfully:', response.data.orderId);
+
+        // Order placed successfully, now initiate eSewa payment
+        const orderId = response.data.orderId;
+
+        try {
+          console.log('💳 Initiating eSewa payment for order:', orderId);
+          const paymentData = await initiateOrderPayment(orderId, totalAmount, token);
+
+          console.log('✅ Payment initiated successfully');
+
+          // Submit eSewa form
+          submitEsewaForm(paymentData);
+
+        } catch (paymentError) {
+          console.error('❌ Payment initiation failed:', paymentError);
+          setError(paymentError.message || "Error initiating payment. Please try again.");
+          setLoading(false)
+          alert("Order placed but payment initiation failed. Error: " + (paymentError.message || "Unknown error"))
         }
-
-        const form = document.createElement("form")
-        form.method = "POST"
-        form.action = payment.endpoint
-
-        Object.entries(payment.params).forEach(([key, value]) => {
-          const input = document.createElement("input")
-          input.type = "hidden"
-          input.name = key
-          input.value = String(value)
-          form.appendChild(input)
-        })
-
-        document.body.appendChild(form)
-        form.submit()
       }
       else {
+        setError(response.data.message || "Error placing order. Please try again.")
+        setLoading(false)
         alert(response.data.message || "Error placing order. Please try again.")
       }
     } catch (error) {
-      alert(error?.response?.data?.message || "Error placing order. Please try again.")
+      const errorMsg = error?.response?.data?.message || error.message || "Error placing order. Please try again."
+      setError(errorMsg)
+      setLoading(false)
+      alert(errorMsg)
     }
   }
   const navigate = useNavigate();
@@ -125,7 +178,10 @@ const PlaceOrder = () => {
 
             </div>
           </div>
-          <button type='submit'>PROCEED TO PAYMENT</button>
+          {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+          <button type='submit' disabled={loading}>
+            {loading ? 'PROCESSING...' : 'PROCEED TO PAYMENT'}
+          </button>
 
         </div>
 

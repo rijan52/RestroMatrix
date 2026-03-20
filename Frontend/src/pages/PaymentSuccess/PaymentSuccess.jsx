@@ -10,9 +10,9 @@ const PaymentSuccess = () => {
     const [loading, setLoading] = useState(true);
 
     const transactionId = searchParams.get('transaction_uuid');
-    // Extract billId from transaction format: BILL_<billId>_<timestamp>
+    // transaction_uuid format we generate: <billId>_<timestamp>_<random>
     const parts = transactionId?.split('_');
-    const billId = parts && parts.length >= 2 ? parts[1] : null;
+    const billId = parts && parts.length >= 2 ? parts[0] : null;
 
     useEffect(() => {
         const fetchBill = async () => {

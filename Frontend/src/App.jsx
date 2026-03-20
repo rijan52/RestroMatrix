@@ -16,6 +16,7 @@ import Contact from "./pages/Contact/Contact";
 import Payment from "./pages/Payment/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure/PaymentFailure";
+import OrderConfirmation from "./pages/OrderConfirmation/OrderConfirmation";
 
 // Protected Route Component
 const ProtectedDriverRoute = ({ children }) => {
@@ -51,6 +52,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/order" element={<PlaceOrder />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/myorders" element={<MyOrders />} />
           <Route path="/live-tracking" element={<LiveTracking />} />

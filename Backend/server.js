@@ -12,8 +12,8 @@ import orderRouter from "./routes/orderRoute.js";
 import reservationRouter from "./routes/reservationRoute.js";
 import billRouter from "./routes/billRoute.js";
 import esewaTestRouter from "./routes/esewaTestRoute.js";
-import { initiateEsewaPayment, verifyPayment } from "./controllers/billController.js";
-import { paymentSuccess, paymentFailure } from "./controllers/orderController.js";
+import { initiateEsewaPayment, verifyPayment, handlePaymentFailure } from "./controllers/billController.js";
+import { paymentSuccess, paymentFailure, initiateEsewaPaymentOrder } from "./controllers/orderController.js";
 import { initializeSocketHandlers } from "./socket/deliveryTracking.js";
 
 const app = express();
@@ -31,6 +31,11 @@ const port = process.env.PORT || 4000;
 app.use(cors({ credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Favicon handler - suppress 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 
 // Connect database
 connectDB();
@@ -54,7 +59,13 @@ app.use("/api/reservation", reservationRouter);
 app.use("/api/bills", billRouter);
 app.use("/api/esewa-test", esewaTestRouter);
 
-// Payment routes (for order-based payments via eSewa)
+// Payment routes - SPLIT PAYMENTS (Bills/QR-based)
+app.post("/api/payment/esewa/initiate", initiateEsewaPayment);
+app.get("/api/payment/bill/success", verifyPayment);
+app.get("/api/payment/bill/failure", handlePaymentFailure);
+
+// Payment routes - ORDER PAYMENTS (Direct checkout)
+app.post("/api/payment/order/esewa/initiate", initiateEsewaPaymentOrder);
 app.get("/api/payment/success", paymentSuccess);
 app.get("/api/payment/failure", paymentFailure);
 
@@ -62,9 +73,11 @@ app.get("/", (req, res) => {
   res.send("Server is working!");
 });
 
-// Start server with Socket.IO
-server.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+// Start server with Socket.IO - wait a bit for DB connection to establish
+setTimeout(() => {
+  server.listen(port, () => {
+    console.log(`✅ Server running on http://localhost:${port}`);
+  });
+}, 2000);
 
 export { io };

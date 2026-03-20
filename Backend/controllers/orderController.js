@@ -50,30 +50,21 @@ const signEsewaPayload = ({ total_amount, transaction_uuid, product_code }, secr
 }
 
 //placing user order for frontend
+// Payment is handled directly - order payment status is "Pending" until manually verified
 
 const placeOrder = async (req, res) => {
-    const frontend_url = process.env.FRONTEND_URL || "http://localhost:5173";
-    const backend_url = process.env.BACKEND_URL || "http://localhost:4000";
-
     try {
-        const esewaConfig = getEsewaConfig()
-        if (!esewaConfig.productCode || !esewaConfig.secretKey) {
-            return res.json({ success: false, message: "eSewa credentials missing" })
-        }
-
+        // Validate cart items
         if (!Array.isArray(req.body.items) || req.body.items.length === 0) {
             return res.json({ success: false, message: "Cart is empty" })
         }
 
-        const newOrder = new orderModel({
-            userId: req.userId,
-            items: req.body.items,
-            amount: req.body.amount,
-            address: req.body.address
-        })
-        await newOrder.save();
-        await customerModel.findByIdAndUpdate(req.userId, { cartData: {} })
+        // Validate address
+        if (!req.body.address) {
+            return res.json({ success: false, message: "Delivery address is required" })
+        }
 
+        // Calculate order totals
         const deliveryFeeNpr = 2
         const totals = calculateOrderTotals(req.body.items, deliveryFeeNpr)
 
@@ -84,77 +75,40 @@ const placeOrder = async (req, res) => {
             })
         }
 
-        // eSewa v2 REQUIRED FIELDS - all amounts as strings with 2 decimal places
-        const itemAmount = formatAmount(totals.itemsTotal);
-        const taxAmount = formatAmount(0);
-        const deliveryCharge = formatAmount(totals.deliveryFee);
-        const serviceCharge = formatAmount(0);
+        // Create new order
+        const newOrder = new orderModel({
+            userId: req.userId,
+            items: req.body.items,
+            amount: totals.totalAmount,
+            address: req.body.address,
+            paymentStatus: "Pending",  // Payment status set to Pending (not yet verified)
+            payment: false              // payment flag remains false until verified
+        })
+        await newOrder.save()
 
-        // CRITICAL: total_amount = amount + tax_amount + product_service_charge + product_delivery_charge
-        const totalAmountCalculated = formatAmount(
-            parseFloat(itemAmount) +
-            parseFloat(taxAmount) +
-            parseFloat(serviceCharge) +
-            parseFloat(deliveryCharge)
-        );
+        // Clear user's cart
+        await customerModel.findByIdAndUpdate(req.userId, { cartData: {} })
 
-        const paymentPayload = {
-            // REQUIRED CORE FIELDS (all as strings with 2 decimals)
-            amount: itemAmount,
-            tax_amount: taxAmount,
-            total_amount: totalAmountCalculated,
-            transaction_uuid: String(newOrder._id),
-            product_code: esewaConfig.productCode,
-            product_name: `Food Order #${newOrder._id.toString().slice(-6).toUpperCase()}`,
-
-            // REQUIRED CHARGE FIELDS
-            product_service_charge: serviceCharge,
-            product_delivery_charge: deliveryCharge,
-
-            // REQUIRED CALLBACK URLs (properly encoded)
-            success_url: `${backend_url}/api/payment/success?transaction_uuid=${encodeURIComponent(String(newOrder._id))}`,
-            failure_url: `${backend_url}/api/payment/failure?transaction_uuid=${encodeURIComponent(String(newOrder._id))}`,
-
-            // REQUIRED SIGNATURE FIELD
-            signed_field_names: "total_amount,transaction_uuid,product_code"
-        };
-
-        const signature = signEsewaPayload(
-            {
-                total_amount: paymentPayload.total_amount,
-                transaction_uuid: paymentPayload.transaction_uuid,
-                product_code: paymentPayload.product_code
-            },
-            esewaConfig.secretKey
-        );
-
-        console.log('Order Payment Debug Info:');
+        console.log('✅ Order placed successfully:');
         console.log('Order ID:', newOrder._id);
-        console.log('Item Amount:', itemAmount);
-        console.log('Delivery Charge:', deliveryCharge);
-        console.log('Total Amount:', totalAmountCalculated);
-        console.log('Signature Message:', `total_amount=${paymentPayload.total_amount},transaction_uuid=${paymentPayload.transaction_uuid},product_code=${paymentPayload.product_code}`);
-        console.log('Signature:', signature);
+        console.log('Items Total:', totals.itemsTotal);
+        console.log('Delivery Fee:', totals.deliveryFee);
+        console.log('Total Amount:', totals.totalAmount);
+        console.log('Payment Status: Pending');
 
+        // Return success response with order details
         res.json({
             success: true,
-            message: "Order placed successfully. Redirecting to payment...",
-            payment: {
-                endpoint: esewaConfig.endpoint,
-                params: {
-                    amount: paymentPayload.amount,
-                    tax_amount: paymentPayload.tax_amount,
-                    total_amount: paymentPayload.total_amount,
-                    transaction_uuid: paymentPayload.transaction_uuid,
-                    product_code: paymentPayload.product_code,
-                    product_name: paymentPayload.product_name,
-                    product_service_charge: paymentPayload.product_service_charge,
-                    product_delivery_charge: paymentPayload.product_delivery_charge,
-                    success_url: paymentPayload.success_url,
-                    failure_url: paymentPayload.failure_url,
-                    signed_field_names: paymentPayload.signed_field_names,
-                    signature: signature
-                }
+            message: "Order placed successfully!",
+            orderId: newOrder._id,
+            orderDetails: {
+                orderId: newOrder._id,
+                itemsTotal: totals.itemsTotal,
+                deliveryFee: totals.deliveryFee,
+                totalAmount: totals.totalAmount,
+                paymentStatus: "Pending",
+                items: newOrder.items,
+                address: newOrder.address
             }
         })
 
@@ -172,7 +126,8 @@ const verifyOrder = async (req, res) => {
         }
 
         if (status !== "COMPLETE") {
-            await orderModel.findByIdAndDelete(transaction_uuid);
+            // Find and delete order by transaction ID, not by _id
+            await orderModel.findOneAndDelete({ esewaTransactionId: transaction_uuid });
             return res.json({ success: false, message: "Payment not completed" })
         }
 
@@ -186,11 +141,11 @@ const verifyOrder = async (req, res) => {
         const statusData = await statusResponse.json()
 
         if (statusData?.status === "COMPLETE") {
-            await orderModel.findByIdAndUpdate(transaction_uuid, { payment: true })
+            await orderModel.findOneAndUpdate({ esewaTransactionId: transaction_uuid }, { payment: true })
             return res.json({ success: true, message: "Paid" })
         }
 
-        await orderModel.findByIdAndDelete(transaction_uuid)
+        await orderModel.findOneAndDelete({ esewaTransactionId: transaction_uuid })
         return res.json({ success: false, message: "Payment not verified" })
     } catch (error) {
         console.log(error);
@@ -205,38 +160,67 @@ const paymentSuccess = async (req, res) => {
         console.log("All Query Params:", req.query);
 
         let transaction_uuid, status, total_amount, transaction_code;
+        let transaction_uuid_raw = req.query.transaction_uuid;
 
-        // eSewa sometimes sends data as base64-encoded JSON in a 'data' parameter
-        if (req.query.data) {
+        // Case 1: Data is embedded in transaction_uuid as ?data=BASE64
+        if (transaction_uuid_raw && transaction_uuid_raw.includes('?data=')) {
+            console.log("✓ Detected embedded data in transaction_uuid");
+            const [cleanUuid, encodedData] = transaction_uuid_raw.split('?data=');
+            transaction_uuid = cleanUuid;
+
             try {
-                const decodedData = Buffer.from(req.query.data, 'base64').toString('utf8');
+                const decodedData = Buffer.from(encodedData, 'base64').toString('utf8');
                 const paymentData = JSON.parse(decodedData);
 
-                transaction_uuid = paymentData.transaction_uuid;
                 status = paymentData.status;
                 total_amount = paymentData.total_amount;
                 transaction_code = paymentData.transaction_code;
 
-                console.log("Decoded from data parameter:");
-                console.log("Transaction UUID:", transaction_uuid);
-                console.log("Status:", status);
-                console.log("Total Amount:", total_amount);
-                console.log("Transaction Code:", transaction_code);
+                console.log("✓ Decoded from embedded data:");
+                console.log("  Transaction UUID:", transaction_uuid);
+                console.log("  Status:", status);
+                console.log("  Total Amount:", total_amount);
+                console.log("  Transaction Code:", transaction_code);
             } catch (decodeError) {
-                console.error("❌ Failed to decode data parameter:", decodeError);
+                console.error("❌ Failed to decode embedded data:", decodeError.message);
+                return res.json({ success: false, message: "Failed to decode payment data" });
             }
-        } else {
-            // Fallback to query parameters
-            transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+        }
+        // Case 2: Data is in separate 'data' query parameter
+        else if (req.query.data) {
+            console.log("✓ Detected separate data parameter");
+            transaction_uuid = transaction_uuid_raw;
+
+            try {
+                const decodedData = Buffer.from(req.query.data, 'base64').toString('utf8');
+                const paymentData = JSON.parse(decodedData);
+
+                status = paymentData.status;
+                total_amount = paymentData.total_amount;
+                transaction_code = paymentData.transaction_code;
+
+                console.log("✓ Decoded from data parameter:");
+                console.log("  Transaction UUID:", transaction_uuid);
+                console.log("  Status:", status);
+                console.log("  Total Amount:", total_amount);
+                console.log("  Transaction Code:", transaction_code);
+            } catch (decodeError) {
+                console.error("❌ Failed to decode data parameter:", decodeError.message);
+                return res.json({ success: false, message: "Failed to decode payment data" });
+            }
+        }
+        // Case 3: Fallback to direct query parameters
+        else {
+            console.log("✓ Using direct query parameters");
+            transaction_uuid = transaction_uuid_raw;
             status = req.query.status;
             total_amount = req.query.total_amount;
             transaction_code = req.query.transaction_code;
-        }
 
-        // Clean up transaction_uuid (remove any appended query strings)
-        if (transaction_uuid && transaction_uuid.includes('?')) {
-            transaction_uuid = transaction_uuid.split('?')[0];
-            console.log("Cleaned transaction UUID:", transaction_uuid);
+            console.log("  Transaction UUID:", transaction_uuid);
+            console.log("  Status:", status);
+            console.log("  Total Amount:", total_amount);
+            console.log("  Transaction Code:", transaction_code);
         }
 
         console.log("================================\n");
@@ -247,11 +231,11 @@ const paymentSuccess = async (req, res) => {
             return res.json({ success: false, message: "Payment not found" });
         }
 
-        // Try to find the order by ID
-        let order = await orderModel.findById(transaction_uuid);
+        // Try to find the order by transaction UUID field instead of order ID
+        let order = await orderModel.findOne({ esewaTransactionId: transaction_uuid });
 
         if (!order) {
-            console.error("❌ Order not found for ID:", transaction_uuid);
+            console.error("❌ Order not found for transaction UUID:", transaction_uuid);
             console.error("Searching with transaction_uuid:", transaction_uuid);
             return res.json({ success: false, message: "Payment not found" });
         }
@@ -282,15 +266,14 @@ const paymentSuccess = async (req, res) => {
 
         console.log("✅ Order marked as paid:", transaction_uuid);
 
-        res.json({
-            success: true,
-            message: "Payment verified successfully",
-            orderId: transaction_uuid
-        });
+        // Redirect to frontend order page with transaction UUID
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/myorders?payment_success=true&transaction_uuid=${transaction_uuid}&orderId=${order._id.toString()}`);
 
     } catch (error) {
         console.error("[Payment Success Error]", error);
-        res.json({ success: false, message: error.message });
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/myorders?payment_success=false&error=${encodeURIComponent(error.message)}`);
     }
 }
 
@@ -300,28 +283,43 @@ const paymentFailure = async (req, res) => {
         console.log("[Payment Failure] Query params:", req.query);
 
         let transaction_uuid;
+        let transaction_uuid_raw = req.query.transaction_uuid;
 
-        // Handle data parameter if present (base64-encoded JSON)
-        if (req.query.data) {
+        // Case 1: Data is embedded in transaction_uuid as ?data=BASE64
+        if (transaction_uuid_raw && transaction_uuid_raw.includes('?data=')) {
+            console.log("✓ Detected embedded data in transaction_uuid");
+            const [cleanUuid, encodedData] = transaction_uuid_raw.split('?data=');
+            transaction_uuid = cleanUuid;
+
+            try {
+                const decodedData = Buffer.from(encodedData, 'base64').toString('utf8');
+                const paymentData = JSON.parse(decodedData);
+                console.log("[Payment Failure] Decoded transaction UUID:", transaction_uuid);
+            } catch (decodeError) {
+                console.error("[Payment Failure] Failed to decode embedded data:", decodeError.message);
+                transaction_uuid = cleanUuid; // Still use the cleaned UUID
+            }
+        }
+        // Case 2: Data is in separate 'data' query parameter
+        else if (req.query.data) {
+            console.log("✓ Detected separate data parameter");
+            transaction_uuid = transaction_uuid_raw;
+
             try {
                 const decodedData = Buffer.from(req.query.data, 'base64').toString('utf8');
                 const paymentData = JSON.parse(decodedData);
-                transaction_uuid = paymentData.transaction_uuid;
+                transaction_uuid = paymentData.transaction_uuid || transaction_uuid;
                 console.log("[Payment Failure] Decoded transaction UUID:", transaction_uuid);
             } catch (decodeError) {
-                console.error("[Payment Failure] Failed to decode data:", decodeError);
-                transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+                console.error("[Payment Failure] Failed to decode data:", decodeError.message);
             }
-        } else {
-            transaction_uuid = req.query.transaction_uuid || req.query.transaction_uid;
+        }
+        // Case 3: Use raw transaction UUID
+        else {
+            transaction_uuid = transaction_uuid_raw;
         }
 
-        // Clean up if appended with query string
-        if (transaction_uuid && transaction_uuid.includes('?')) {
-            transaction_uuid = transaction_uuid.split('?')[0];
-        }
-
-        console.log("[Payment Failure] Cleaned transaction UUID:", transaction_uuid);
+        console.log("[Payment Failure] Final transaction UUID:", transaction_uuid);
 
         if (!transaction_uuid) {
             return res.json({ success: false, message: "Transaction ID not found" });
@@ -464,4 +462,119 @@ const getDriverAssignedOrders = async (req, res) => {
     }
 }
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById, getDriverAssignedOrders, paymentSuccess, paymentFailure }
+// INITIATE ESEWA PAYMENT FOR ORDER - POST /api/payment/order/esewa/initiate
+const initiateEsewaPaymentOrder = async (req, res) => {
+    try {
+        const { orderId, amount } = req.body
+
+        // Validation
+        if (!orderId || !amount) {
+            return res.json({
+                success: false,
+                message: "Order ID and amount are required"
+            })
+        }
+
+        if (amount <= 0) {
+            return res.json({
+                success: false,
+                message: "Amount must be greater than 0"
+            })
+        }
+
+        // Fetch order
+        const order = await orderModel.findById(orderId)
+
+        if (!order) {
+            return res.json({
+                success: false,
+                message: "Order not found"
+            })
+        }
+
+        // Validate order status - should not be already paid
+        if (order.payment === true) {
+            return res.json({
+                success: false,
+                message: "Order is already paid"
+            })
+        }
+
+        // Create transaction ID for this payment
+        const transactionId = `ORDER_${orderId}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
+
+        // Get eSewa config
+        const esewaConfig = getEsewaConfig()
+        const backendUrl = process.env.BACKEND_URL || "http://localhost:4000"
+
+        // Prepare eSewa payload with required fields
+        const taxAmount = "0"
+        const serviceCharge = "0"
+        const deliveryCharge = "0"
+        const totalAmount = formatAmount(amount)
+
+        const payload = {
+            amount: formatAmount(amount),
+            tax_amount: taxAmount,
+            total_amount: totalAmount,
+            transaction_uuid: transactionId,
+            product_code: esewaConfig.productCode,
+            product_name: "RestroMatrix Order Payment",
+            product_service_charge: serviceCharge,
+            product_delivery_charge: deliveryCharge,
+            success_url: `${backendUrl}/api/payment/success?transaction_uuid=${encodeURIComponent(transactionId)}`,
+            failure_url: `${backendUrl}/api/payment/failure?transaction_uuid=${encodeURIComponent(transactionId)}`,
+            signed_field_names: "total_amount,transaction_uuid,product_code"
+        }
+
+        // Generate signature
+        const signedFieldNames = payload.signed_field_names
+        const signatureData = signedFieldNames
+            .split(",")
+            .map(field => {
+                const value = payload[field]
+                return `${field}=${value || ""}`
+            })
+            .join(",")
+
+        console.log("🔐 Signature Data:", signatureData)
+        console.log("📦 eSewa Payload:", payload)
+
+        const signature = crypto
+            .createHmac("sha256", esewaConfig.secretKey)
+            .update(signatureData)
+            .digest("base64")
+
+        console.log("✓ Generated Signature:", signature)
+
+        // Update order with transaction ID for later verification
+        order.esewaTransactionId = transactionId
+        await order.save()
+
+        // Return payment form data with all required fields
+        return res.json({
+            amount: payload.amount,
+            tax_amount: payload.tax_amount,
+            total_amount: payload.total_amount,
+            transaction_uuid: payload.transaction_uuid,
+            product_code: payload.product_code,
+            product_name: payload.product_name,
+            product_service_charge: payload.product_service_charge,
+            product_delivery_charge: payload.product_delivery_charge,
+            success_url: payload.success_url,
+            failure_url: payload.failure_url,
+            signed_field_names: payload.signed_field_names,
+            signature,
+            paymentEndpoint: esewaConfig.endpoint
+        })
+    } catch (error) {
+        console.error("Error initiating eSewa payment:", error)
+        return res.json({
+            success: false,
+            message: "Error initiating payment",
+            error: error.message
+        })
+    }
+}
+
+export { placeOrder, verifyOrder, userOrders, listOrders, updateOrderStatus, getOrderById, getDriverAssignedOrders, paymentSuccess, paymentFailure, initiateEsewaPaymentOrder }
