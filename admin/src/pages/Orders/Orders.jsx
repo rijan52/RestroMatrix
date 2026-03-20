@@ -47,25 +47,59 @@ const Orders = ({ url }) => {
     }
   };
 
-  const statusHandler = async (event, orderId) => {
-    const newStatus = event.target.value;
+  const fetchWalkInSessions = async () => {
+    try {
+      const response = await axios.get(`${url}/api/walkin/list`);
 
-    if (newStatus === "Out for delivery") {
+      if (response.data.success) {
+        // Merge walk-in sessions with online orders
+        setOrders((prevOrders) => {
+          // Filter out any existing walk-in orders
+          const onlineOrders = prevOrders.filter(
+            (order) => !order.source || order.source !== "walkin"
+          );
+          const walkInOrders = response.data.data || [];
+          return [...onlineOrders, ...walkInOrders];
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching walk-in sessions:", error);
+      // Don't show error toast for this, it's supplementary data
+    }
+  };
+
+  const statusHandler = async (event, order) => {
+    const newStatus = event.target.value;
+    const isWalkIn = Boolean(order.tableNumber) || order.source === "walkin";
+
+    if (newStatus === "Out for delivery" && !isWalkIn) {
       setPendingStatuses((prev) => ({
         ...prev,
-        [orderId]: newStatus,
+        [order._id]: newStatus,
       }));
       return;
     }
 
     try {
-      const response = await axios.post(`${url}/api/order/status`, {
-        orderId,
-        status: newStatus,
-      });
+      let response;
+
+      if (isWalkIn) {
+        // For walk-in orders, use the walk-in API endpoint with sessionId
+        response = await axios.post(`${url}/api/walkin/status`, {
+          sessionId: order.sessionId,
+          status: newStatus,
+        });
+      } else {
+        // For online orders, use the regular order API endpoint
+        response = await axios.post(`${url}/api/order/status`, {
+          orderId: order._id,
+          status: newStatus,
+        });
+      }
 
       if (response.data.success) {
         await fetchAllOrders();
+        await fetchWalkInSessions();
         toast.success("Order status updated successfully");
       }
     } catch (error) {
@@ -114,6 +148,7 @@ const Orders = ({ url }) => {
 
   useEffect(() => {
     fetchAllOrders();
+    fetchWalkInSessions();
     fetchAllDrivers();
   }, []);
 
@@ -162,8 +197,6 @@ const Orders = ({ url }) => {
       <div className="order-list">
         {filteredOrders.map((order) => (
           <div key={order._id} className="order-item">
-            <img src={assets.parcelIcon} alt="" />
-
             <div>
               <p className="order-item-food">
                 {order.items.map((item, index) =>
@@ -192,6 +225,13 @@ const Orders = ({ url }) => {
               {order.address && (
                 <p className="order-item-phone">{order.address.phone}</p>
               )}
+              <p className="order-item-time">
+                {new Date(order.date).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </p>
             </div>
 
             <p>Items : {order.items.length}</p>
@@ -199,16 +239,35 @@ const Orders = ({ url }) => {
 
             <div className="order-status-container">
               <select
-                onChange={(e) => statusHandler(e, order._id)}
+                onChange={(e) => statusHandler(e, order)}
                 value={pendingStatuses[order._id] || order.status}
               >
-                <option value="Food Processing">Food Processing</option>
-                <option value="Out for delivery">Out for delivery</option>
-                <option value="Delivered">Delivered</option>
+                {(() => {
+                  const isWalkIn = Boolean(order.tableNumber) || order.source === "walkin";
+                  if (isWalkIn) {
+                    return (
+                      <>
+                        <option value="active">Active</option>
+                        <option value="awaiting_payment">Awaiting Payment</option>
+                        <option value="fully_paid">Fully Paid</option>
+                        <option value="closed">Closed</option>
+                      </>
+                    );
+                  } else {
+                    return (
+                      <>
+                        <option value="Food Processing">Food Processing</option>
+                        <option value="Out for delivery">Out for delivery</option>
+                        <option value="Delivered">Delivered</option>
+                      </>
+                    );
+                  }
+                })()}
               </select>
 
-              {(pendingStatuses[order._id] === "Out for delivery" ||
-                order.status === "Out for delivery") && (
+              {!((Boolean(order.tableNumber) || order.source === "walkin")) &&
+                (pendingStatuses[order._id] === "Out for delivery" ||
+                  order.status === "Out for delivery") && (
                   <div className="driver-assignment">
                     <select
                       value={driverNames[order._id] || ""}

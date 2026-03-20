@@ -12,6 +12,7 @@ import orderRouter from "./routes/orderRoute.js";
 import reservationRouter from "./routes/reservationRoute.js";
 import billRouter from "./routes/billRoute.js";
 import esewaTestRouter from "./routes/esewaTestRoute.js";
+import walkInRouter from "./routes/walkInRoute.js";
 import { initiateEsewaPayment, verifyPayment, handlePaymentFailure } from "./controllers/billController.js";
 import { paymentSuccess, paymentFailure, initiateEsewaPaymentOrder } from "./controllers/orderController.js";
 import { initializeSocketHandlers } from "./socket/deliveryTracking.js";
@@ -20,7 +21,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"],
     credentials: true,
   },
 });
@@ -58,6 +59,10 @@ app.use("/api/order", orderRouter);
 app.use("/api/reservation", reservationRouter);
 app.use("/api/bills", billRouter);
 app.use("/api/esewa-test", esewaTestRouter);
+
+// ⚠️ WALK-IN ROUTES (DINE-IN / QR-BASED SPLIT PAYMENTS)
+// Keep separate from online order flows
+app.use("/api/walkin", walkInRouter);
 
 // Payment routes - SPLIT PAYMENTS (Bills/QR-based)
 app.post("/api/payment/esewa/initiate", initiateEsewaPayment);

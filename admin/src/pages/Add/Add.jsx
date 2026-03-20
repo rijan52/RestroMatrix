@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Add.css';
 import assets from '../../assets/assets';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Add = ({ url }) => {
 
     const [image, setImage] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [originalImage, setOriginalImage] = useState(null);
     const [data, setData] = useState({
         name: "",
         description: "",
         price: "",
         category: "Salad"
     });
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if there's food data in localStorage for editing
+        const editFood = localStorage.getItem('editFood');
+        if (editFood) {
+            const foodData = JSON.parse(editFood);
+            setData({
+                name: foodData.name,
+                description: foodData.description,
+                price: foodData.price,
+                category: foodData.category
+            });
+            setEditId(foodData._id);
+            setEditMode(true);
+            setOriginalImage(foodData.image);
+            localStorage.removeItem('editFood');
+        }
+    }, []);
 
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
@@ -22,6 +46,16 @@ const Add = ({ url }) => {
     const onSubmitHandler = async (event) => {
         event.preventDefault();
 
+        if (editMode) {
+            // Edit existing food
+            await editFood();
+        } else {
+            // Add new food
+            await addFood();
+        }
+    };
+
+    const addFood = async () => {
         const formData = new FormData();
         formData.append("image", image);
         formData.append("name", data.name);
@@ -49,20 +83,82 @@ const Add = ({ url }) => {
             }
         } catch (error) {
             console.error(error);
-            alert("Server error");
+            toast.error("Server error");
+        }
+    };
+
+    const editFood = async () => {
+        const formData = new FormData();
+
+        // Only append image if a new one was selected
+        if (image) {
+            formData.append("image", image);
+        }
+        formData.append("name", data.name);
+        formData.append("description", data.description);
+        formData.append("price", Number(data.price));
+        formData.append("category", data.category);
+        formData.append("id", editId);
+
+        try {
+            const response = await axios.post(
+                `${url}/api/food/update`,
+                formData
+            );
+
+            if (response.data.success) {
+                toast.success("Food item updated successfully!");
+                setData({
+                    name: "",
+                    description: "",
+                    price: "",
+                    category: "Salad"
+                });
+                setImage(false);
+                setEditMode(false);
+                setEditId(null);
+                setOriginalImage(null);
+                navigate('/list');
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error updating food item");
+        }
+    };
+
+    const handleCancel = () => {
+        setData({
+            name: "",
+            description: "",
+            price: "",
+            category: "Salad"
+        });
+        setImage(false);
+        setEditMode(false);
+        setEditId(null);
+        setOriginalImage(null);
+        if (editMode) {
+            navigate('/list');
         }
     };
 
     return (
         <div className='add'>
+            <div className="add-header">
+                <h2>{editMode ? 'Edit Food Item' : 'Add New Food Item'}</h2>
+                <p className="add-subtitle">{editMode ? 'Update the food details' : 'Add a new item to your menu'}</p>
+            </div>
+
             <form className='add-form flex-col' onSubmit={onSubmitHandler}>
 
                 <div className="add-img-upload flex-col">
                     <p>Upload Image</p>
                     <label htmlFor="image">
                         <img
-                            src={image ? URL.createObjectURL(image) : assets.addIcon}
-                            alt=""
+                            src={image ? URL.createObjectURL(image) : (editMode && originalImage ? `${url}/images/${originalImage}` : assets.addIcon)}
+                            alt="Food item"
                         />
                     </label>
                     <input
@@ -70,7 +166,7 @@ const Add = ({ url }) => {
                         type="file"
                         id="image"
                         hidden
-                        required
+                        required={!editMode}
                     />
                 </div>
 
@@ -130,7 +226,14 @@ const Add = ({ url }) => {
                     </div>
                 </div>
 
-                <button type="submit" className="add-btn">Add</button>
+                <div className="add-buttons">
+                    <button type="submit" className="add-btn">
+                        {editMode ? 'Update' : 'Add'}
+                    </button>
+                    <button type="button" className="cancel-btn" onClick={handleCancel}>
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );

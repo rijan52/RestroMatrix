@@ -2,29 +2,66 @@
     flex: 1;
     padding: 32px;
     color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+}
+
+.add-header {
+    margin-bottom: 32px;
+}
+
+.add-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.01em;
+    font-family: var(--display-font, 'Outfit', sans-serif);
+}
+
+.add-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0;
+    font-weight: 500;
 }
 
 .add-form {
     gap: 20px;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 28px;
+    padding: 32px;
     max-width: 720px;
-    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 .add-img-upload {
     gap: 12px;
 }
 
+.add-img-upload p {
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    font-size: 14px;
+}
+
 .add-img-upload img {
     width: 120px;
     height: 120px;
     border-radius: 18px;
-    border: 1px dashed #cbd5f5;
+    border: 2px dashed var(--line);
     padding: 12px;
-    background: #f8fafc;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    object-fit: cover;
+}
+
+.add-img-upload img:hover {
+    border-color: var(--brand);
+    background: rgba(37, 99, 235, 0.05);
 }
 
 .add-product-name,
@@ -32,9 +69,38 @@
     width: 100%;
 }
 
+.add-product-name p,
+.add-product-description p {
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
 .add-product-name input,
 .add-product-description textarea {
     width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--body-font, inherit);
+    transition: all 0.2s ease;
+}
+
+.add-product-name input::placeholder,
+.add-product-description textarea::placeholder {
+    color: var(--muted);
+}
+
+.add-product-name input:focus,
+.add-product-description textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: #ffffff;
 }
 
 .add-category-price {
@@ -47,22 +113,66 @@
     flex: 1;
 }
 
+.add-category p,
+.add-price p {
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
 .add-category-price select,
 .add-category-price input {
     width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--body-font, inherit);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-category-price select::placeholder,
+.add-category-price input::placeholder {
+    color: var(--muted);
+}
+
+.add-category-price select:focus,
+.add-category-price input:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: #ffffff;
+}
+
+.add-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.add-btn,
+.cancel-btn {
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 13px;
+    font-family: var(--body-font, inherit);
 }
 
 .add-btn {
-    max-width: 140px;
-    border: none;
-    padding: 12px 18px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #ffffff;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
+    color: white;
     box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    flex: 1;
 }
 
 .add-btn:hover {
@@ -74,18 +184,68 @@
     transform: translateY(0);
 }
 
+.cancel-btn {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1.5px solid var(--line);
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background: var(--line);
+    color: var(--text);
+    transform: translateY(-2px);
+}
+
+.cancel-btn:active {
+    transform: translateY(0);
+}
+
 @media (max-width: 900px) {
     .add {
         padding: 24px 18px;
     }
 
     .add-form {
-        padding: 20px;
+        padding: 24px;
+        max-width: 100%;
+    }
+
+    .add-header h2 {
+        font-size: 28px;
     }
 }
 
 @media (max-width: 600px) {
+    .add {
+        padding: 16px 12px;
+    }
+
+    .add-header {
+        margin-bottom: 24px;
+    }
+
+    .add-header h2 {
+        font-size: 24px;
+    }
+
+    .add-form {
+        padding: 20px;
+        gap: 16px;
+    }
+
     .add-category-price {
         flex-direction: column;
+    }
+
+    .add-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .add-btn,
+    .cancel-btn {
+        width: 100%;
+        padding: 12px 20px;
     }
 }

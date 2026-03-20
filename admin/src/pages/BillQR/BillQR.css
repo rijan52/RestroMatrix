@@ -25,15 +25,17 @@
 .billqr-header h1 {
     font-family: var(--display-font);
     font-size: clamp(28px, 5vw, 36px);
-    color: var(--ink);
+    color: #0f172a;
     font-weight: 700;
     margin-bottom: 8px;
+    letter-spacing: -0.5px;
 }
 
 .billqr-subtitle {
-    font-size: 16px;
-    color: var(--muted);
+    font-size: 15px;
+    color: #64748b;
     font-weight: 500;
+    letter-spacing: 0.2px;
 }
 
 /* Content */
@@ -62,23 +64,23 @@
 }
 
 .form-group label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
 }
 
 .form-group input {
     padding: 14px 16px;
-    border: 2px solid var(--line);
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ink);
-    background: var(--surface);
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #0f172a;
+    background: #ffffff;
     transition: all 0.3s ease;
-    font-family: 'Courier New', monospace;
+    font-family: var(--body-font);
 }
 
 .form-group input::placeholder {
@@ -95,19 +97,19 @@
 /* Generate Button */
 .btn-generate {
     grid-column: 1 / -1;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
-    color: white;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #f8fafc;
     border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-    height: 52px;
+    letter-spacing: 0.4px;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,15 +162,17 @@
 
 .guide-item h4 {
     margin: 0 0 4px 0;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    color: var(--ink);
+    color: #0f172a;
+    letter-spacing: 0.3px;
 }
 
 .guide-item p {
     margin: 0;
     font-size: 13px;
-    color: var(--muted);
+    color: #64748b;
+    line-height: 1.4;
 }
 
 /* Bill Display Content */
@@ -188,9 +192,9 @@
 }
 
 .section-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--muted);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 0;
@@ -222,18 +226,18 @@
 }
 
 .info-row .label {
-    font-weight: 600;
-    color: var(--muted);
+    font-weight: 700;
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .info-row .value {
-    color: var(--ink);
+    color: #0f172a;
     font-weight: 700;
-    font-family: 'Courier New', monospace;
-    font-size: 16px;
+    font-family: var(--body-font);
+    font-size: 15px;
 }
 
 /* QR Section */
@@ -267,13 +271,13 @@
 .link-input {
     flex: 1;
     padding: 14px 16px;
-    border: 2px solid var(--line);
-    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: 600;
-    color: var(--brand);
-    background: rgba(37, 99, 235, 0.02);
-    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    color: #0f172a;
+    background: #ffffff;
+    font-family: var(--body-font);
     transition: all 0.3s ease;
 }
 
@@ -326,25 +330,25 @@
 }
 
 .btn-print {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     color: white;
-    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
 .btn-print:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(5, 150, 105, 0.4);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.4);
 }
 
 .btn-new {
-    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, #06b6d4 100%);
     color: white;
-    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.3);
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
 }
 
 .btn-new:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(234, 88, 12, 0.4);
+    box-shadow: 0 12px 28px rgba(56, 189, 248, 0.4);
 }
 
 /* Animations */

@@ -20,6 +20,16 @@
   --shadow: 0 20px 60px rgba(15, 27, 45, 0.08);
   --radius: 18px;
   --radius-pill: 999px;
+
+  /* Frontend compatible variables */
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --brand: #2563eb;
+  --brand-strong: #1d4ed8;
+  --brand-light: #dbeafe;
+  --line: #e2e8f0;
+  --display-font: "Outfit", sans-serif;
+  --body-font: "Manrope", "Outfit", sans-serif;
 }
 
 body {

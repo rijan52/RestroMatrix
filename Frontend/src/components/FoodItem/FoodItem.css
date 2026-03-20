@@ -76,7 +76,7 @@
     bottom: 12px;
     right: 12px;
     cursor: pointer;
-    border-radius: 100%;
+    border-radius: 50%;
     padding: 0;
     background: white;
     border: none;
@@ -84,9 +84,10 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    font-size: 20px;
+    transition: all 0.25s ease;
+    font-size: 14px;
     font-weight: 300;
+    color: #0f172a;
 }
 
 .food-item-img-container .add:hover {

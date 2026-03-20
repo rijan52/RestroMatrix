@@ -21,10 +21,10 @@ const Cart = () => {
         setIsPlacing(true);
         setStatus("");
         try {
-            const orderId = await createOrder();
-            setStatus(`Order placed! Your order id is ${orderId}.`);
+            const sessionId = await createOrder();
+            setStatus(`Session created! Your session ID is ${sessionId}.`);
         } catch (error) {
-            setStatus(error?.message || "Unable to place order.");
+            setStatus(error?.message || "Unable to create session.");
         } finally {
             setIsPlacing(false);
         }

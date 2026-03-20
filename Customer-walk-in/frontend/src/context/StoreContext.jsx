@@ -12,7 +12,7 @@ const StoreContextProvider = ({ children }) => {
 
     const fetchMenu = useCallback(async () => {
         try {
-            const response = await axios.get(`${apiUrl}/api/menu`);
+            const response = await axios.get(`${apiUrl}/api/food/list`);
             if (response.data?.success) {
                 setFoodList(response.data.data || []);
             }
@@ -72,23 +72,23 @@ const StoreContextProvider = ({ children }) => {
 
     const createOrder = useCallback(async () => {
         const items = buildOrderItems();
-        const amount = getCartTotal();
+        const totalBillAmount = getCartTotal();
         if (!tableNumber) {
             throw new Error("Table number is required");
         }
         if (!items.length) {
             throw new Error("Cart is empty");
         }
-        const response = await axios.post(`${apiUrl}/api/order/create`, {
+        const response = await axios.post(`${apiUrl}/api/walkin/session/create`, {
             tableNumber,
             items,
-            amount
+            totalBillAmount
         });
         if (!response.data?.success) {
-            throw new Error(response.data?.message || "Unable to place order");
+            throw new Error(response.data?.message || "Unable to create session");
         }
         clearCart();
-        return response.data.orderId;
+        return response.data.data?.sessionId;
     }, [apiUrl, buildOrderItems, getCartTotal, tableNumber]);
 
     const contextValue = useMemo(() => {
