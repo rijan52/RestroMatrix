@@ -150,7 +150,7 @@ const OrderConfirmation = () => {
                         <h2 className="section-title">Delivery Address</h2>
                         <div className="address-box">
                             <p>{addressString}</p>
-                            <p className="phone">📞 {deliveryAddress?.phone}</p>
+                            <p className="phone"> {deliveryAddress?.phone}</p>
                         </div>
                     </div>
 

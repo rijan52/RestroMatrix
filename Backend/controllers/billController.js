@@ -22,6 +22,149 @@ const getEsewaConfig = () => {
     };
 };
 
+const formatEsewaAmount = (value) => Number(value).toFixed(2);
+
+const escapeHtml = (value = '') => String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const renderSuccessReceiptHtml = ({
+        transactionId,
+        amountPaid,
+        totalPaid,
+        remainingAmount,
+        billStatus,
+        message,
+        paidAt
+}) => {
+        const formattedPaidAt = paidAt
+                ? new Date(paidAt).toLocaleString('en-NP', { hour12: true })
+                : new Date().toLocaleString('en-NP', { hour12: true });
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Receipt</title>
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            font-family: "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        .container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+        .card {
+            width: 100%;
+            max-width: 620px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+        }
+        .brand { text-align: center; font-size: 12px; letter-spacing: 0.08em; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 12px; }
+        .icon {
+            width: 74px;
+            height: 74px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            margin: 0 auto 14px;
+            border: 1px solid #86efac;
+        }
+        h1 { margin: 0; text-align: center; font-size: 42px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800; color: #0b1f43; }
+        .subtitle { text-align: center; color: #475569; margin: 10px 0 20px; font-size: 17px; }
+        .confirm {
+            background: #ecfdf5;
+            border: 1px solid #86efac;
+            color: #166534;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .receipt-table { border-top: 1px solid #e2e8f0; }
+        .row {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            align-items: start;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .row:last-child { border-bottom: 0; }
+        .label { color: #64748b; font-weight: 500; font-size: 14px; }
+        .value { font-weight: 700; text-align: right; word-break: break-word; font-size: 14px; color: #0f172a; }
+        .status { color: #16a34a; letter-spacing: 0.02em; }
+        @media (max-width: 560px) {
+            .card { padding: 22px 16px; border-radius: 14px; }
+            h1 { font-size: 34px; }
+            .subtitle { font-size: 16px; }
+            .row { grid-template-columns: 1fr 1fr; }
+            .value { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="brand">RestroMatrix • Payment Receipt</div>
+            <div class="icon">✓</div>
+            <h1>Payment Successful</h1>
+            <p class="subtitle">Your split bill payment has been completed successfully.</p>
+            <div class="confirm">${escapeHtml(message || 'Your payment is confirmed. Thank you!')}</div>
+            <div class="receipt-table">
+                <div class="row"><span class="label">Status</span><span class="value status">SUCCESS</span></div>
+                <div class="row"><span class="label">Amount Paid</span><span class="value">NPR ${escapeHtml(Number(amountPaid || 0).toFixed(2))}</span></div>
+                <div class="row"><span class="label">Transaction ID</span><span class="value">${escapeHtml(transactionId || 'N/A')}</span></div>
+                <div class="row"><span class="label">Date & Time</span><span class="value">${escapeHtml(formattedPaidAt)}</span></div>
+                <div class="row"><span class="label">Total Paid So Far</span><span class="value">NPR ${escapeHtml(Number(totalPaid || 0).toFixed(2))}</span></div>
+                <div class="row"><span class="label">Remaining Amount</span><span class="value">NPR ${escapeHtml(Number(remainingAmount || 0).toFixed(2))}</span></div>
+                <div class="row"><span class="label">Bill Status</span><span class="value">${escapeHtml(billStatus || 'UNPAID')}</span></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+};
+
+const sendSuccessReceiptResponse = (req, res, payload) => {
+    const explicitJsonRequested =
+        req.query?.responseType === 'json' ||
+        req.get('x-requested-with') === 'XMLHttpRequest';
+
+    if (explicitJsonRequested) {
+                return res.status(200).json(payload);
+        }
+
+        const { data = {}, message } = payload;
+        const html = renderSuccessReceiptHtml({
+                transactionId: data.transaction_uuid,
+                amountPaid: data.amountPaid,
+                totalPaid: data.paidAmount,
+                remainingAmount: data.remainingAmount,
+                billStatus: data.billStatus,
+                message,
+                paidAt: data.paidAt
+        });
+
+        return res.status(200).type('html').send(html);
+};
+
 // CREATE BILL API - POST /api/bills/create
 const createBill = async (req, res) => {
     try {
@@ -195,7 +338,7 @@ const getAllBills = async (req, res) => {
 // INITIATE ESEWA PAYMENT - POST /api/payment/esewa/initiate
 const initiateEsewaPayment = async (req, res) => {
     try {
-        const { billId, amount } = req.body;
+        const { billId, amount, customerName } = req.body;
 
         // Validation
         if (!billId || !amount) {
@@ -245,13 +388,15 @@ const initiateEsewaPayment = async (req, res) => {
         }
 
         // Create payment record first
-        const transactionId = `${billId}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+        // eSewa transaction UUID should avoid underscores/special chars and prefer hyphen-separated format
+        const transactionId = `BILL-${billId}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
 
         const payment = new paymentModel({
             billId,
             amount,
             method: 'esewa',
             transactionId,
+            customerName: customerName?.trim() || null,
             status: 'PENDING'
         });
 
@@ -262,13 +407,16 @@ const initiateEsewaPayment = async (req, res) => {
         const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 
         // Prepare eSewa payload with required fields
-        const taxAmount = '0';
-        const serviceCharge = '0';
-        const deliveryCharge = '0';
-        const totalAmount = amount.toString();
+        const taxAmount = formatEsewaAmount(0);
+        const serviceCharge = formatEsewaAmount(0);
+        const deliveryCharge = formatEsewaAmount(0);
+        const payableAmount = formatEsewaAmount(amount);
+        const totalAmount = formatEsewaAmount(
+            Number(payableAmount) + Number(taxAmount) + Number(serviceCharge) + Number(deliveryCharge)
+        );
 
         const payload = {
-            amount: amount.toString(),
+            amount: payableAmount,
             tax_amount: taxAmount,
             total_amount: totalAmount,
             transaction_uuid: transactionId,
@@ -276,9 +424,10 @@ const initiateEsewaPayment = async (req, res) => {
             product_name: `Table ${bill.tableNumber} Bill Payment`,
             product_service_charge: serviceCharge,
             product_delivery_charge: deliveryCharge,
-            // Don't embed `transaction_uuid` in the URL. eSewa will append it automatically.
+            // Keep success URL clean for v2 callback `data` payload.
             success_url: `${backendUrl}/api/payment/bill/success`,
-            failure_url: `${backendUrl}/api/payment/bill/failure`,
+            // Include transaction UUID explicitly for failure callbacks because eSewa may redirect without `data`.
+            failure_url: `${backendUrl}/api/payment/bill/failure?transaction_uuid=${encodeURIComponent(transactionId)}`,
             signed_field_names: 'total_amount,transaction_uuid,product_code'
         };
 
@@ -292,9 +441,9 @@ const initiateEsewaPayment = async (req, res) => {
             })
             .join(',');
 
-        console.log('🔐 Signature Data:', signatureData);
-        console.log('📦 eSewa Payload:', payload);
-        console.log('📋 Secret Key (first 8 chars):', esewaConfig.secretKey.substring(0, 8) + '...');
+        console.log(' Signature Data:', signatureData);
+        console.log(' eSewa Payload:', payload);
+        console.log(' Secret Key (first 8 chars):', esewaConfig.secretKey.substring(0, 8) + '...');
 
         const signature = crypto
             .createHmac('sha256', esewaConfig.secretKey)
@@ -399,6 +548,46 @@ const extractEsewaPaymentData = (queryParams) => {
 };
 
 /**
+ * Extract transaction UUID from eSewa failure callback query params.
+ * Handles plain query params, embedded `?data=...` and base64 `data` payload.
+ */
+const extractFailureTransactionUuid = (queryParams = {}) => {
+    let transaction_uuid = queryParams.transaction_uuid;
+    let data = queryParams.data;
+
+    // Some gateways append `?data=` into transaction_uuid value
+    if (transaction_uuid && transaction_uuid.includes('?data=')) {
+        const [cleanUuid, encodedData] = transaction_uuid.split('?data=');
+        transaction_uuid = cleanUuid;
+        data = data || encodedData;
+    }
+
+    if (transaction_uuid) {
+        return transaction_uuid;
+    }
+
+    // Decode base64 data if present
+    if (data) {
+        try {
+            const decodedStr = Buffer.from(data, 'base64').toString('utf-8');
+            const decodedData = JSON.parse(decodedStr);
+            if (decodedData?.transaction_uuid) {
+                return decodedData.transaction_uuid;
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not decode failure callback data:', error.message);
+        }
+    }
+
+    // Legacy fallback used by older flows
+    if (queryParams.oid) {
+        return queryParams.oid;
+    }
+
+    return null;
+};
+
+/**
  * Payment success callback handler for eSewa ePay v2 API
  * Verifies payment completion and updates database
  */
@@ -424,7 +613,7 @@ const verifyPayment = async (req, res) => {
                 transaction_code: esewaData.transaction_code
             });
         } catch (error) {
-            console.error('❌ Data extraction failed:', error.message);
+            console.error('Data extraction failed:', error.message);
             return res.status(400).json({
                 success: false,
                 message: error.message
@@ -435,7 +624,7 @@ const verifyPayment = async (req, res) => {
 
         // Step 2: Validate payment status
         if (status !== 'COMPLETE') {
-            console.error(`❌ Payment not completed. Status: ${status}`);
+            console.error(`Payment not completed. Status: ${status}`);
 
             // Try to update payment record if it exists
             try {
@@ -445,10 +634,10 @@ const verifyPayment = async (req, res) => {
                     payment.failedAt = new Date();
                     payment.failureReason = `eSewa status: ${status}`;
                     await payment.save();
-                    console.log('📝 Payment record marked as FAILED');
+                    console.log('Payment record marked as FAILED');
                 }
             } catch (updateError) {
-                console.error('⚠️ Could not update payment record:', updateError.message);
+                console.error(' Could not update payment record:', updateError.message);
             }
 
             return res.status(400).json({
@@ -459,46 +648,54 @@ const verifyPayment = async (req, res) => {
         }
 
         // Step 3: Find payment record
-        console.log(`🔍 Looking for payment with transaction ID: ${transaction_uuid}`);
+        console.log(`Looking for payment with transaction ID: ${transaction_uuid}`);
         payment = await paymentModel.findOne({ transactionId: transaction_uuid });
 
         if (!payment) {
-            console.error(`❌ Payment record not found for transaction: ${transaction_uuid}`);
+            console.error(`Payment record not found for transaction: ${transaction_uuid}`);
             return res.status(404).json({
                 success: false,
                 message: 'Payment record not found in database'
             });
         }
 
-        console.log(`✓ Payment record found. Current status: ${payment.status}`);
+        console.log(`Payment record found. Current status: ${payment.status}`);
 
         // Step 4: Prevent duplicate processing
         if (payment.status === 'SUCCESS') {
-            console.warn('⚠️ Payment already processed (idempotency check)');
-            return res.status(200).json({
+            console.warn('Payment already processed (idempotency check)');
+            return sendSuccessReceiptResponse(req, res, {
                 success: true,
                 message: 'Payment already processed',
-                isIdempotent: true
+                isIdempotent: true,
+                data: {
+                    transaction_uuid,
+                    amountPaid: payment.amount,
+                    paidAmount: payment.amount,
+                    remainingAmount: 0,
+                    billStatus: 'PAID',
+                    paidAt: payment.paidAt || new Date()
+                }
             });
         }
 
         // Step 5: Fetch and validate bill
-        console.log(`🔍 Fetching bill with ID: ${payment.billId}`);
+        console.log(`Fetching bill with ID: ${payment.billId}`);
         const bill = await billModel.findById(payment.billId);
 
         if (!bill) {
-            console.error(`❌ Bill not found: ${payment.billId}`);
+            console.error(`Bill not found: ${payment.billId}`);
             return res.status(404).json({
                 success: false,
                 message: 'Associated bill not found'
             });
         }
 
-        console.log(`✓ Bill found. Table: ${bill.tableNumber}, Remaining: ${bill.remainingAmount}`);
+        console.log(`Bill found. Table: ${bill.tableNumber}, Remaining: ${bill.remainingAmount}`);
 
         // Step 6: Verify amount matches (security check)
         if (Math.abs(payment.amount - total_amount) > 0.01) {
-            console.error(`❌ Amount mismatch! Expected: ${payment.amount}, Received: ${total_amount}`);
+            console.error(`Amount mismatch! Expected: ${payment.amount}, Received: ${total_amount}`);
             payment.status = 'FAILED';
             payment.failedAt = new Date();
             payment.failureReason = `Amount mismatch: expected ${payment.amount}, got ${total_amount}`;
@@ -514,7 +711,7 @@ const verifyPayment = async (req, res) => {
         try {
             const esewaConfig = getEsewaConfig();
             const statusUrl = `${esewaConfig.verificationEndpoint}?product_code=${encodeURIComponent(esewaConfig.productCode)}&total_amount=${encodeURIComponent(total_amount)}&transaction_uuid=${encodeURIComponent(transaction_uuid)}`;
-            console.log(`🔐 Attempting eSewa API verification...`);
+            console.log(` Attempting eSewa API verification...`);
 
             const esewaResponse = await axios.get(statusUrl, {
                 headers: {
@@ -526,25 +723,25 @@ const verifyPayment = async (req, res) => {
             if (esewaResponse.data?.status === 'COMPLETE') {
                 console.log('✓ eSewa API verification successful');
             } else {
-                console.warn(`⚠️ eSewa verification returned status: ${esewaResponse.data?.status}. Trusting callback status instead.`);
+                console.warn(` eSewa verification returned status: ${esewaResponse.data?.status}. Trusting callback status instead.`);
             }
         } catch (esewaError) {
             // 404 or timeout is expected in some cases - trust the callback status
             if (esewaError.response?.status === 404) {
-                console.warn('⚠️ eSewa API returned 404 - transaction may not be indexed yet. Trusting callback status.');
+                console.warn(' eSewa API returned 404 - transaction may not be indexed yet. Trusting callback status.');
             } else if (esewaError.code === 'ECONNABORTED') {
-                console.warn('⚠️ eSewa API verification timed out. Trusting callback status.');
+                console.warn(' eSewa API verification timed out. Trusting callback status.');
             } else {
-                console.warn(`⚠️ eSewa API verification error: ${esewaError.message}. Trusting callback status.`);
+                console.warn(` eSewa API verification error: ${esewaError.message}. Trusting callback status.`);
             }
         }
 
         // Step 8: Prevent overpayment (security check)
-        console.log(`💰 Checking for overpayment. Current: ${bill.paidAmount}, Payment: ${payment.amount}, Total: ${bill.totalAmount}`);
+        console.log(` Checking for overpayment. Current: ${bill.paidAmount}, Payment: ${payment.amount}, Total: ${bill.totalAmount}`);
         const newPaidAmount = bill.paidAmount + payment.amount;
 
         if (newPaidAmount > bill.totalAmount) {
-            console.error(`❌ Overpayment detected! Would total: ${newPaidAmount}, Bill: ${bill.totalAmount}`);
+            console.error(` Overpayment detected! Would total: ${newPaidAmount}, Bill: ${bill.totalAmount}`);
             payment.status = 'FAILED';
             payment.failedAt = new Date();
             payment.failureReason = 'Payment would exceed total bill amount';
@@ -557,7 +754,7 @@ const verifyPayment = async (req, res) => {
         }
 
         // Step 9: Mark payment as successful
-        console.log('✅ Marking payment as SUCCESS');
+        console.log(' Marking payment as SUCCESS');
         payment.status = 'SUCCESS';
         payment.paidAt = new Date();
         if (transaction_code) {
@@ -568,47 +765,49 @@ const verifyPayment = async (req, res) => {
             };
         }
         await payment.save();
-        console.log('✓ Payment record updated successfully');
+        console.log(' Payment record updated successfully');
 
         // Step 10: Update bill status
-        console.log('📝 Updating bill record');
+        console.log(' Updating bill record');
         bill.paidAmount = newPaidAmount;
         bill.remainingAmount = bill.totalAmount - bill.paidAmount;
 
         if (bill.paidAmount >= bill.totalAmount) {
             bill.status = 'PAID';
             bill.qrActive = false;
-            console.log('🎉 Bill fully paid! Deactivating QR code');
+            console.log(' Bill fully paid! Deactivating QR code');
         } else {
-            console.log(`📊 Partial payment. Remaining: ${bill.remainingAmount}`);
+            console.log(` Partial payment. Remaining: ${bill.remainingAmount}`);
         }
 
         await bill.save();
-        console.log('✓ Bill record updated successfully');
+        console.log(' Bill record updated successfully');
 
         // Step 11: Success response
         const processingTime = Date.now() - startTime;
-        console.log(`\n✅ PAYMENT PROCESSING COMPLETE (${processingTime}ms)`);
+        console.log(`\n PAYMENT PROCESSING COMPLETE (${processingTime}ms)`);
         console.log('='.repeat(60) + '\n');
 
-        return res.status(200).json({
+        return sendSuccessReceiptResponse(req, res, {
             success: true,
             message: 'Payment verified and processed successfully',
             data: {
                 transaction_uuid,
                 transaction_code,
                 billId: bill._id.toString(),
+                amountPaid: payment.amount,
                 totalAmount: bill.totalAmount,
                 paidAmount: bill.paidAmount,
                 remainingAmount: bill.remainingAmount,
                 billStatus: bill.status,
+                paidAt: payment.paidAt,
                 processingTimeMs: processingTime
             }
         });
 
     } catch (error) {
         const processingTime = Date.now() - startTime;
-        console.error(`\n❌ PAYMENT PROCESSING FAILED (${processingTime}ms)`);
+        console.error(`\nPAYMENT PROCESSING FAILED (${processingTime}ms)`);
         console.error('Error:', error.message);
         console.error('Stack:', error.stack);
         console.error('='.repeat(60) + '\n');
@@ -622,7 +821,7 @@ const verifyPayment = async (req, res) => {
                 await payment.save();
             }
         } catch (updateError) {
-            console.error('⚠️ Could not update payment status on error:', updateError.message);
+            console.error('Could not update payment status on error:', updateError.message);
         }
 
         return res.status(500).json({
@@ -694,18 +893,40 @@ const getPayment = async (req, res) => {
     }
 };
 
+// List all successful split payments for admin reports
+const getSplitPayments = async (req, res) => {
+    try {
+        const payments = await paymentModel
+            .find({ status: 'SUCCESS' })
+            .populate('billId', 'tableNumber totalAmount paidAmount remainingAmount status')
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            data: payments
+        });
+    } catch (error) {
+        console.error('Error fetching split payments:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching split payments',
+            error: error.message
+        });
+    }
+};
+
 // PAYMENT FAILURE HANDLER - GET /api/payment/bill/failure
 const handlePaymentFailure = async (req, res) => {
     try {
         console.log('\n' + '='.repeat(60));
-        console.log('❌ ESEWA PAYMENT FAILURE CALLBACK RECEIVED');
+        console.log('ESEWA PAYMENT FAILURE CALLBACK RECEIVED');
         console.log('='.repeat(60));
         console.log('Query Params:', req.query);
 
-        const { transaction_uuid } = req.query;
+        const transaction_uuid = extractFailureTransactionUuid(req.query);
 
         if (!transaction_uuid) {
-            console.error('❌ No transaction UUID found');
+            console.error(' No transaction UUID found');
             return res.status(400).json({
                 success: false,
                 message: 'Transaction UUID is required'
@@ -720,9 +941,9 @@ const handlePaymentFailure = async (req, res) => {
             payment.failedAt = new Date();
             payment.failureReason = 'Payment cancelled or rejected by eSewa';
             await payment.save();
-            console.log('📝 Payment marked as FAILED:', transaction_uuid);
+            console.log('Payment marked as FAILED:', transaction_uuid);
         } else {
-            console.warn('⚠️ Payment record not found for transaction:', transaction_uuid);
+            console.warn('Payment record not found for transaction:', transaction_uuid);
         }
 
         console.log('='.repeat(60) + '\n');
@@ -787,5 +1008,6 @@ export {
     getAllBills,
     getBillPayments,
     getPayment,
+    getSplitPayments,
     closeBill
 };

@@ -60,7 +60,7 @@ app.use("/api/reservation", reservationRouter);
 app.use("/api/bills", billRouter);
 app.use("/api/esewa-test", esewaTestRouter);
 
-// ⚠️ WALK-IN ROUTES (DINE-IN / QR-BASED SPLIT PAYMENTS)
+// WALK-IN ROUTES (DINE-IN / QR-BASED SPLIT PAYMENTS)
 // Keep separate from online order flows
 app.use("/api/walkin", walkInRouter);
 
@@ -81,7 +81,7 @@ app.get("/", (req, res) => {
 // Start server with Socket.IO - wait a bit for DB connection to establish
 setTimeout(() => {
   server.listen(port, () => {
-    console.log(`✅ Server running on http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
   });
 }, 2000);
 

@@ -1,6 +1,9 @@
 .drivers-container {
-    padding: 20px;
-    background: #f8fafc;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 32px;
+    background: var(--bg);
     min-height: 100vh;
 }
 
@@ -8,34 +11,38 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
 }
 
 .drivers-header h1 {
-    font-size: 28px;
-    color: #0f172a;
+    font-size: 32px;
+    color: var(--text);
     margin: 0;
     font-weight: 700;
+    letter-spacing: -0.01em;
+    font-family: var(--display-font, 'Sora', sans-serif);
 }
 
 .add-driver-btn {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: var(--brand);
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 10px;
+    padding: 12px 20px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+    white-space: nowrap;
 }
 
 .add-driver-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.32);
 }
 
 .add-driver-btn:active {
@@ -43,12 +50,12 @@
 }
 
 .driver-form-wrapper {
-    background: white;
+    background: var(--surface);
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
     margin-bottom: 30px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
 }
 
 .driver-form {
@@ -58,7 +65,7 @@
 .driver-form h2 {
     font-size: 20px;
     margin-bottom: 20px;
-    color: #0f172a;
+    color: var(--text);
     font-weight: 700;
 }
 
@@ -71,35 +78,35 @@
 .form-group label {
     margin-bottom: 5px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text);
     font-size: 14px;
 }
 
 .form-group input {
     padding: 12px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
     border-radius: 10px;
     font-size: 14px;
     font-family: inherit;
     transition: all 0.2s ease;
-    background: #f8fafc;
-    color: #0f172a;
+    background: var(--surface);
+    color: var(--text);
 }
 
 .form-group input:hover {
-    border-color: #38bdf8;
+    border-color: var(--accent);
     background: #ffffff;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--brand);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     background: #ffffff;
 }
 
 .submit-btn {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: var(--brand);
     color: white;
     padding: 12px 24px;
     border: none;
@@ -115,7 +122,7 @@
 
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -129,84 +136,111 @@
 }
 
 .drivers-list {
-    background: white;
-    padding: 20px;
+    background: var(--surface);
+    padding: 22px;
     border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    border: 1px solid var(--line);
 }
 
 .drivers-list h2 {
     font-size: 20px;
     margin-bottom: 20px;
-    color: #0f172a;
+    color: var(--text);
     font-weight: 700;
 }
 
 .no-drivers {
     text-align: center;
-    color: #999;
+    color: var(--muted);
     padding: 40px 20px;
     font-size: 14px;
+}
+
+.drivers-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
 }
 
 .drivers-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 720px;
 }
 
 .drivers-table thead {
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background: rgba(37, 99, 235, 0.05);
+    border-bottom: 1px solid var(--line);
 }
 
 .drivers-table th {
-    padding: 12px;
+    padding: 14px 16px;
     text-align: left;
     font-weight: 600;
-    color: #0f172a;
-    font-size: 14px;
+    color: var(--text);
+    font-size: 13px;
+    letter-spacing: 0.01em;
 }
 
 .drivers-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
     font-size: 14px;
-    color: #0f172a;
+    color: var(--text);
+    vertical-align: middle;
 }
 
 .drivers-table tbody tr:hover {
-    background: #f9f9f9;
+    background: rgba(56, 189, 248, 0.06);
 }
 
-.status {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.status.online {
-    background: #c8e6c9;
-    color: #2e7d32;
-}
-
-.status.offline {
-    background: #efefef;
-    color: #999;
+.driver-action-cell {
+    width: 120px;
 }
 
 .delete-btn {
-    background: #f44336;
+    background: #dc2626;
     color: white;
     border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
+    padding: 8px 14px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
-    transition: background 0.3s;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .delete-btn:hover {
-    background: #d32f2f;
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+    .drivers-container {
+        padding: 24px;
+    }
+
+    .drivers-header h1 {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 768px) {
+    .drivers-container {
+        padding: 18px;
+    }
+
+    .drivers-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .add-driver-btn {
+        width: 100%;
+    }
+
+    .driver-form-wrapper,
+    .drivers-list {
+        padding: 16px;
+    }
 }

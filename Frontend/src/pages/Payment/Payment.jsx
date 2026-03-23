@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import './Payment.css';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBill, initiateEsewaPayment } from '../../services/billService';
+import { getBill, initiateEsewaPayment, getBillPayments } from '../../services/billService';
 
 const Payment = () => {
     const { billId } = useParams();
     const navigate = useNavigate();
     const [bill, setBill] = useState(null);
+    const [customerName, setCustomerName] = useState('');
     const [paymentAmount, setPaymentAmount] = useState('');
     const [loading, setLoading] = useState(true);
     const [paying, setPaying] = useState(false);
     const [error, setError] = useState('');
+    const [paymentHistory, setPaymentHistory] = useState([]);
+    const [showHistoryDetails, setShowHistoryDetails] = useState(false);
 
     useEffect(() => {
-        const fetchBill = async () => {
+        const fetchBillAndPayments = async () => {
             try {
-                const response = await getBill(billId);
-                setBill(response);
+                const [billResponse, paymentsResponse] = await Promise.all([
+                    getBill(billId),
+                    getBillPayments(billId)
+                ]);
+
+                setBill(billResponse);
+                setPaymentHistory(Array.isArray(paymentsResponse?.data) ? paymentsResponse.data : []);
                 setError('');
             } catch (err) {
                 setError(err.message || 'Error loading bill');
@@ -25,15 +33,20 @@ const Payment = () => {
             }
         };
 
-        fetchBill();
+        fetchBillAndPayments();
 
         // Refresh bill status every 5 seconds
-        const interval = setInterval(fetchBill, 5000);
+        const interval = setInterval(fetchBillAndPayments, 5000);
         return () => clearInterval(interval);
     }, [billId]);
 
     const handlePaymentSubmit = async (e) => {
         e.preventDefault();
+
+        if (!customerName.trim()) {
+            setError('Please enter your name');
+            return;
+        }
 
         if (!paymentAmount) {
             setError('Please enter payment amount');
@@ -56,7 +69,7 @@ const Payment = () => {
         setError('');
 
         try {
-            const response = await initiateEsewaPayment(billId, amount);
+            const response = await initiateEsewaPayment(billId, amount, customerName);
 
             if (response.paymentEndpoint && response.signature) {
                 // Create form and submit to eSewa
@@ -142,6 +155,8 @@ const Payment = () => {
         );
     }
 
+    const successfulPayments = paymentHistory.filter((payment) => payment.status === 'SUCCESS');
+
     return (
         <div className="payment-wrapper">
             <div className="payment-container">
@@ -188,26 +203,81 @@ const Payment = () => {
                         </div>
                     </div>
 
+                    <div className="payment-history">
+                        <div className="history-header">
+                            <h3 className="history-title">Paid Amount History</h3>
+                            <div className="history-meta">
+                                <span className="history-count">{successfulPayments.length} payment(s)</span>
+                                <button
+                                    type="button"
+                                    className="history-toggle"
+                                    onClick={() => setShowHistoryDetails((prev) => !prev)}
+                                >
+                                    {showHistoryDetails ? 'Hide' : 'View'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {!showHistoryDetails ? (
+                            <p className="history-empty">Payment details are hidden. Click View to see.</p>
+                        ) : successfulPayments.length === 0 ? (
+                            <p className="history-empty">No completed payments yet.</p>
+                        ) : (
+                            <div className="history-list">
+                                {successfulPayments.map((payment, index) => (
+                                    <div
+                                        key={payment._id || `${payment.transactionId}-${index}`}
+                                        className="history-item"
+                                    >
+                                        <div className="history-person">
+                                            <span className="history-name">{payment.customerName || 'Guest'}</span>
+                                            <span className="history-time">
+                                                {new Date(payment.paidAt || payment.createdAt).toLocaleString('en-NP', { hour12: true })}
+                                            </span>
+                                        </div>
+                                        <span className="history-amount">NPR {Number(payment.amount || 0).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Payment Form */}
                     {error && <div className="error-message">{error}</div>}
 
                     <form onSubmit={handlePaymentSubmit} className="payment-form">
                         <div className="form-group">
+                            <label htmlFor="name">Your Name</label>
+                            <input
+                                id="name"
+                                type="text"
+                                value={customerName}
+                                onChange={(e) => {
+                                    setCustomerName(e.target.value);
+                                    setError('');
+                                }}
+                                placeholder="Enter your full name"
+                                disabled={paying}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
                             <label htmlFor="amount">Enter Payment Amount</label>
                             <div className="input-wrapper">
-                                <span className="currency">NPR</span>
+                                <span className="currency">Rs: </span>
                                 <input
                                     id="amount"
                                     type="number"
-                                    min="0.01"
-                                    step="0.01"
+                                    min="10"
+                                    step="10"
                                     max={bill.remainingAmount}
                                     value={paymentAmount}
                                     onChange={(e) => {
                                         setPaymentAmount(e.target.value);
                                         setError('');
                                     }}
-                                    placeholder={`Max: ${bill.remainingAmount}`}
+                                    placeholder={`${bill.remainingAmount}`}
                                     disabled={paying}
                                 />
                             </div>
@@ -236,7 +306,7 @@ const Payment = () => {
 
                         <button
                             type="submit"
-                            disabled={paying || !paymentAmount}
+                            disabled={paying || !paymentAmount || !customerName.trim()}
                             className="btn-pay"
                         >
                             {paying ? 'Redirecting...' : 'Proceed to Payment'}
@@ -245,7 +315,7 @@ const Payment = () => {
 
                     {/* Info Box */}
                     <div className="info-box">
-                        <div className="info-icon">ℹ️</div>
+                        <div className="info-icon"></div>
                         <div className="info-content">
                             <p className="info-title">Share Your Payment Link</p>
                             <p className="info-text">Multiple customers can split this bill. Share the payment link with others to collect payments.</p>

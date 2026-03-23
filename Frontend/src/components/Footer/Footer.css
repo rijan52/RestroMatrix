@@ -1,29 +1,29 @@
 .footer {
-    color: #0f172a;
-    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #eff6ff 100%);
+    color: #1e293b;
+    background: #eaf2f9;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 45px 8vw 28px;
-    margin-top: 80px;
+    gap: 14px;
+    padding: 52px 8vw 26px;
+    margin-top: 90px;
     border-radius: 26px 26px 0 0;
-    border-top: 2px solid #bae6fd;
-    box-shadow: inset 0 1px 0 0 rgba(37, 99, 235, 0.1);
+    border-top: 1px solid #c8d9ea;
 }
 
 .footer-content {
     width: 100%;
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
-    gap: 60px;
+    gap: 72px;
+    max-width: 1200px;
 }
 
 .footer-content-left {
     display: flex;
     flex-direction: column;
     align-items: start;
-    gap: 18px;
+    gap: 16px;
 }
 
 .footer-content-left h3 {
@@ -38,95 +38,121 @@
     display: flex;
     flex-direction: column;
     align-items: start;
-    gap: 14px;
+    gap: 10px;
+}
+
+.footer-content-right ul,
+.footer-content-center ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .footer-content-left li,
 .footer-content-right li,
 .footer-content-center li {
     list-style: none;
-    margin-bottom: 4px;
-    cursor: pointer;
-    color: #475569;
-    font-size: 14px;
+    margin-bottom: 8px;
+    color: #45586d;
+    font-size: 15px;
     font-weight: 500;
-    transition: all 0.2s ease;
 }
 
-.footer-content-left li:hover,
-.footer-content-right li:hover,
-.footer-content-center li:hover {
-    color: #2563eb;
-    transform: translateX(4px);
+.footer-content-right a,
+.footer-content-center a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-content-right a:hover,
+.footer-content-center a:hover {
+    color: #0b66c3;
 }
 
 .footer-content-right h2,
 .footer-content-center h2 {
-    color: #0f172a;
-    font-size: 14px;
-    letter-spacing: 0.1em;
+    color: #1e293b;
+    font-size: 20px;
+    letter-spacing: 0.08em;
     font-weight: 700;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
 .footer-content-left p {
-    color: #475569;
-    line-height: 1.7;
-    font-size: 14px;
-    max-width: 340px;
+    color: #45586d;
+    line-height: 1.65;
+    font-size: 16px;
+    max-width: 520px;
 }
 
 .footer-content-left img {
-    width: 120px;
+    width: 170px;
 }
 
 .footer-social-icon {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-top: 6px;
 }
 
-.footer-social-icon img {
-    width: 36px;
-    height: 36px;
-    padding: 6px;
+.footer-social-icon a {
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: #e0f2fe;
-    border: 1px solid #bae6fd;
-    transition: all 0.2s ease;
+    background: #e0ebf6;
+    border: 1px solid #c8d9ea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.footer-social-icon img:hover {
-    transform: translateY(-3px) scale(1.08);
-    background: #38bdf8;
-    border-color: #38bdf8;
-    box-shadow: 0 6px 14px rgba(56, 189, 248, 0.3);
+.footer-social-icon img {
+    width: 22px;
+    height: 22px;
+}
+
+.footer-social-icon a:hover {
+    transform: translateY(-2px);
+    background: #d9e9f8;
+    border-color: #b8cee5;
 }
 
 .footer hr {
     width: 100%;
     height: 1px;
     margin: 24px 0 16px;
-    background: linear-gradient(to right, transparent, #bae6fd, transparent);
+    background: linear-gradient(to right, transparent, #c8d9ea, transparent);
     border: none;
 }
 
 .footer-copyright {
-    color: #64748b;
-    font-size: 13px;
+    color: #5f7388;
+    font-size: 14px;
     font-weight: 500;
 }
 
 @media (max-width: 750px) {
     .footer {
         border-radius: 18px 18px 0 0;
+        padding-top: 36px;
     }
 
     .footer-content {
         display: flex;
         flex-direction: column;
         gap: 28px;
+    }
+
+    .footer-content-left p {
+        max-width: 100%;
+    }
+
+    .footer-content-right h2,
+    .footer-content-center h2 {
+        margin-bottom: 4px;
     }
 
     .footer-copyright {

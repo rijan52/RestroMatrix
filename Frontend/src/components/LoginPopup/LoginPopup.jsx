@@ -2,15 +2,16 @@ import React, { useState } from 'react'
 import './LoginPopup.css'
 import assets from '../../assets/assets'
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
 
 
 
-const LoginPopup = ({ setShowLogin }) => {
+const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
 
   const navigate = useNavigate()
+  const location = useLocation()
   const { url, setToken, setRole } = useContext(StoreContext)
   const [currState, setCurrState] = useState("Login")
   const [data, setData] = useState({
@@ -18,6 +19,8 @@ const LoginPopup = ({ setShowLogin }) => {
     email: "",
     password: ""
   })
+  const [passwordError, setPasswordError] = useState("")
+  const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
 
 
   const onChangeHandler = (event) => {
@@ -27,10 +30,19 @@ const LoginPopup = ({ setShowLogin }) => {
       ...data,
       [name]: value
     }))
+    if (name === 'password') {
+      setPasswordError('')
+    }
   }
 
   const onLogin = async (event) => {
     event.preventDefault()
+
+    if (!strongPasswordPattern.test(data.password)) {
+      setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.')
+      return
+    }
+
     let newUrl = url;
     if (currState === "Login") {
       newUrl += "/api/customer/login"
@@ -49,11 +61,26 @@ const LoginPopup = ({ setShowLogin }) => {
       setRole(userRole);
       localStorage.setItem("role", userRole)
 
-      setShowLogin(false);
-
       // Redirect driver to driver dashboard
       if (userRole === "driver") {
         navigate("/driver-dashboard");
+        return;
+      }
+
+      const redirectTo = location.state?.redirectTo || localStorage.getItem('postLoginRedirect')
+      if (redirectTo) {
+        localStorage.removeItem('postLoginRedirect')
+        navigate(redirectTo)
+        if (setShowLogin) {
+          setShowLogin(false)
+        }
+        return
+      }
+
+      if (isPageMode) {
+        navigate('/')
+      } else if (setShowLogin) {
+        setShowLogin(false)
       }
     }
     else {
@@ -67,12 +94,36 @@ const LoginPopup = ({ setShowLogin }) => {
       <form onSubmit={onLogin} action="" className="login-popup-container">
         <div className='login-popup-title'>
           <h2>{currState}</h2>
-          <img onClick={() => setShowLogin(false)} src={assets.crossIcon} alt="" />
+          <img
+            onClick={() => {
+              if (isPageMode) {
+                navigate('/')
+                return
+              }
+              if (setShowLogin) {
+                setShowLogin(false)
+              }
+            }}
+            src={assets.crossIcon}
+            alt=""
+          />
         </div>
         <div className="login-popup-inputs">
           {currState === "Login" ? <></> : <input name='name' onChange={onChangeHandler} value={data.name} type="text" placeholder='Your name' required />}
           <input name='email' onChange={onChangeHandler} value={data.email} type="email" placeholder='Your email' required />
-          <input name='password' onChange={onChangeHandler} value={data.password} type="password" placeholder='Password' required />
+          <input
+            name='password'
+            onChange={onChangeHandler}
+            value={data.password}
+            type="password"
+            placeholder='Password'
+            required
+            minLength={8}
+            pattern='(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}'
+            title='Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+          />
+          <p className='password-hint'>Use 8+ chars with uppercase, lowercase, number, and special character.</p>
+          {passwordError && <p className='password-error'>{passwordError}</p>}
         </div>
         <button type='submit'>{currState === "Sign Up" ? "Create account" : "Login"}</button>
         <div className="login-popup-condition">

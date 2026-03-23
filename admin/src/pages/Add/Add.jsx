@@ -11,6 +11,8 @@ const Add = ({ url }) => {
     const [editMode, setEditMode] = useState(false);
     const [editId, setEditId] = useState(null);
     const [originalImage, setOriginalImage] = useState(null);
+    const [categories, setCategories] = useState([]);
+
     const [data, setData] = useState({
         name: "",
         description: "",
@@ -37,6 +39,26 @@ const Add = ({ url }) => {
             localStorage.removeItem('editFood');
         }
     }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [url]);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get(`${url}/api/food/category/list`);
+            if (response.data.success) {
+                setCategories(response.data.data);
+                // If no data.category is set, use the first category
+                if (!data.category && response.data.data.length > 0) {
+                    setData(prev => ({ ...prev, category: response.data.data[0].name }));
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+
 
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
@@ -202,14 +224,24 @@ const Add = ({ url }) => {
                             value={data.category}
                             onChange={onChangeHandler}
                         >
-                            <option value="Appetizer">Appetizer</option>
-                            <option value="Fried Items">Fried Items</option>
-                            <option value="Noodles">Noodles</option>
-                            <option value="Chilly Items">Chilly Items</option>
-                            <option value="Cheesy">Cheesy</option>
-                            <option value="Main Course">Main Course</option>
-                            <option value="Salad">Salad</option>
-                            <option value="Desert">Desert</option>
+                            {categories.length > 0 ? (
+                                categories.map((cat, index) => (
+                                    <option key={cat._id || index} value={cat.name}>
+                                        {cat.name}
+                                    </option>
+                                ))
+                            ) : (
+                                <>
+                                    <option value="Appetizer">Appetizer</option>
+                                    <option value="Fried Items">Fried Items</option>
+                                    <option value="Noodles">Noodles</option>
+                                    <option value="Chilly Items">Chilly Items</option>
+                                    <option value="Cheesy">Cheesy</option>
+                                    <option value="Main Course">Main Course</option>
+                                    <option value="Salad">Salad</option>
+                                    <option value="Desert">Desert</option>
+                                </>
+                            )}
                         </select>
                     </div>
 

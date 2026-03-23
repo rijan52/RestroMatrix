@@ -65,7 +65,7 @@ const placeOrder = async (req, res) => {
         }
 
         // Calculate order totals
-        const deliveryFeeNpr = 2
+        const deliveryFeeNpr = 150
         const totals = calculateOrderTotals(req.body.items, deliveryFeeNpr)
 
         if (totals.totalAmount < MIN_CHARGE_NPR) {
@@ -89,7 +89,7 @@ const placeOrder = async (req, res) => {
         // Clear user's cart
         await customerModel.findByIdAndUpdate(req.userId, { cartData: {} })
 
-        console.log('✅ Order placed successfully:');
+        console.log('Order placed successfully:');
         console.log('Order ID:', newOrder._id);
         console.log('Items Total:', totals.itemsTotal);
         console.log('Delivery Fee:', totals.deliveryFee);
@@ -176,13 +176,13 @@ const paymentSuccess = async (req, res) => {
                 total_amount = paymentData.total_amount;
                 transaction_code = paymentData.transaction_code;
 
-                console.log("✓ Decoded from embedded data:");
+                console.log("Decoded from embedded data:");
                 console.log("  Transaction UUID:", transaction_uuid);
                 console.log("  Status:", status);
                 console.log("  Total Amount:", total_amount);
                 console.log("  Transaction Code:", transaction_code);
             } catch (decodeError) {
-                console.error("❌ Failed to decode embedded data:", decodeError.message);
+                console.error("Failed to decode embedded data:", decodeError.message);
                 return res.json({ success: false, message: "Failed to decode payment data" });
             }
         }
@@ -199,19 +199,19 @@ const paymentSuccess = async (req, res) => {
                 total_amount = paymentData.total_amount;
                 transaction_code = paymentData.transaction_code;
 
-                console.log("✓ Decoded from data parameter:");
+                console.log(" Decoded from data parameter:");
                 console.log("  Transaction UUID:", transaction_uuid);
                 console.log("  Status:", status);
                 console.log("  Total Amount:", total_amount);
                 console.log("  Transaction Code:", transaction_code);
             } catch (decodeError) {
-                console.error("❌ Failed to decode data parameter:", decodeError.message);
+                console.error("Failed to decode data parameter:", decodeError.message);
                 return res.json({ success: false, message: "Failed to decode payment data" });
             }
         }
         // Case 3: Fallback to direct query parameters
         else {
-            console.log("✓ Using direct query parameters");
+            console.log("Using direct query parameters");
             transaction_uuid = transaction_uuid_raw;
             status = req.query.status;
             total_amount = req.query.total_amount;
@@ -226,7 +226,7 @@ const paymentSuccess = async (req, res) => {
         console.log("================================\n");
 
         if (!transaction_uuid) {
-            console.error("❌ No transaction UUID found in query params or data");
+            console.error("No transaction UUID found in query params or data");
             console.error("Query params were:", req.query);
             return res.json({ success: false, message: "Payment not found" });
         }
@@ -235,14 +235,14 @@ const paymentSuccess = async (req, res) => {
         let order = await orderModel.findOne({ esewaTransactionId: transaction_uuid });
 
         if (!order) {
-            console.error("❌ Order not found for transaction UUID:", transaction_uuid);
+            console.error("Order not found for transaction UUID:", transaction_uuid);
             console.error("Searching with transaction_uuid:", transaction_uuid);
             return res.json({ success: false, message: "Payment not found" });
         }
 
         // Check if already paid
         if (order.payment === true) {
-            console.log("⚠️ Order already marked as paid");
+            console.log("Order already marked as paid");
             return res.json({ success: true, message: "Payment already processed" });
         }
 
@@ -250,7 +250,7 @@ const paymentSuccess = async (req, res) => {
         const validStatus = status === "COMPLETE" || status === "Completed" || status === "COMPLETE";
 
         if (!validStatus) {
-            console.error("❌ Invalid payment status:", status);
+            console.error("Invalid payment status:", status);
             order.payment = false;
             order.paymentStatus = "failed";
             await order.save();
@@ -264,7 +264,7 @@ const paymentSuccess = async (req, res) => {
         order.esewaTransactionId = transaction_uuid;
         await order.save();
 
-        console.log("✅ Order marked as paid:", transaction_uuid);
+        console.log("Order marked as paid:", transaction_uuid);
 
         // Redirect to frontend order page with transaction UUID
         const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -287,7 +287,7 @@ const paymentFailure = async (req, res) => {
 
         // Case 1: Data is embedded in transaction_uuid as ?data=BASE64
         if (transaction_uuid_raw && transaction_uuid_raw.includes('?data=')) {
-            console.log("✓ Detected embedded data in transaction_uuid");
+            console.log("Detected embedded data in transaction_uuid");
             const [cleanUuid, encodedData] = transaction_uuid_raw.split('?data=');
             transaction_uuid = cleanUuid;
 
@@ -302,7 +302,7 @@ const paymentFailure = async (req, res) => {
         }
         // Case 2: Data is in separate 'data' query parameter
         else if (req.query.data) {
-            console.log("✓ Detected separate data parameter");
+            console.log(" Detected separate data parameter");
             transaction_uuid = transaction_uuid_raw;
 
             try {
@@ -448,13 +448,13 @@ const getDriverAssignedOrders = async (req, res) => {
             status: { $in: ["Confirmed", "Out for delivery"] }
         }).sort({ date: -1 })
 
-        // ✅ Add driverId to each order for socket communication
+        // Add driverId to each order for socket communication
         const ordersWithDriver = orders.map(order => ({
             ...order.toObject(),
             driverId: req.userId  // Include driver ID for socket emit
         }))
 
-        console.log(`✅ Fetched ${ordersWithDriver.length} assigned orders for driver ${req.userId}`)
+        console.log(`Fetched ${ordersWithDriver.length} assigned orders for driver ${req.userId}`)
         res.json({ success: true, data: ordersWithDriver })
     } catch (error) {
         console.log(error)
@@ -537,15 +537,15 @@ const initiateEsewaPaymentOrder = async (req, res) => {
             })
             .join(",")
 
-        console.log("🔐 Signature Data:", signatureData)
-        console.log("📦 eSewa Payload:", payload)
+        console.log("Signature Data:", signatureData)
+        console.log(" eSewa Payload:", payload)
 
         const signature = crypto
             .createHmac("sha256", esewaConfig.secretKey)
             .update(signatureData)
             .digest("base64")
 
-        console.log("✓ Generated Signature:", signature)
+        console.log("Generated Signature:", signature)
 
         // Update order with transaction ID for later verification
         order.esewaTransactionId = transactionId

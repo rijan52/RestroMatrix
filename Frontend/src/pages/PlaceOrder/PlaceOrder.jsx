@@ -82,7 +82,7 @@ const PlaceOrder = () => {
         }
       })
 
-      const totalAmount = getTotalCartAmount() + 2;
+      const totalAmount = getTotalCartAmount() + 150;
 
       let orderData = {
         address: data,
@@ -90,27 +90,27 @@ const PlaceOrder = () => {
         amount: totalAmount,
       }
 
-      console.log('📦 Placing order with data:', orderData);
+      console.log('Placing order with data:', orderData);
 
       let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
 
       if (response.data.success) {
-        console.log('✅ Order placed successfully:', response.data.orderId);
+        console.log('Order placed successfully:', response.data.orderId);
 
         // Order placed successfully, now initiate eSewa payment
         const orderId = response.data.orderId;
 
         try {
-          console.log('💳 Initiating eSewa payment for order:', orderId);
+          console.log('Initiating eSewa payment for order:', orderId);
           const paymentData = await initiateOrderPayment(orderId, totalAmount, token);
 
-          console.log('✅ Payment initiated successfully');
+          console.log('Payment initiated successfully');
 
           // Submit eSewa form
           submitEsewaForm(paymentData);
 
         } catch (paymentError) {
-          console.error('❌ Payment initiation failed:', paymentError);
+          console.error('Payment initiation failed:', paymentError);
           setError(paymentError.message || "Error initiating payment. Please try again.");
           setLoading(false)
           alert("Order placed but payment initiation failed. Error: " + (paymentError.message || "Unknown error"))
@@ -169,12 +169,12 @@ const PlaceOrder = () => {
             <hr />
             <div className="cart-total-details">
               <p>Delivery Fee</p>
-              <p>Rs{getTotalCartAmount() === 0 ? 0 : 2}</p>
+              <p>Rs {getTotalCartAmount() === 0 ? 0 : 150}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <b>Total</b>
-              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b>
+              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 150}</b>
 
             </div>
           </div>

@@ -240,7 +240,11 @@ const Orders = ({ url }) => {
             <div className="order-status-container">
               <select
                 onChange={(e) => statusHandler(e, order)}
-                value={pendingStatuses[order._id] || order.status}
+                value={
+                  (Boolean(order.tableNumber) || order.source === "walkin")
+                    ? ((pendingStatuses[order._id] || order.status) === "closed" ? "closed" : "active")
+                    : (pendingStatuses[order._id] || order.status)
+                }
               >
                 {(() => {
                   const isWalkIn = Boolean(order.tableNumber) || order.source === "walkin";
@@ -248,9 +252,7 @@ const Orders = ({ url }) => {
                     return (
                       <>
                         <option value="active">Active</option>
-                        <option value="awaiting_payment">Awaiting Payment</option>
-                        <option value="fully_paid">Fully Paid</option>
-                        <option value="closed">Closed</option>
+                        <option value="closed">Completed</option>
                       </>
                     );
                   } else {

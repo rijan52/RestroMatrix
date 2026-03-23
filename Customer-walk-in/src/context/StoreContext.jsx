@@ -61,7 +61,7 @@ const StoreContextProvider = ({ children }) => {
                 const item = foodList.find((food) => food._id === itemId);
                 if (!item) return null;
                 return {
-                    menuId: item._id,
+                    foodId: item._id,
                     name: item.name,
                     price: item.price,
                     quantity: qty

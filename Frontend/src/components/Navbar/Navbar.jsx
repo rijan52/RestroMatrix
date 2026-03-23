@@ -1,15 +1,20 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import assets from "../../assets/assets";
 import './Navbar.css'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
-  const [menu, setMenu] = useState("menu")
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef(null)
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext)
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -35,10 +40,10 @@ const Navbar = ({ setShowLogin }) => {
     <div className='navbar'>
       <Link to='/'> <img src={assets.logo} alt="" className="logo" /> </Link>
       <ul className="navbar-menu">
-        <Link to='/' onClick={() => setMenu("home")} className={menu === "home" ? "active" : ""}>Home</Link>
-        <Link to='/menu' onClick={() => setMenu("menu")} className={menu === "menu" ? "active" : ""}>Menu</Link>
-        <Link to='/reservation' onClick={() => setMenu("reservation")} className={menu === "reservation" ? "active" : ""}>Reservation</Link>
-        <Link to='/contact' onClick={() => setMenu("contact-us")} className={menu === "contact-us" ? "active" : ""}>Contact us</Link>
+        <Link to='/' className={isActive('/') ? 'active' : ''}>Home</Link>
+        <Link to='/menu' className={isActive('/menu') ? 'active' : ''}>Menu</Link>
+        <Link to='/reservation' className={isActive('/reservation') ? 'active' : ''}>Reservation</Link>
+        <Link to='/contact' className={isActive('/contact') ? 'active' : ''}>Contact us</Link>
 
       </ul>
 

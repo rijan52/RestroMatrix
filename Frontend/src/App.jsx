@@ -28,6 +28,18 @@ const ProtectedDriverRoute = ({ children }) => {
   return children;
 };
 
+const ProtectedCheckoutRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const location = useLocation();
+
+  if (!token || role === "driver") {
+    return <Navigate to="/login" replace state={{ redirectTo: location.pathname }} />;
+  }
+
+  return children;
+};
+
 const App = () => {
   const [showLogin, setShowLogin] = useState(false)
   const [isDriverLoggedIn, setIsDriverLoggedIn] = useState(false)
@@ -41,17 +53,19 @@ const App = () => {
   const isDriverPage = location.pathname === "/driver-tracking"
   const isTrackingPage = location.pathname === "/live-tracking"
   const isPaymentPage = location.pathname.startsWith("/pay/") || location.pathname.startsWith("/payment/")
+  const isLoginPage = location.pathname === "/login"
 
   return (
     <>
       {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <div className="app">
-        {!isDriverPage && !isTrackingPage && !isPaymentPage && <Navbar setShowLogin={setShowLogin} />}
+        {!isDriverPage && !isTrackingPage && !isPaymentPage && !isLoginPage && <Navbar setShowLogin={setShowLogin} />}
 
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPopup isPageMode={true} />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/order" element={<PlaceOrder />} />
+          <Route path="/order" element={<ProtectedCheckoutRoute><PlaceOrder /></ProtectedCheckoutRoute>} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/myorders" element={<MyOrders />} />
@@ -65,7 +79,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        {!isDriverPage && !isTrackingPage && !isPaymentPage && <Footer />}
+        {!isDriverPage && !isTrackingPage && !isPaymentPage && !isLoginPage && <Footer />}
       </div>
     </>
   );

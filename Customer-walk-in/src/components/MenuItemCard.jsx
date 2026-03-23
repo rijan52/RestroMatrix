@@ -13,7 +13,7 @@ const MenuItemCard = ({ item }) => {
                 <p>{item.description}</p>
             </div>
             <div className="price-row">
-                <span className="price">${item.price.toFixed(2)}</span>
+                <span className="price">Rs {item.price.toFixed(2)}</span>
                 {quantity === 0 ? (
                     <button className="primary-btn" onClick={() => addToCart(item._id)}>
                         Add

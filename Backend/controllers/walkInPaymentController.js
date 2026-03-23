@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import walkInSessionModel from "../models/walkInSessionModel.js";
 
 /**
- * ⚠️ WALK-IN PAYMENT CONTROLLER
+ *  WALK-IN PAYMENT CONTROLLER
  * Handles split payments for QR-based dine-in customers
  * IMPORTANT: Uses separate transaction UUIDs per payment to avoid conflicts with online orders
  */
@@ -72,15 +72,18 @@ export const getSessionDetails = async (req, res) => {
             data: {
                 sessionId: session.sessionId,
                 tableNumber: session.tableNumber,
+                items: session.items,
                 totalBillAmount: session.totalBillAmount,
                 totalPaidAmount: session.totalPaidAmount,
                 remainingBalance: parseFloat(remainingBalance),
                 status: session.status,
                 paymentHistory: session.payments,
+                createdAt: session.createdAt,
+                updatedAt: session.updatedAt,
             },
         });
     } catch (error) {
-        console.error("❌ Error fetching session details:", error);
+        console.error(" Error fetching session details:", error);
         res.status(500).json({
             success: false,
             message: "Unable to fetch session details",
@@ -189,7 +192,7 @@ export const initiateWalkInPayment = async (req, res) => {
             transactionUuid,
         });
     } catch (error) {
-        console.error("❌ Error initiating walk-in payment:", error);
+        console.error("Error initiating walk-in payment:", error);
         res.status(500).json({
             success: false,
             message: "Unable to initiate payment",
@@ -314,7 +317,7 @@ export const verifyWalkInPayment = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("❌ Error verifying walk-in payment:", error);
+        console.error("Error verifying walk-in payment:", error);
         res.status(500).json({
             success: false,
             message: "Unable to verify payment",
@@ -362,7 +365,7 @@ export const handleWalkInPaymentFailure = async (req, res) => {
             sessionId,
         });
     } catch (error) {
-        console.error("❌ Error handling walk-in payment failure:", error);
+        console.error("Error handling walk-in payment failure:", error);
         res.status(500).json({
             success: false,
             message: "Unable to handle failure",
@@ -392,12 +395,41 @@ export const createWalkInSession = async (req, res) => {
             });
         }
 
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "At least one ordered item is required",
+            });
+        }
+
+        const normalizedItems = items
+            .map((item) => ({
+                foodId: item.foodId || item.menuId,
+                name: item.name,
+                price: Number(item.price),
+                quantity: Number(item.quantity),
+            }))
+            .filter(
+                (item) =>
+                    item.name &&
+                    Number.isFinite(item.price) &&
+                    Number.isFinite(item.quantity) &&
+                    item.quantity > 0
+            );
+
+        if (!normalizedItems.length) {
+            return res.status(400).json({
+                success: false,
+                message: "Ordered items are invalid",
+            });
+        }
+
         const sessionId = `WALKIN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const newSession = new walkInSessionModel({
             sessionId,
             tableNumber,
-            items: items || [],
+            items: normalizedItems,
             totalBillAmount,
             status: "active",
         });
@@ -414,7 +446,7 @@ export const createWalkInSession = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("❌ Error creating walk-in session:", error);
+        console.error(" Error creating walk-in session:", error);
         res.status(500).json({
             success: false,
             message: "Unable to create session",
@@ -452,7 +484,7 @@ export const listWalkInSessions = async (req, res) => {
             data: formattedSessions,
         });
     } catch (error) {
-        console.error("❌ Error listing walk-in sessions:", error);
+        console.error("Error listing walk-in sessions:", error);
         res.status(500).json({
             success: false,
             message: "Unable to fetch sessions",
@@ -513,7 +545,7 @@ export const updateWalkInSessionStatus = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("❌ Error updating walk-in session status:", error);
+        console.error("Error updating walk-in session status:", error);
         res.status(500).json({
             success: false,
             message: "Unable to update session status",

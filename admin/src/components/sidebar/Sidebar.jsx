@@ -26,11 +26,6 @@ const Sidebar = () => {
                     <p>Reservations</p>
                 </NavLink>
 
-                <NavLink to='/driver-tracking' className="sidebar-option">
-                    {/* <img src="" alt="" /> */}
-                    <p>Driver Tracking</p>
-                </NavLink>
-
                 <NavLink to='/drivers' className="sidebar-option">
                     {/* <img src="" alt="" /> */}
                     <p>Manage Drivers</p>
@@ -39,6 +34,11 @@ const Sidebar = () => {
                 <NavLink to='/bill-qr' className="sidebar-option">
                     {/* <img src="" alt="" /> */}
                     <p>Bill QR Generator</p>
+                </NavLink>
+
+                <NavLink to='/payments' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Payments</p>
                 </NavLink>
 
             </div>

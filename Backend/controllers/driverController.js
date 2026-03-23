@@ -242,10 +242,10 @@ const updateDriverLocation = async (req, res) => {
     try {
 
         const { id } = req.params;
-        const driverId = id || req.userId;  // ✅ Get ID from params or token
+        const driverId = id || req.userId;  //  Get ID from params or token
         const { latitude, longitude } = req.body;
 
-        console.log("📍 Location update request:", {
+        console.log(" Location update request:", {
             driverId,
             latitude,
             longitude,
@@ -288,7 +288,7 @@ const updateDriverLocation = async (req, res) => {
             });
         }
 
-        console.log("✅ Driver location updated:", {
+        console.log("Driver location updated:", {
             driverId: driver._id,
             lat: driver.location.latitude,
             lng: driver.location.longitude
@@ -301,7 +301,7 @@ const updateDriverLocation = async (req, res) => {
 
     } catch (error) {
 
-        console.error("❌ Location update error:", error);
+        console.error(" Location update error:", error);
 
         res.json({
             success: false,

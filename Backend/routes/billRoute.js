@@ -8,6 +8,7 @@ import {
     getAllBills,
     getBillPayments,
     getPayment,
+    getSplitPayments,
     closeBill
 } from '../controllers/billController.js';
 
@@ -28,6 +29,9 @@ billRouter.get('/list', getAllBills);
 
 // Get bill by QR code
 billRouter.get('/qr/:qrCodeData', getBillByQRCode);
+
+// Get all successful split payments (reporting)
+billRouter.get('/payments/split', getSplitPayments);
 
 // 2. GET BILL DETAILS - GET /api/bills/:billId
 billRouter.get('/:billId', getBill);

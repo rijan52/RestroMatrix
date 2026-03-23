@@ -49,35 +49,82 @@ const Dashboard = () => {
   const [driverLocation, setDriverLocation] = useState(null);
   const [customerLocation, setCustomerLocation] = useState(null);
   const [socketStatus, setSocketStatus] = useState("disconnected");
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusUpdateMessage, setStatusUpdateMessage] = useState("");
+  const [statusUpdateType, setStatusUpdateType] = useState("");
+
+  const socketStatusClass = socketStatus === "connected" ? "connected" : "disconnected";
+  const socketStatusLabel = socketStatus === "connected" ? "Connected" : "Disconnected";
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const fetchAssignedOrders = async () => {
+    try {
+      const res = await axios.get(`${url}/api/order/driver/assigned`, {
+        headers: { token: driverToken },
+      });
+
+      if (res.data.success) {
+        const orders = res.data.data || [];
+        setAssignedOrders(orders);
+        setSelectedOrder((prev) => {
+          if (!orders.length) return null;
+          if (!prev) return orders[0];
+          const matched = orders.find((order) => order._id === prev._id);
+          return matched || orders[0];
+        });
+      }
+    } catch (error) {
+      console.error("Fetch orders error:", error.response?.data || error.message);
+    }
+  };
+
+  const handleMarkDelivered = async () => {
+    if (!selectedOrder?._id || updatingStatus) return;
+
+    setUpdatingStatus(true);
+    setStatusUpdateMessage("");
+    setStatusUpdateType("");
+
+    try {
+      const response = await axios.post(
+        `${url}/api/order/status`,
+        {
+          orderId: selectedOrder._id,
+          status: "Delivered",
+        },
+        {
+          headers: { token: driverToken },
+        }
+      );
+
+      if (response.data.success) {
+        setStatusUpdateType("success");
+        setStatusUpdateMessage("Order marked as delivered.");
+        await fetchAssignedOrders();
+      } else {
+        setStatusUpdateType("error");
+        setStatusUpdateMessage(response.data.message || "Failed to update order status.");
+      }
+    } catch (error) {
+      setStatusUpdateType("error");
+      setStatusUpdateMessage(error.response?.data?.message || "Failed to update order status.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   /* ============ FETCH ASSIGNED ORDERS ============ */
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.get(`${url}/api/order/driver/assigned`, {
-          headers: { token: driverToken },
-        });
-        if (res.data.success) {
-          setAssignedOrders(res.data.data);
-          if (res.data.data.length > 0 && !selectedOrder) {
-            setSelectedOrder(res.data.data[0]);
-          }
-        }
-      } catch (error) {
-        console.error("Fetch orders error:", error.response?.data || error.message);
-      }
-    };
-    if (driverToken) fetchOrders();
+    if (driverToken) fetchAssignedOrders();
     const interval = setInterval(() => {
-      if (driverToken) fetchOrders();
+      if (driverToken) fetchAssignedOrders();
     }, 30000);
     return () => clearInterval(interval);
-  }, [url, driverToken, selectedOrder]);
+  }, [url, driverToken]);
 
   /* ============ INITIALIZE MAP ============ */
   useEffect(() => {
@@ -238,57 +285,11 @@ const Dashboard = () => {
   return (
     <div className="driver-dashboard-container">
       <nav className="driver-navbar">
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <div className="driver-navbar-left">
           <h1>RestroMatrix Driver</h1>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "8px 12px",
-              borderRadius: "6px",
-              backgroundColor:
-                socketStatus === "joined-order"
-                  ? "rgba(59, 130, 246, 0.1)"
-                  : socketStatus === "connected"
-                    ? "rgba(34, 197, 94, 0.1)"
-                    : "rgba(239, 68, 68, 0.1)",
-              fontSize: "11px",
-              fontWeight: "bold",
-              color:
-                socketStatus === "joined-order"
-                  ? "#1e40af"
-                  : socketStatus === "connected"
-                    ? "#065f46"
-                    : "#7f1d1d",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-              border:
-                socketStatus === "joined-order"
-                  ? "1px solid rgba(59, 130, 246, 0.3)"
-                  : socketStatus === "connected"
-                    ? "1px solid rgba(34, 197, 94, 0.3)"
-                    : "1px solid rgba(239, 68, 68, 0.3)",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor:
-                  socketStatus === "joined-order"
-                    ? "#3b82f6"
-                    : socketStatus === "connected"
-                      ? "#22c55e"
-                      : "#ef4444",
-                animation:
-                  socketStatus === "connected" || socketStatus === "joined-order"
-                    ? "pulse 2s infinite"
-                    : "none",
-              }}
-            ></span>
-            {socketStatus}
+          <div className={`socket-status ${socketStatusClass}`}>
+            <span></span>
+            {socketStatusLabel}
           </div>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
@@ -297,7 +298,10 @@ const Dashboard = () => {
       </nav>
 
       <div className="driver-dashboard-content">
-        <h2>Delivery Dashboard</h2>
+        <div className="dashboard-heading">
+          <h2>Delivery Dashboard</h2>
+          <p>Track assigned deliveries and customer location in real time.</p>
+        </div>
 
         <div className="dashboard-layout">
           <div className="map-section">
@@ -322,7 +326,7 @@ const Dashboard = () => {
 
                 {/* Customer Info Card */}
                 <div className="details-card">
-                  <h4 className="card-title">👤 Customer</h4>
+                  <h4 className="card-title"> Customer</h4>
                   <div className="info-row">
                     <span className="label">Name:</span>
                     <span className="value">{selectedOrder.address?.firstName || "N/A"}</span>
@@ -339,7 +343,7 @@ const Dashboard = () => {
 
                 {/* Delivery Info Card */}
                 <div className="details-card">
-                  <h4 className="card-title">🚚 Delivery</h4>
+                  <h4 className="card-title"> Delivery</h4>
                   <div className="info-row">
                     <span className="label">Status:</span>
                     <span className={`status-text status-${selectedOrder.status?.toLowerCase().replace(/\s+/g, "-")}`}>
@@ -363,12 +367,29 @@ const Dashboard = () => {
                     <span className="label">ETA:</span>
                     <span className="value">~15 mins</span>
                   </div>
+
+                  {selectedOrder.status !== "Delivered" && selectedOrder.status !== "Cancelled" && (
+                    <div className="driver-order-actions">
+                      <button
+                        type="button"
+                        className="mark-delivered-btn"
+                        onClick={handleMarkDelivered}
+                        disabled={updatingStatus}
+                      >
+                        {updatingStatus ? "Updating..." : "Mark as Delivered"}
+                      </button>
+                    </div>
+                  )}
+
+                  {statusUpdateMessage && (
+                    <p className={`status-update-message ${statusUpdateType}`}>{statusUpdateMessage}</p>
+                  )}
                 </div>
 
                 {/* Items Card */}
                 {selectedOrder.items && selectedOrder.items.length > 0 && (
                   <div className="details-card">
-                    <h4 className="card-title">📦 Items</h4>
+                    <h4 className="card-title">Items</h4>
                     <div className="items-list">
                       {selectedOrder.items.map((item, idx) => (
                         <div key={idx} className="item-row">
@@ -387,11 +408,13 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                {/* Order Lists */}
-                <div className="section-card">
-                  <h3>📋 Other Assigned Orders</h3>
-                  <div className="orders">
-                    {assignedOrders.map((order) => (
+              </div>
+            ) : (
+              <div className="section-card">
+                <h3>Assigned Orders</h3>
+                <div className="orders">
+                  {assignedOrders.length > 0 ? (
+                    assignedOrders.map((order) => (
                       <div
                         key={order._id}
                         className={`order-item ${selectedOrder?._id === order._id ? "active" : ""}`}
@@ -402,26 +425,13 @@ const Dashboard = () => {
                         <p>{order.address?.phone}</p>
                         <span>Rs {order.amount}</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="section-card">
-                <h3>📋 Assigned Orders</h3>
-                <div className="orders">
-                  {assignedOrders.map((order) => (
-                    <div
-                      key={order._id}
-                      className={`order-item ${selectedOrder?._id === order._id ? "active" : ""}`}
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      <strong>#{order._id.slice(-6)}</strong>
-                      <p>{order.address?.firstName}</p>
-                      <p>{order.address?.phone}</p>
-                      <span>Rs {order.amount}</span>
+                    ))
+                  ) : (
+                    <div className="orders-empty-state">
+                      <p>No assigned orders right now.</p>
+                      <small>New deliveries will appear here automatically.</small>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}

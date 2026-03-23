@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'react-qr-code';
 import { toPng } from 'html-to-image';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { createBill } from '../../services/billService';
 import './BillQR.css';
 
@@ -10,7 +11,34 @@ const BillQR = ({ url }) => {
     const [totalAmount, setTotalAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [billData, setBillData] = useState(null);
+    const [unpaidBills, setUnpaidBills] = useState([]);
+    const [loadingUnpaidBills, setLoadingUnpaidBills] = useState(false);
     const qrRef = useRef();
+
+    const getPaymentLink = (billId) => `http://localhost:5173/pay/${billId}`;
+
+    const fetchUnpaidBills = async () => {
+        setLoadingUnpaidBills(true);
+        try {
+            const response = await axios.get(`${url}/api/bills/list?status=UNPAID&limit=100`);
+            if (response.data?.success) {
+                const bills = response.data.data || [];
+                const filteredBills = bills.filter((bill) => Number(bill.remainingAmount || 0) > 0);
+                setUnpaidBills(filteredBills);
+            } else {
+                setUnpaidBills([]);
+            }
+        } catch (error) {
+            setUnpaidBills([]);
+            toast.error('Failed to load unpaid bill QRs');
+        } finally {
+            setLoadingUnpaidBills(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnpaidBills();
+    }, []);
 
     // Generate Bill and QR
     const handleGenerateQR = async (e) => {
@@ -40,6 +68,7 @@ const BillQR = ({ url }) => {
                     tableNumber: parseInt(tableNumber),
                     totalAmount: parseFloat(totalAmount)
                 });
+                await fetchUnpaidBills();
                 setTableNumber('');
                 setTotalAmount('');
                 toast.success('Bill QR generated successfully!');
@@ -55,9 +84,18 @@ const BillQR = ({ url }) => {
 
     // Copy payment link
     const handleCopyLink = () => {
-        const fullUrl = `http://localhost:5173/pay/${billData.billId}`;
+        const fullUrl = getPaymentLink(billData.billId);
         navigator.clipboard.writeText(fullUrl);
         toast.success('Payment link copied to clipboard!');
+    };
+
+    const handleCopyUnpaidLink = async (billId) => {
+        try {
+            await navigator.clipboard.writeText(getPaymentLink(billId));
+            toast.success('Payment link copied to clipboard!');
+        } catch (error) {
+            toast.error('Unable to copy payment link');
+        }
     };
 
     // Print QR Code
@@ -198,7 +236,6 @@ const BillQR = ({ url }) => {
                                     value={`http://localhost:5173/pay/${billData.billId}`}
                                     size={256}
                                     level="H"
-                                    includeMargin={true}
                                 />
                             </div>
                         </div>
@@ -210,7 +247,7 @@ const BillQR = ({ url }) => {
                                 <input
                                     type="text"
                                     readOnly
-                                    value={`http://localhost:5173/pay/${billData.billId}`}
+                                    value={getPaymentLink(billData.billId)}
                                     className="link-input"
                                 />
                                 <button onClick={handleCopyLink} className="btn-copy">
@@ -228,11 +265,53 @@ const BillQR = ({ url }) => {
                                 onClick={() => setBillData(null)}
                                 className="btn-new"
                             >
-                                 Generate New Bill
+                                Generate New Bill
                             </button>
                         </div>
                     </div>
                 )}
+
+                <div className="unpaid-bills-section">
+                    <div className="unpaid-bills-header">
+                        <h2>Unpaid Bill QRs</h2>
+                        <button type="button" className="btn-refresh-unpaid" onClick={fetchUnpaidBills} disabled={loadingUnpaidBills}>
+                            {loadingUnpaidBills ? 'Refreshing...' : 'Refresh'}
+                        </button>
+                    </div>
+
+                    {loadingUnpaidBills ? (
+                        <div className="unpaid-empty">Loading unpaid bills...</div>
+                    ) : unpaidBills.length === 0 ? (
+                        <div className="unpaid-empty">No unpaid bills found.</div>
+                    ) : (
+                        <div className="unpaid-bills-grid">
+                            {unpaidBills.map((bill) => (
+                                <div className="unpaid-bill-card" key={bill._id}>
+                                    <div className="unpaid-bill-details">
+                                        <p><strong>Bill ID:</strong> {bill._id}</p>
+                                        <p><strong>Table:</strong> {bill.tableNumber}</p>
+                                        <p><strong>Total:</strong> NPR {Number(bill.totalAmount || 0).toFixed(2)}</p>
+                                        <p><strong>Paid:</strong> NPR {Number(bill.paidAmount || 0).toFixed(2)}</p>
+                                        <p><strong>Remaining:</strong> NPR {Number(bill.remainingAmount || 0).toFixed(2)}</p>
+                                    </div>
+
+                                    <div className="unpaid-bill-qr">
+                                        <QRCode
+                                            value={getPaymentLink(bill._id)}
+                                            size={160}
+                                            level="H"
+                                        />
+                                    </div>
+
+                                    <div className="unpaid-bill-link-row">
+                                        <input type="text" readOnly value={getPaymentLink(bill._id)} />
+                                        <button type="button" onClick={() => handleCopyUnpaidLink(bill._id)}>Copy</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

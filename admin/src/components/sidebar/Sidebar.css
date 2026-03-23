@@ -35,7 +35,6 @@
     background: #dbeafe;
     color: #0f172a;
     border-color: #38bdf8;
-    box-shadow: inset 4px 0 0 #2563eb;
 }
 
 @media(max-width: 900px) {

@@ -114,3 +114,18 @@
 .login-popup p span:hover {
     color: #1d4ed8;
 }
+
+.password-hint {
+    margin: -8px 0 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.password-error {
+    margin: -10px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dc2626;
+    line-height: 1.4;
+}

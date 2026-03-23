@@ -4,9 +4,20 @@ import './Cart.css'
 import { useNavigate } from 'react-router';
 
 const Cart = () => {
-  const { cartItems, food_list, removeFromCart, getTotalCartAmount, url } = useContext(StoreContext);
+  const { cartItems, food_list, addToCart, removeFromCart, getTotalCartAmount, token } = useContext(StoreContext);
 
   const navigate = useNavigate();
+
+  const handleProceedToCheckout = () => {
+    if (!token) {
+      localStorage.setItem('postLoginRedirect', '/order')
+      navigate('/login', { state: { redirectTo: '/order' } })
+      return
+    }
+
+    navigate('/order')
+  }
+
   return (
     <div className='cart'>
       <div className="cart-items">
@@ -25,9 +36,13 @@ const Cart = () => {
               <div key={item._id}>
                 <div className="cart-items-title cart-items-item">
                   <p>{item.name}</p>
-                  <p>Rs{item.price}</p>
-                  <p>{cartItems[item._id]}</p>
-                  <p>Rs{item.price * cartItems[item._id]}</p>
+                  <p>Rs {item.price}</p>
+                  <div className="cart-qty-controls">
+                    <button type="button" onClick={() => removeFromCart(item._id)}>-</button>
+                    <span>{cartItems[item._id]}</span>
+                    <button type="button" onClick={() => addToCart(item._id)}>+</button>
+                  </div>
+                  <p>Rs {item.price * cartItems[item._id]}</p>
                   <p onClick={() => removeFromCart(item._id)} className="cross">x</p>
                 </div>
                 <hr />
@@ -44,21 +59,21 @@ const Cart = () => {
           <div>
             <div className="cart-total-details">
               <p>Subtotal</p>
-              <p>Rs{getTotalCartAmount()}</p>
+              <p>Rs {getTotalCartAmount()}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <p>Delivery Fee</p>
-              <p>Rs{getTotalCartAmount() === 0 ? 0 : 2}</p>
+              <p>Rs {getTotalCartAmount() === 0 ? 0 : 150}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <b>Total</b>
-              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b>
+              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 150}</b>
 
             </div>
           </div>
-          <button onClick={() => navigate('/order')}>PROCEED TO CHECKOUT</button>
+          <button onClick={handleProceedToCheckout}>PROCEED TO CHECKOUT</button>
 
         </div>
         <div className="cart-promocode">

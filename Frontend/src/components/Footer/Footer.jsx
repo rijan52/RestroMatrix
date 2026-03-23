@@ -1,41 +1,49 @@
 import React from 'react'
-import'./Footer.css'
+import './Footer.css'
 import assets from '../../assets/assets'
 const Footer = () => {
-  return (
-    <div className='footer' id='footer'>
-        <div className='footer-content'>
-            <div className='footer-content-left'>
-            <img src={assets.logo} alt="" />
-            <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laudantium nihil iusto, maiores ducimus assumenda, quaerat earum recusandae iste consequuntur, et voluptatum laborum doloribus? Possimus earum, nisi repellat inventore necessitatibus illum?</p>
-            <div className="footer-social-icon">
-                <img src={assets.facebookIcon} alt=''/>
-                <img src={assets.twitterIcon} alt=''/>
-                <img src={assets.whatsappIcon} alt=''/>
-            </div>
-            </div>
-            <div className="footer-content-center">
-                <h2>COMPANY</h2>
-                <ul>
-                    <li>Home</li>
-                    <li>About us</li>
-                    <li>Delivery</li>
-                    <li>Privacy policy</li>
-                </ul>
-            </div>
-            <div className="footer-content-right">
-                <h2>GET IN TOUCH</h2>
-                <ul>
-                    <li>+977 9834450676</li>
-                    <li>contact@restromatrix.com</li>
-                </ul>
+    const year = new Date().getFullYear()
 
-            </div>
+    return (
+        <footer className='footer' id='footer'>
+            <div className='footer-content'>
+                <div className='footer-content-left'>
+                    <img src={assets.logo} alt="RestroMatrix logo" />
+                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laudantium nihil iusto, maiores ducimus assumenda, quaerat earum recusandae iste consequuntur, et voluptatum laborum doloribus? Possimus earum, nisi repellat inventore necessitatibus illum?</p>
+                    <div className="footer-social-icon">
+                        <a href="#" aria-label="Facebook">
+                            <img src={assets.facebookIcon} alt='Facebook' />
+                        </a>
+                        <a href="#" aria-label="X (Twitter)">
+                            <img src={assets.twitterIcon} alt='X (Twitter)' />
+                        </a>
+                        <a href="#" aria-label="WhatsApp">
+                            <img src={assets.whatsappIcon} alt='WhatsApp' />
+                        </a>
+                    </div>
+                </div>
+                <div className="footer-content-center">
+                    <h2>COMPANY</h2>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">About us</a></li>
+                        <li><a href="#">Delivery</a></li>
+                        <li><a href="#">Privacy policy</a></li>
+                    </ul>
+                </div>
+                <div className="footer-content-right">
+                    <h2>GET IN TOUCH</h2>
+                    <ul>
+                        <li><a href="tel:+9779834450676">+977 9834450676</a></li>
+                        <li><a href="mailto:contact@restromatrix.com">contact@restromatrix.com</a></li>
+                    </ul>
+
+                </div>
             </div>
             <hr />
-            <p className='footer-copyright'>Copyright 2025 @ restromatrix.com - All Right Reserved.</p>
-            </div>
-  )
+            <p className='footer-copyright'>Copyright {year} © restromatrix.com — All rights reserved.</p>
+        </footer>
+    )
 }
 
 export default Footer

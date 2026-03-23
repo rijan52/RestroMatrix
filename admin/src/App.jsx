@@ -8,6 +8,7 @@ import Orders from './pages/Orders/Orders'
 import Reservations from './pages/Reservations/Reservations'
 import Drivers from './pages/Drivers/Drivers'
 import BillQR from './pages/BillQR/BillQR'
+import Payments from './pages/Payments/Payments'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/reservations" element={<Reservations url={url} />} />
           <Route path="/drivers" element={<Drivers url={url} />} />
           <Route path="/bill-qr" element={<BillQR url={url} />} />
+          <Route path="/payments" element={<Payments url={url} />} />
         </Routes>
       </div>
     </div>

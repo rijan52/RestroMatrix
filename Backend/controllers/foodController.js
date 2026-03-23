@@ -34,6 +34,24 @@ const listFood = async (req, res) => {
     }
 }
 
+// category list
+const listCategories = async (req, res) => {
+    try {
+        const categories = await foodModel.distinct("category");
+        const formattedCategories = categories
+            .filter((category) => typeof category === "string" && category.trim() !== "")
+            .map((category, index) => ({
+                _id: `${index}-${category}`,
+                name: category
+            }));
+
+        res.json({ success: true, data: formattedCategories });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error fetching categories" });
+    }
+}
+
 // update food item
 const updateFood = async (req, res) => {
     try {
@@ -88,4 +106,4 @@ const removeFood = async (req, res) => {
 }
 
 
-export { addFood, listFood, removeFood, updateFood }
+export { addFood, listFood, listCategories, removeFood, updateFood }

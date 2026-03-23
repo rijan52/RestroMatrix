@@ -209,40 +209,44 @@ const Drivers = ({ url }) => {
 
             <div className='drivers-list'>
                 <h2>All Drivers ({drivers.length})</h2>
-                {drivers.length === 0 ? (
+                {loading ? (
+                    <p className='no-drivers'>Loading drivers...</p>
+                ) : drivers.length === 0 ? (
                     <p className='no-drivers'>No drivers found. Create one to get started!</p>
                 ) : (
-                    <table className='drivers-table'>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Vehicle</th>
-                                <th>Vehicle Number</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {drivers.map((driver) => (
-                                <tr key={driver._id}>
-                                    <td>{driver.name}</td>
-                                    <td>{driver.email}</td>
-                                    <td>{driver.phone || '-'}</td>
-                                    <td>{driver.vehicle || '-'}</td>
-                                    <td>{driver.vehicleNumber || '-'}</td>
-                                    <td>
-                                        <button
-                                            className='delete-btn'
-                                            onClick={() => deleteDriver(driver._id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                    <div className='drivers-table-wrapper'>
+                        <table className='drivers-table'>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Vehicle</th>
+                                    <th>Vehicle Number</th>
+                                    <th>Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {drivers.map((driver) => (
+                                    <tr key={driver._id}>
+                                        <td>{driver.name}</td>
+                                        <td>{driver.email}</td>
+                                        <td>{driver.phone || '-'}</td>
+                                        <td>{driver.vehicle || '-'}</td>
+                                        <td>{driver.vehicleNumber || '-'}</td>
+                                        <td className='driver-action-cell'>
+                                            <button
+                                                className='delete-btn'
+                                                onClick={() => deleteDriver(driver._id)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>
