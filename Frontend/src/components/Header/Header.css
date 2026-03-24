@@ -1,7 +1,9 @@
 .header {
     height: min(520px, 70vw);
     margin: 0;
-    background: url('/header.png') center / cover no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     position: relative;
     border-radius: 0;
     overflow: hidden;
@@ -29,7 +31,7 @@
     align-items: start;
     gap: 18px;
     max-width: 52%;
-    bottom: 12%;
+    top: 12%;
     left: 6%;
     animation: riseUp 1s ease;
     color: #ffffff;

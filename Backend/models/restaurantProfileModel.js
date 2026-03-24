@@ -36,6 +36,35 @@ const restaurantProfileSchema = new mongoose.Schema(
             trim: true,
             default: "",
         },
+        headerTitle: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        headerContent: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        headerButtonText: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        headerBackgroundImage: {
+            type: String,
+            default: "",
+        },
+        exploreMenuTitle: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        exploreMenuDescription: {
+            type: String,
+            trim: true,
+            default: "",
+        },
     },
     { timestamps: true }
 );

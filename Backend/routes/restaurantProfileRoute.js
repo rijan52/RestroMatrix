@@ -17,6 +17,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 restaurantProfileRouter.get("/", getRestaurantProfile);
-restaurantProfileRouter.post("/update", upload.single("logo"), updateRestaurantProfile);
+restaurantProfileRouter.post(
+    "/update",
+    upload.fields([
+        { name: "logo", maxCount: 1 },
+        { name: "headerBackgroundImage", maxCount: 1 },
+    ]),
+    updateRestaurantProfile
+);
 
 export default restaurantProfileRouter;

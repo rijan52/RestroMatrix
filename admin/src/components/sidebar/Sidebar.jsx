@@ -51,6 +51,11 @@ const Sidebar = () => {
                     <p>Restaurant Profile</p>
                 </NavLink>
 
+                <NavLink to='/header-customization' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Header Customization</p>
+                </NavLink>
+
             </div>
         </div>
     )

@@ -1,15 +1,18 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { StoreContext } from '../../context/StoreContext'
 import './Header.css'
 const Header = () => {
+  const { headerSettings } = useContext(StoreContext)
+
   return (
-    <div className='header'>
-        <div className='header-content'>
-            <h2> Order your favourite food here</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus saepe neque, maxime consequatur obcaecati, sequi doloribus autem aperiam consectetur ratione facilis! Debitis dolore omnis eligendi laboriosam inventore explicabo assumenda magnam. </p>
+    <div className='header' style={{ backgroundImage: `url(${headerSettings.backgroundImage})` }}>
+      <div className='header-content'>
+        <h2>{headerSettings.title}</h2>
+        <p>{headerSettings.content}</p>
         <button>
-            View Menu  
+          {headerSettings.buttonText}
         </button>
-        </div>
+      </div>
 
 
 

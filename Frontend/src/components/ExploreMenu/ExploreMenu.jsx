@@ -4,7 +4,7 @@ import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
 
 const ExploreMenu = ({ category, setCategory }) => {
-    const { url } = useContext(StoreContext)
+    const { url, headerSettings } = useContext(StoreContext)
     const [categories, setCategories] = useState([])
 
     useEffect(() => {
@@ -24,9 +24,9 @@ const ExploreMenu = ({ category, setCategory }) => {
 
     return (
         <div className='explore-menu' id='explore-menu'>
-            <h1>Explore Our Menu</h1>
+            <h1>{headerSettings.exploreMenuTitle}</h1>
             <p className='explore-menu-text'>
-                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sequi dignissimos quasi, mollitia recusandae at magnam iste, inventore debitis perferendis vel magni in? Rerum aliquam modi maxime vitae cupiditate sapiente commodi?
+                {headerSettings.exploreMenuDescription}
             </p>
             <div className='explore-menu-list'>
                 {categories.map((item) => {

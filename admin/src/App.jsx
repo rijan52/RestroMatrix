@@ -11,6 +11,7 @@ import Drivers from './pages/Drivers/Drivers'
 import BillQR from './pages/BillQR/BillQR'
 import Payments from './pages/Payments/Payments'
 import Profile from './pages/Profile/Profile'
+import HeaderCustomization from './pages/HeaderCustomization/HeaderCustomization'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/bill-qr" element={<BillQR url={url} />} />
           <Route path="/payments" element={<Payments url={url} />} />
           <Route path="/profile" element={<Profile url={url} />} />
+          <Route path="/header-customization" element={<HeaderCustomization url={url} />} />
         </Routes>
       </div>
     </div>

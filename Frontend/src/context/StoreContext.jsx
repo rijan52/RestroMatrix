@@ -12,6 +12,16 @@ const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [role, setRole] = useState("");
   const [restaurantLogo, setRestaurantLogo] = useState(assets.logo);
+  const [headerSettings, setHeaderSettings] = useState({
+    title: "Order your favourite food here",
+    content:
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus saepe neque, maxime consequatur obcaecati, sequi doloribus autem aperiam consectetur ratione facilis! Debitis dolore omnis eligendi laboriosam inventore explicabo assumenda magnam.",
+    buttonText: "View Menu",
+    backgroundImage: "/header.png",
+    exploreMenuTitle: "Explore Our Menu",
+    exploreMenuDescription:
+      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sequi dignissimos quasi, mollitia recusandae at magnam iste, inventore debitis perferendis vel magni in? Rerum aliquam modi maxime vitae cupiditate sapiente commodi?",
+  });
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -56,8 +66,29 @@ const StoreContextProvider = (props) => {
   const fetchRestaurantProfile = async () => {
     try {
       const response = await axios.get(url + "/api/restaurant-profile");
-      if (response.data?.success && response.data?.data?.logo) {
-        setRestaurantLogo(`${url}/images/${response.data.data.logo}?t=${Date.now()}`);
+      if (response.data?.success) {
+        const profileData = response.data?.data || {};
+
+        if (profileData.logo) {
+          setRestaurantLogo(`${url}/images/${profileData.logo}?t=${Date.now()}`);
+        } else {
+          setRestaurantLogo(assets.logo);
+        }
+
+        setHeaderSettings({
+          title: profileData.headerTitle || "Order your favourite food here",
+          content:
+            profileData.headerContent ||
+            "Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus saepe neque, maxime consequatur obcaecati, sequi doloribus autem aperiam consectetur ratione facilis! Debitis dolore omnis eligendi laboriosam inventore explicabo assumenda magnam.",
+          buttonText: profileData.headerButtonText || "View Menu",
+          backgroundImage: profileData.headerBackgroundImage
+            ? `${url}/images/${profileData.headerBackgroundImage}?t=${Date.now()}`
+            : "/header.png",
+          exploreMenuTitle: profileData.exploreMenuTitle || "Explore Our Menu",
+          exploreMenuDescription:
+            profileData.exploreMenuDescription ||
+            "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sequi dignissimos quasi, mollitia recusandae at magnam iste, inventore debitis perferendis vel magni in? Rerum aliquam modi maxime vitae cupiditate sapiente commodi?",
+        });
       } else {
         setRestaurantLogo(assets.logo);
       }
@@ -127,6 +158,15 @@ const StoreContextProvider = (props) => {
     return () => window.removeEventListener("restaurant-logo-updated", handleLogoUpdated);
   }, [])
 
+  useEffect(() => {
+    const handleHeaderUpdated = () => {
+      fetchRestaurantProfile();
+    };
+
+    window.addEventListener("restaurant-header-updated", handleHeaderUpdated);
+    return () => window.removeEventListener("restaurant-header-updated", handleHeaderUpdated);
+  }, [])
+
   const contextValue = {
     food_list,
     cartItems,
@@ -137,6 +177,7 @@ const StoreContextProvider = (props) => {
     role,
     setRole,
     restaurantLogo,
+    headerSettings,
     fetchRestaurantProfile,
     url,
     token,
