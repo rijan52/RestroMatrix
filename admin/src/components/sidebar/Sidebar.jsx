@@ -16,6 +16,11 @@ const Sidebar = () => {
                     <p>List Items</p>
                 </NavLink>
 
+                <NavLink to='/category' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Manage Categories</p>
+                </NavLink>
+
                 <NavLink to='/orders' className="sidebar-option">
                     {/* <img src="" alt="" /> */}
                     <p>Orders</p>
@@ -39,6 +44,11 @@ const Sidebar = () => {
                 <NavLink to='/payments' className="sidebar-option">
                     {/* <img src="" alt="" /> */}
                     <p>Payments</p>
+                </NavLink>
+
+                <NavLink to='/profile' className="sidebar-option">
+                    {/* <img src="" alt="" /> */}
+                    <p>Restaurant Profile</p>
                 </NavLink>
 
             </div>

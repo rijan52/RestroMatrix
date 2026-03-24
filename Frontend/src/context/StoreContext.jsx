@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react"
 import axios from "axios"
+import assets from "../assets/assets"
 
 
 export const StoreContext = createContext(null)
@@ -10,6 +11,7 @@ const StoreContextProvider = (props) => {
   const [token, setToken] = useState("");
   const [food_list, setFoodList] = useState([]);
   const [role, setRole] = useState("");
+  const [restaurantLogo, setRestaurantLogo] = useState(assets.logo);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -50,6 +52,20 @@ const StoreContextProvider = (props) => {
     const response = await axios.get(url + "/api/food/list");
     setFoodList(response.data.data)
   }
+
+  const fetchRestaurantProfile = async () => {
+    try {
+      const response = await axios.get(url + "/api/restaurant-profile");
+      if (response.data?.success && response.data?.data?.logo) {
+        setRestaurantLogo(`${url}/images/${response.data.data.logo}?t=${Date.now()}`);
+      } else {
+        setRestaurantLogo(assets.logo);
+      }
+    } catch (error) {
+      console.log("Error loading restaurant profile:", error);
+      setRestaurantLogo(assets.logo);
+    }
+  }
   const loadCartData = async (tokenValue) => {
     try {
       const response = await axios.get(url + "/api/cart/get", { headers: { token: tokenValue } });
@@ -80,6 +96,7 @@ const StoreContextProvider = (props) => {
     }
     async function loadData() {
       await fetchFoodList();
+      await fetchRestaurantProfile();
       if (localStorage.getItem("token")) {
         const tokenValue = localStorage.getItem("token");
         setToken(tokenValue);
@@ -101,6 +118,15 @@ const StoreContextProvider = (props) => {
     }
   }, [token])
 
+  useEffect(() => {
+    const handleLogoUpdated = () => {
+      fetchRestaurantProfile();
+    };
+
+    window.addEventListener("restaurant-logo-updated", handleLogoUpdated);
+    return () => window.removeEventListener("restaurant-logo-updated", handleLogoUpdated);
+  }, [])
+
   const contextValue = {
     food_list,
     cartItems,
@@ -110,6 +136,8 @@ const StoreContextProvider = (props) => {
     getTotalCartAmount,
     role,
     setRole,
+    restaurantLogo,
+    fetchRestaurantProfile,
     url,
     token,
     setToken

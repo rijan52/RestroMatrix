@@ -87,8 +87,10 @@
     max-width: 520px;
 }
 
-.footer-content-left img {
+.footer-logo {
     width: 170px;
+    height: 70px;
+    object-fit: contain;
 }
 
 .footer-social-icon {

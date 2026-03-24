@@ -6,7 +6,7 @@ import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef(null)
-  const { getTotalCartAmount, token, setToken } = useContext(StoreContext)
+  const { getTotalCartAmount, token, setToken, restaurantLogo } = useContext(StoreContext)
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,7 +38,7 @@ const Navbar = ({ setShowLogin }) => {
   }
   return (
     <div className='navbar'>
-      <Link to='/'> <img src={assets.logo} alt="" className="logo" /> </Link>
+      <Link to='/'> <img src={restaurantLogo} alt="Restaurant logo" className="logo" /> </Link>
       <ul className="navbar-menu">
         <Link to='/' className={isActive('/') ? 'active' : ''}>Home</Link>
         <Link to='/menu' className={isActive('/menu') ? 'active' : ''}>Menu</Link>

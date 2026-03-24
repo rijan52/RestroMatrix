@@ -5,6 +5,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 import foodRouter from "./routes/foodRoute.js";
+import categoryRouter from "./routes/categoryRoute.js";
 import customerRouter from "./routes/customerRoute.js";
 import driverRouter from "./routes/driverRoute.js";
 import cartRouter from "./routes/cartRoute.js";
@@ -13,6 +14,7 @@ import reservationRouter from "./routes/reservationRoute.js";
 import billRouter from "./routes/billRoute.js";
 import esewaTestRouter from "./routes/esewaTestRoute.js";
 import walkInRouter from "./routes/walkInRoute.js";
+import restaurantProfileRouter from "./routes/restaurantProfileRoute.js";
 import { initiateEsewaPayment, verifyPayment, handlePaymentFailure } from "./controllers/billController.js";
 import { paymentSuccess, paymentFailure, initiateEsewaPaymentOrder } from "./controllers/orderController.js";
 import { initializeSocketHandlers } from "./socket/deliveryTracking.js";
@@ -51,6 +53,7 @@ initializeSocketHandlers(io);
 
 // API routes
 app.use("/api/food", foodRouter);
+app.use("/api/category", categoryRouter);
 app.use("/images", express.static("uploads"));
 app.use("/api/customer", customerRouter);
 app.use("/api/driver", driverRouter);
@@ -59,6 +62,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/reservation", reservationRouter);
 app.use("/api/bills", billRouter);
 app.use("/api/esewa-test", esewaTestRouter);
+app.use("/api/restaurant-profile", restaurantProfileRouter);
 
 // WALK-IN ROUTES (DINE-IN / QR-BASED SPLIT PAYMENTS)
 // Keep separate from online order flows

@@ -3,6 +3,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 120px;
+    box-sizing: border-box;
     padding: 18px 6%;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(14px);
@@ -15,7 +17,10 @@
 }
 
 .logo {
+    height: 110px;
     width: 140px;
+    max-height: 100%;
+    display: block;
     cursor: pointer;
     object-fit: contain;
 }

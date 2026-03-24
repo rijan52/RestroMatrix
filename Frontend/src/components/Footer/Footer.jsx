@@ -1,14 +1,16 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import './Footer.css'
 import assets from '../../assets/assets'
+import { StoreContext } from '../../context/StoreContext'
 const Footer = () => {
     const year = new Date().getFullYear()
+    const { restaurantLogo } = useContext(StoreContext)
 
     return (
         <footer className='footer' id='footer'>
             <div className='footer-content'>
                 <div className='footer-content-left'>
-                    <img src={assets.logo} alt="RestroMatrix logo" />
+                    <img src={restaurantLogo} alt="Restaurant logo" className='footer-logo' />
                     <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laudantium nihil iusto, maiores ducimus assumenda, quaerat earum recusandae iste consequuntur, et voluptatum laborum doloribus? Possimus earum, nisi repellat inventore necessitatibus illum?</p>
                     <div className="footer-social-icon">
                         <a href="#" aria-label="Facebook">

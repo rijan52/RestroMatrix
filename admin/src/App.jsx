@@ -4,11 +4,13 @@ import Sidebar from './components/sidebar/sidebar'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import Add from './pages/Add/Add'
 import List from './pages/List/List'
+import Category from './pages/Category/Category'
 import Orders from './pages/Orders/Orders'
 import Reservations from './pages/Reservations/Reservations'
 import Drivers from './pages/Drivers/Drivers'
 import BillQR from './pages/BillQR/BillQR'
 import Payments from './pages/Payments/Payments'
+import Profile from './pages/Profile/Profile'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -27,11 +29,13 @@ const App = () => {
           <Route path="/" element={<Navigate to="/add" replace />} />
           <Route path="/add" element={<Add url={url} />} />
           <Route path="/list" element={<List url={url} />} />
+          <Route path="/category" element={<Category url={url} />} />
           <Route path="/orders" element={<Orders url={url} />} />
           <Route path="/reservations" element={<Reservations url={url} />} />
           <Route path="/drivers" element={<Drivers url={url} />} />
           <Route path="/bill-qr" element={<BillQR url={url} />} />
           <Route path="/payments" element={<Payments url={url} />} />
+          <Route path="/profile" element={<Profile url={url} />} />
         </Routes>
       </div>
     </div>

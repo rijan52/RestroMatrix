@@ -46,7 +46,7 @@ const Add = ({ url }) => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`${url}/api/food/category/list`);
+            const response = await axios.get(`${url}/api/category/list`);
             if (response.data.success) {
                 setCategories(response.data.data);
                 // If no data.category is set, use the first category
@@ -56,6 +56,8 @@ const Add = ({ url }) => {
             }
         } catch (error) {
             console.error("Error fetching categories:", error);
+            // Fallback to empty array
+            setCategories([]);
         }
     };
 
