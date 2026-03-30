@@ -100,7 +100,7 @@ const getCustomerById = async (req, res) => {
 const updateCustomer = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, phone, address } = req.body;
+        const { name, phone, addressId } = req.body;
 
         const customer = await customerModel.findByIdAndUpdate(
             id,

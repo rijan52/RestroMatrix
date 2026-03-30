@@ -25,26 +25,26 @@ const getEsewaConfig = () => {
 const formatEsewaAmount = (value) => Number(value).toFixed(2);
 
 const escapeHtml = (value = '') => String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const renderSuccessReceiptHtml = ({
-        transactionId,
-        amountPaid,
-        totalPaid,
-        remainingAmount,
-        billStatus,
-        message,
-        paidAt
+    transactionId,
+    amountPaid,
+    totalPaid,
+    remainingAmount,
+    billStatus,
+    message,
+    paidAt
 }) => {
-        const formattedPaidAt = paidAt
-                ? new Date(paidAt).toLocaleString('en-NP', { hour12: true })
-                : new Date().toLocaleString('en-NP', { hour12: true });
+    const formattedPaidAt = paidAt
+        ? new Date(paidAt).toLocaleString('en-NP', { hour12: true })
+        : new Date().toLocaleString('en-NP', { hour12: true });
 
-        return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -148,27 +148,35 @@ const sendSuccessReceiptResponse = (req, res, payload) => {
         req.get('x-requested-with') === 'XMLHttpRequest';
 
     if (explicitJsonRequested) {
-                return res.status(200).json(payload);
-        }
+        return res.status(200).json(payload);
+    }
 
-        const { data = {}, message } = payload;
-        const html = renderSuccessReceiptHtml({
-                transactionId: data.transaction_uuid,
-                amountPaid: data.amountPaid,
-                totalPaid: data.paidAmount,
-                remainingAmount: data.remainingAmount,
-                billStatus: data.billStatus,
-                message,
-                paidAt: data.paidAt
-        });
+    const { data = {}, message } = payload;
+    const html = renderSuccessReceiptHtml({
+        transactionId: data.transaction_uuid,
+        amountPaid: data.amountPaid,
+        totalPaid: data.paidAmount,
+        remainingAmount: data.remainingAmount,
+        billStatus: data.billStatus,
+        message,
+        paidAt: data.paidAt
+    });
 
-        return res.status(200).type('html').send(html);
+    return res.status(200).type('html').send(html);
 };
 
 // CREATE BILL API - POST /api/bills/create
 const createBill = async (req, res) => {
+
     try {
-        const { tableNumber, totalAmount } = req.body;
+        const { tableNumber, totalAmount, restaurantId } = req.body;
+
+        if (!restaurantId) {
+            return res.status(400).json({
+                success: false,
+                message: 'restaurantId is required'
+            });
+        }
 
         // Validation
         if (tableNumber === undefined || totalAmount === undefined) {
@@ -195,6 +203,7 @@ const createBill = async (req, res) => {
         // Generate unique QR code data
         const qrCodeData = `bill_${tableNumber}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 
+
         const newBill = new billModel({
             tableNumber,
             totalAmount,
@@ -202,7 +211,8 @@ const createBill = async (req, res) => {
             remainingAmount: totalAmount,
             status: 'UNPAID',
             qrActive: true,
-            qrCodeData
+            qrCodeData,
+            restaurantId
         });
 
         await newBill.save();
@@ -296,16 +306,17 @@ const getBillByQRCode = async (req, res) => {
 // Get all bills (with optional filters)
 const getAllBills = async (req, res) => {
     try {
-        const { status, tableNumber, page = 1, limit = 10 } = req.query;
+        const { status, tableNumber, page = 1, limit = 10, restaurantId } = req.query;
 
         let query = {};
-
         if (status) {
             query.status = status;
         }
-
         if (tableNumber) {
             query.tableNumber = tableNumber;
+        }
+        if (restaurantId) {
+            query.restaurantId = restaurantId;
         }
 
         const bills = await billModel

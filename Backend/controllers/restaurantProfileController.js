@@ -1,5 +1,50 @@
+// Get restaurant profile by ID
+const getRestaurantProfileById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await restaurantProfileModel.findById(id);
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Restaurant profile not found" });
+        }
+        res.json({ success: true, data: profile });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Error fetching restaurant profile by ID" });
+    }
+};
+import restaurantProfileModel from '../models/restaurantProfileModel.js';
+import bcrypt from 'bcryptjs';
+
+// Register a new restaurant
+const registerRestaurant = async (req, res) => {
+    try {
+        const { restaurantName, email, password, phoneNumber, address } = req.body;
+        if (!restaurantName || !email || !password || !phoneNumber || !address) {
+            return res.json({ success: false, message: "All fields are required" });
+        }
+        // Check if email already exists
+        const existing = await restaurantProfileModel.findOne({ email });
+        if (existing) {
+            return res.json({ success: false, message: "Email already registered" });
+        }
+        // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const newRestaurant = new restaurantProfileModel({
+            restaurantName,
+            email,
+            password: hashedPassword,
+            phoneNumber,
+            address
+        });
+        await newRestaurant.save();
+        res.json({ success: true, message: "Registration successful" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Registration error" });
+    }
+};
 import fs from "fs";
-import restaurantProfileModel from "../models/restaurantProfileModel.js";
 
 const getRestaurantProfile = async (req, res) => {
     try {
@@ -121,4 +166,27 @@ const updateRestaurantProfile = async (req, res) => {
     }
 };
 
-export { getRestaurantProfile, updateRestaurantProfile };
+
+const loginRestaurant = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.json({ success: false, message: "Email and password are required" });
+        }
+        const profile = await restaurantProfileModel.findOne({ email });
+        if (!profile) {
+            return res.json({ success: false, message: "No restaurant found with this email" });
+        }
+        const isMatch = await bcrypt.compare(password, profile.password);
+        if (!isMatch) {
+            return res.json({ success: false, message: "Incorrect password" });
+        }
+        // Return restaurantId for frontend redirect
+        return res.json({ success: true, message: "Login successful", restaurantId: profile._id });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Login error" });
+    }
+};
+
+export { getRestaurantProfile, updateRestaurantProfile, loginRestaurant, registerRestaurant, getRestaurantProfileById };

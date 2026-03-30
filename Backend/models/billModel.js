@@ -59,8 +59,12 @@ const billSchema = new mongoose.Schema({
     notes: {
         type: String,
         default: null
+    },
+    restaurantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'restaurantprofile',
+        required: true
     }
-
 }, { timestamps: true });
 
 

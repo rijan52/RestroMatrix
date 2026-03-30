@@ -6,27 +6,36 @@ import fs from "fs";
 const addFood = async (req, res) => {
     let image_filename = `${req.file.filename}`;
 
+    // Check for restaurantId
+    if (!req.body.restaurantId) {
+        return res.status(400).json({ success: false, message: "restaurantId is required" });
+    }
+
     const food = new foodModel({
         name: req.body.name,
         description: req.body.description,
         price: Number(req.body.price),
         category: req.body.category,
-        image: image_filename
-    })
+        image: image_filename,
+        restaurantId: req.body.restaurantId
+    });
     try {
         await food.save();
-        res.json({ success: true, message: "Food Item Added Successfully" })
+        res.json({ success: true, message: "Food Item Added Successfully" });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: "Error" })
-
+        console.log(error);
+        res.json({ success: false, message: error.message || "Error" });
     }
 }
 
 // all food list
 const listFood = async (req, res) => {
     try {
-        const foods = await foodModel.find({});
+        const filter = {};
+        if (req.query.restaurantId) {
+            filter.restaurantId = req.query.restaurantId;
+        }
+        const foods = await foodModel.find(filter);
         res.json({ success: true, data: foods });
     } catch (error) {
         console.log(error);

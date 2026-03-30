@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Home from "./pages/Home/Home";
 import Cart from "./pages/Cart/Cart";
@@ -59,31 +59,56 @@ const App = () => {
     <>
       {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <div className="app">
-        {!isDriverPage && !isTrackingPage && !isPaymentPage && !isLoginPage && <Navbar setShowLogin={setShowLogin} />}
-
         <Routes>
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPopup isPageMode={true} />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/order" element={<ProtectedCheckoutRoute><PlaceOrder /></ProtectedCheckoutRoute>} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-          <Route path="/verify" element={<Verify />} />
-          <Route path="/myorders" element={<MyOrders />} />
-          <Route path="/live-tracking" element={<LiveTracking />} />
-          <Route path="/reservation" element={<TableReservation />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/" element={<FallbackPage />} />
+          <Route path="/restaurant/:restaurantId/*" element={<RestaurantLayout setShowLogin={setShowLogin} />} />
+          {/* Payment and tracking routes can remain global if needed */}
           <Route path="/pay/:billId" element={<Payment />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/live-tracking" element={<LiveTracking />} />
+          <Route path="*" element={<FallbackPage />} />
         </Routes>
-
         {!isDriverPage && !isTrackingPage && !isPaymentPage && !isLoginPage && <Footer />}
       </div>
     </>
   );
 };
+
+// Layout for all restaurant routes
+const RestaurantLayout = ({ setShowLogin }) => {
+  const { restaurantId } = useParams();
+  if (!restaurantId) {
+    return <FallbackPage />;
+  }
+  return (
+    <>
+      <Navbar setShowLogin={setShowLogin} />
+      <Routes>
+        <Route index element={<Home />} />
+        <Route path="home" element={<Home />} />
+        <Route path="menu" element={<Menu />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="order" element={<ProtectedCheckoutRoute><PlaceOrder /></ProtectedCheckoutRoute>} />
+        <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
+        <Route path="verify" element={<Verify />} />
+        <Route path="myorders" element={<MyOrders />} />
+        <Route path="reservation" element={<TableReservation />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </>
+  );
+}
+
+// Fallback page if no restaurantId
+const FallbackPage = () => (
+  <div style={{ padding: '2rem', textAlign: 'center' }}>
+    <h2>Please select a restaurant to continue.</h2>
+    <p>Or use a direct link like <code>/restaurant/&lt;restaurantId&gt;/menu</code></p>
+  </div>
+);
 
 export default App;
 

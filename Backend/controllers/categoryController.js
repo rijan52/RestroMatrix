@@ -5,10 +5,16 @@ import fs from "fs";
 const addCategory = async (req, res) => {
     let image_filename = `${req.file.filename}`;
 
+    // Check for restaurantId
+    if (!req.body.restaurantId) {
+        return res.status(400).json({ success: false, message: "restaurantId is required" });
+    }
+
     const category = new categoryModel({
         name: req.body.name,
         description: req.body.description || "",
-        image: image_filename
+        image: image_filename,
+        restaurantId: req.body.restaurantId
     });
 
     try {
@@ -27,7 +33,11 @@ const addCategory = async (req, res) => {
 // Get all categories
 const listCategories = async (req, res) => {
     try {
-        const categories = await categoryModel.find({});
+        const filter = {};
+        if (req.query.restaurantId) {
+            filter.restaurantId = req.query.restaurantId;
+        }
+        const categories = await categoryModel.find(filter);
         res.json({ success: true, data: categories });
     } catch (error) {
         console.log(error);

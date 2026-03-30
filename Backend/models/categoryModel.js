@@ -15,6 +15,11 @@ const categorySchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    restaurantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'restaurantprofile',
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

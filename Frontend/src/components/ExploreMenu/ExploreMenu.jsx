@@ -2,20 +2,24 @@ import React, { useState, useEffect, useContext } from 'react'
 import './ExploreMenu.css'
 import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
+import { useParams } from 'react-router-dom'
 
-const ExploreMenu = ({ category, setCategory }) => {
+const ExploreMenu = ({ category, setCategory, restaurantId: propRestaurantId }) => {
     const { url, headerSettings } = useContext(StoreContext)
     const [categories, setCategories] = useState([])
+    const params = useParams();
+    const restaurantId = propRestaurantId || params.restaurantId;
 
     useEffect(() => {
         fetchCategories()
-    }, [url])
+    }, [url, restaurantId])
 
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${url}/api/category/list`)
             if (response.data.success) {
-                setCategories(response.data.data)
+                // Only show categories for this restaurant
+                setCategories(response.data.data.filter(cat => cat.restaurantId === restaurantId))
             }
         } catch (error) {
             console.error("Error fetching categories:", error)
@@ -34,7 +38,6 @@ const ExploreMenu = ({ category, setCategory }) => {
                         <div onClick={() => setCategory(prev => prev === item.name ? "All" : item.name)} key={item._id} className='explore-menu-list-item'>
                             <img className={category === item.name ? "active" : ""} src={`${url}/images/${item.image}`} alt={item.name} />
                             <p>{item.name}</p>
-
                         </div>
                     )
                 })}

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import assets from "../../assets/assets";
 import './Navbar.css'
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
   const [profileOpen, setProfileOpen] = useState(false)
@@ -28,29 +28,30 @@ const Navbar = ({ setShowLogin }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [profileOpen]);
 
+  const { restaurantId } = useParams();
+  const base = restaurantId ? `/restaurant/${restaurantId}` : '';
+
   const logout = () => {
     localStorage.removeItem("token");
     setToken("");
     setProfileOpen(false);
-    navigate("/")
+    navigate(base || "/");
+  };
 
-
-  }
   return (
     <div className='navbar'>
-      <Link to='/'> <img src={restaurantLogo} alt="Restaurant logo" className="logo" /> </Link>
+      <Link to={base || '/'}> <img src={restaurantLogo} alt="Restaurant logo" className="logo" /> </Link>
       <ul className="navbar-menu">
-        <Link to='/' className={isActive('/') ? 'active' : ''}>Home</Link>
-        <Link to='/menu' className={isActive('/menu') ? 'active' : ''}>Menu</Link>
-        <Link to='/reservation' className={isActive('/reservation') ? 'active' : ''}>Reservation</Link>
-        <Link to='/contact' className={isActive('/contact') ? 'active' : ''}>Contact us</Link>
-
+        <Link to={`${base}/home`} className={isActive(`${base}/home`) ? 'active' : ''}>Home</Link>
+        <Link to={`${base}/menu`} className={isActive(`${base}/menu`) ? 'active' : ''}>Menu</Link>
+        <Link to={`${base}/reservation`} className={isActive(`${base}/reservation`) ? 'active' : ''}>Reservation</Link>
+        <Link to={`${base}/contact`} className={isActive(`${base}/contact`) ? 'active' : ''}>Contact us</Link>
       </ul>
 
       <div className='navbar-right'>
         <img src={assets.searchIcon} alt="" />
         <div className='navbar-search-icon'>
-          <Link to='/cart'><img src={assets.basketIcon} alt="" /></Link>
+          <Link to={`${base}/cart`}><img src={assets.basketIcon} alt="" /></Link>
           <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
         {!token ? (
@@ -70,7 +71,7 @@ const Navbar = ({ setShowLogin }) => {
             <ul className={`nav-profile-dropdown ${profileOpen ? "open" : ""}`}>
               <li onClick={() => {
                 setProfileOpen(false);
-                navigate('/myorders');
+                navigate(`${base}/myorders`);
               }}><img src={assets.addIcon} alt="" /><p>Orders</p></li>
               <hr />
               <li onClick={logout}><img src={assets.removeIcon} alt="" /><p>Logout</p></li>
