@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import './LoginPopup.css'
 import assets from '../../assets/assets'
 import { useContext } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
 
@@ -13,6 +13,7 @@ const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { url, setToken, setRole } = useContext(StoreContext)
+  const { restaurantId } = useParams();
   const [currState, setCurrState] = useState("Login")
   const [data, setData] = useState({
     name: "",
@@ -35,6 +36,7 @@ const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
     }
   }
 
+
   const onLogin = async (event) => {
     event.preventDefault()
 
@@ -44,12 +46,9 @@ const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
     }
 
     let newUrl = url;
-    if (currState === "Login") {
-      newUrl += "/api/customer/login"
-    }
-    else {
-      newUrl += "/api/customer/register"
-    }
+    newUrl += currState === "Login"
+      ? `/api/customer/${restaurantId}/login`
+      : `/api/customer/${restaurantId}/register`;
 
     const response = await axios.post(newUrl, data);
     if (response.data.success) {
@@ -89,6 +88,33 @@ const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
   }
 
 
+  if (!restaurantId) {
+    return (
+      <div className='login-popup'>
+        <div className="login-popup-container">
+          <div className='login-popup-title'>
+            <h2>Restaurant Not Selected</h2>
+            <img
+              onClick={() => {
+                if (isPageMode) {
+                  navigate('/')
+                  return
+                }
+                if (setShowLogin) {
+                  setShowLogin(false)
+                }
+              }}
+              src={assets.crossIcon}
+              alt=""
+            />
+          </div>
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>No restaurant selected. Please use a restaurant link (e.g. <code>/restaurant/&lt;restaurantId&gt;/menu</code>).</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className='login-popup'>
       <form onSubmit={onLogin} action="" className="login-popup-container">

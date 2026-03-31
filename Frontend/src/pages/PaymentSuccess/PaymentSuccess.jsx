@@ -4,15 +4,46 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getBill } from '../../services/billService';
 
 const PaymentSuccess = () => {
+    // Auto-redirect to My Orders with correct restaurantId and params
+    useEffect(() => {
+        if (!loading && bill) {
+            const restaurantId = getRestaurantId();
+            if (restaurantId) {
+                const params = new URLSearchParams();
+                if (paymentSuccess) params.set('payment_success', paymentSuccess);
+                if (transactionId) params.set('transaction_uuid', transactionId);
+                if (orderId) params.set('orderId', orderId);
+                navigate(`/restaurant/${restaurantId}/myorders?${params.toString()}`, { replace: true });
+            }
+        }
+    }, [loading, bill]);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [bill, setBill] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const transactionId = searchParams.get('transaction_uuid');
+    const orderId = searchParams.get('orderId');
+    const paymentSuccess = searchParams.get('payment_success');
     // transaction_uuid format we generate: <billId>_<timestamp>_<random>
     const parts = transactionId?.split('_');
     const billId = parts && parts.length >= 2 ? parts[0] : null;
+    // Helper to get restaurantId from bill or fallback
+    const getRestaurantId = () => {
+        if (bill && bill.restaurantId) return bill.restaurantId;
+        // fallback: try to get from localStorage or URL if needed
+        try {
+            const lastPath = window.localStorage.getItem('lastRestaurantPath');
+            if (lastPath) {
+                const match = lastPath.match(/\/restaurant\/(.*?)\//);
+                if (match && match[1]) return match[1];
+            }
+        } catch { }
+        // fallback: try to get from current URL
+        const match = window.location.pathname.match(/\/restaurant\/(.*?)\//);
+        if (match && match[1]) return match[1];
+        return null;
+    };
 
     useEffect(() => {
         const fetchBill = async () => {
@@ -102,6 +133,23 @@ const PaymentSuccess = () => {
                         className="btn btn-primary"
                     >
                         Go to Home
+                    </button>
+                    <button
+                        onClick={() => {
+                            const restaurantId = getRestaurantId();
+                            if (restaurantId) {
+                                const params = new URLSearchParams();
+                                if (paymentSuccess) params.set('payment_success', paymentSuccess);
+                                if (transactionId) params.set('transaction_uuid', transactionId);
+                                if (orderId) params.set('orderId', orderId);
+                                navigate(`/restaurant/${restaurantId}/myorders?${params.toString()}`);
+                            } else {
+                                alert('Restaurant ID not found.');
+                            }
+                        }}
+                        className="btn btn-success"
+                    >
+                        Go to My Orders
                     </button>
                     {!isFullyPaid && (
                         <button

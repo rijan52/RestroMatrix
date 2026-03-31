@@ -7,9 +7,12 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { initiateOrderPayment } from '../../services/orderService'
 
-const PlaceOrder = () => {
 
+import { useParams } from 'react-router-dom';
+
+const PlaceOrder = () => {
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext)
+  const { restaurantId } = useParams();
 
   const [data, setData] = useState({
     firstName: "",
@@ -84,10 +87,12 @@ const PlaceOrder = () => {
 
       const totalAmount = getTotalCartAmount() + 150;
 
+
       let orderData = {
         address: data,
         items: orderItems,
         amount: totalAmount,
+        restaurantId: restaurantId,
       }
 
       console.log('Placing order with data:', orderData);

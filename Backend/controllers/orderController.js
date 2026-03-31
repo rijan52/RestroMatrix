@@ -78,6 +78,7 @@ const placeOrder = async (req, res) => {
         // Create new order
         const newOrder = new orderModel({
             userId: req.userId,
+            restaurantId: req.body.restaurantId, // Must be sent from frontend
             items: req.body.items,
             amount: totals.totalAmount,
             address: req.body.address,
@@ -268,7 +269,13 @@ const paymentSuccess = async (req, res) => {
 
         // Redirect to frontend order page with transaction UUID
         const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-        return res.redirect(`${frontendUrl}/myorders?payment_success=true&transaction_uuid=${transaction_uuid}&orderId=${order._id.toString()}`);
+        // Use restaurantId in redirect if available
+        const restaurantId = order.restaurantId || "";
+        if (restaurantId) {
+            return res.redirect(`${frontendUrl}/restaurant/${restaurantId}/myorders?payment_success=true&transaction_uuid=${transaction_uuid}&orderId=${order._id.toString()}`);
+        } else {
+            return res.redirect(`${frontendUrl}/myorders?payment_success=true&transaction_uuid=${transaction_uuid}&orderId=${order._id.toString()}`);
+        }
 
     } catch (error) {
         console.error("[Payment Success Error]", error);

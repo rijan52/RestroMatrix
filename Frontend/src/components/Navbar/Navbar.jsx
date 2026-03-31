@@ -55,7 +55,16 @@ const Navbar = ({ setShowLogin }) => {
           <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
         {!token ? (
-          <button onClick={() => setShowLogin(true)} className='sign-in-btn'>sign in</button>
+          <button
+            onClick={() => {
+              if (restaurantId) {
+                setShowLogin(true);
+              } else {
+                // If not on a restaurant route, redirect to fallback page
+                navigate('/');
+              }
+            }}
+            className='sign-in-btn'>sign in</button>
         )
           :
           <div className='navbar-profile' ref={profileRef}>

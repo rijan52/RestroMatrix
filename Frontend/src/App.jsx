@@ -40,6 +40,7 @@ const ProtectedCheckoutRoute = ({ children }) => {
   return children;
 };
 
+
 const App = () => {
   const [showLogin, setShowLogin] = useState(false)
   const [isDriverLoggedIn, setIsDriverLoggedIn] = useState(false)
@@ -57,15 +58,15 @@ const App = () => {
 
   return (
     <>
-      {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <div className="app">
         <Routes>
-          <Route path="/login" element={<LoginPopup isPageMode={true} />} />
           <Route path="/" element={<FallbackPage />} />
-          <Route path="/restaurant/:restaurantId/*" element={<RestaurantLayout setShowLogin={setShowLogin} />} />
+          {/* Redirect /order to /restaurant/:restaurantId/order if restaurantId is in localStorage or context */}
+          <Route path="/order" element={<OrderRedirect />} />
+          <Route path="/restaurant/:restaurantId/*" element={<RestaurantLayout showLogin={showLogin} setShowLogin={setShowLogin} />} />
           {/* Payment and tracking routes can remain global if needed */}
           <Route path="/pay/:billId" element={<Payment />} />
-          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/restaurant/:restaurantId/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
           <Route path="/live-tracking" element={<LiveTracking />} />
           <Route path="*" element={<FallbackPage />} />
@@ -74,10 +75,33 @@ const App = () => {
       </div>
     </>
   );
-};
+}
+
+// Redirect /order to /restaurant/:restaurantId/order
+function OrderRedirect() {
+  // Try to get restaurantId from last visited path or localStorage
+  let restaurantId = null;
+  // Try to parse from referrer or fallback
+  try {
+    const lastPath = window.localStorage.getItem('lastRestaurantPath');
+    if (lastPath) {
+      const match = lastPath.match(/\/restaurant\/(.*?)\//);
+      if (match && match[1]) restaurantId = match[1];
+    }
+  } catch { }
+  // Fallback: try to get from current URL
+  if (!restaurantId) {
+    const match = window.location.pathname.match(/\/restaurant\/(.*?)\//);
+    if (match && match[1]) restaurantId = match[1];
+  }
+  // If still not found, show fallback
+  if (!restaurantId) return <FallbackPage />;
+  // Redirect
+  return <Navigate to={`/restaurant/${restaurantId}/order`} replace />;
+}
 
 // Layout for all restaurant routes
-const RestaurantLayout = ({ setShowLogin }) => {
+const RestaurantLayout = ({ showLogin, setShowLogin }) => {
   const { restaurantId } = useParams();
   if (!restaurantId) {
     return <FallbackPage />;
@@ -85,6 +109,7 @@ const RestaurantLayout = ({ setShowLogin }) => {
   return (
     <>
       <Navbar setShowLogin={setShowLogin} />
+      {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <Routes>
         <Route index element={<Home />} />
         <Route path="home" element={<Home />} />

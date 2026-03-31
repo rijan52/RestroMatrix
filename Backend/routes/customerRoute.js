@@ -10,8 +10,8 @@ import {
 
 const customerRouter = express.Router()
 
-customerRouter.post("/register", registerCustomer)
-customerRouter.post("/login", loginCustomer)
+customerRouter.post("/:restaurantId/register", registerCustomer)
+customerRouter.post("/:restaurantId/login", loginCustomer)
 customerRouter.get("/", getAllCustomers)
 customerRouter.get("/:id", getCustomerById)
 customerRouter.put("/:id", updateCustomer)
