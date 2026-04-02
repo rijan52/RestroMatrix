@@ -46,7 +46,7 @@ const Profile = ({ url }) => {
                 address: data.address || '',
                 description: data.description || '',
                 openingHours: data.openingHours || '',
-                password: data.password || ''
+                password: ''
             });
 
             if (data.logo) {
@@ -105,13 +105,14 @@ const Profile = ({ url }) => {
         }
 
         const payload = new FormData();
+        payload.append('restaurantId', restaurantId);
         payload.append('restaurantName', formData.restaurantName);
         payload.append('email', formData.email);
         payload.append('phoneNumber', formData.phoneNumber);
         payload.append('address', formData.address);
         payload.append('description', formData.description);
         payload.append('openingHours', formData.openingHours);
-        if (formData.password !== undefined) {
+        if (formData.password.trim()) {
             payload.append('password', formData.password);
         }
 
@@ -166,14 +167,15 @@ const Profile = ({ url }) => {
 
                     <div className="profile-grid">
                         <div className="profile-field">
-                            <label htmlFor="password">{formData.password ? 'Change Password' : 'Set Password'}</label>
+                            <label htmlFor="password">Change Password</label>
                             <input
                                 id="password"
                                 name="password"
-                                type="text"
+                                type="password"
                                 value={formData.password}
                                 onChange={onChangeHandler}
-                                placeholder={formData.password ? 'Enter new password' : 'Set password'}
+                                placeholder="Enter a new password"
+                                autoComplete="new-password"
                             />
                         </div>
                         <div className="profile-field">

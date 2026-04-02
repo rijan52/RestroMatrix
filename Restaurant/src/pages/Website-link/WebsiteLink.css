@@ -1,0 +1,354 @@
+/* Modern Website Link Page Styles - Bluish Theme */
+.website-link-container {
+    flex: 1;
+    padding: 32px;
+    color: var(--text-dark, #0F172A);
+    background: var(--background, #F8FAFC);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.website-link-card {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--card, #FFFFFF);
+    border: 1px solid var(--border, #E2E8F0);
+    border-radius: 24px;
+    padding: 2.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease-out;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.website-link-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+}
+
+/* Header Section */
+.website-link-header {
+    margin-bottom: 2rem;
+}
+
+.website-link-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--text-dark, #0F172A) 0%, var(--primary, #2563EB) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.website-link-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-light, #64748B);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* URL Display Section */
+.url-display {
+    background: var(--background, #F8FAFC);
+    border: 1px solid var(--border, #E2E8F0);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.url-display:hover {
+    border-color: var(--primary, #2563EB);
+    background: var(--card, #FFFFFF);
+}
+
+.url-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light, #64748B);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.url-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark, #0F172A);
+    word-break: break-all;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    line-height: 1.5;
+    background: var(--card, #FFFFFF);
+    padding: 0.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #E2E8F0);
+}
+
+/* Action Buttons */
+.website-link-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.copy-btn,
+.visit-btn {
+    padding: 0.75rem 1.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    max-width: 150px;
+}
+
+.copy-btn {
+    background: var(--card, #FFFFFF);
+    color: var(--primary, #2563EB);
+    border: 1.5px solid var(--primary, #2563EB);
+}
+
+.copy-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.copy-btn:hover {
+    background: var(--primary, #2563EB);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.copy-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.visit-btn {
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.visit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.visit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+}
+
+.visit-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.copy-btn:active,
+.visit-btn:active {
+    transform: translateY(0);
+}
+
+/* Success Message */
+.copy-success {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+    border-radius: 8px;
+    color: #16A34A;
+    font-size: 0.75rem;
+    font-weight: 500;
+    animation: fadeInOut 2s ease-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* QR Code Section (Optional) */
+.qr-code-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border, #E2E8F0);
+}
+
+.qr-code-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-light, #64748B);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.qr-code-container {
+    display: inline-block;
+    background: var(--card, #FFFFFF);
+    padding: 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border, #E2E8F0);
+    margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .website-link-container {
+        padding: 24px;
+    }
+
+    .website-link-card {
+        padding: 2rem;
+    }
+
+    .website-link-header h2 {
+        font-size: 1.75rem;
+    }
+
+    .url-text {
+        font-size: 0.875rem;
+    }
+
+    .website-link-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .copy-btn,
+    .visit-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .website-link-container {
+        padding: 16px;
+    }
+
+    .website-link-card {
+        padding: 1.5rem;
+    }
+
+    .website-link-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .website-link-subtitle {
+        font-size: 0.8125rem;
+    }
+
+    .url-display {
+        padding: 1rem;
+    }
+
+    .url-text {
+        font-size: 0.8125rem;
+        padding: 0.625rem;
+    }
+
+    .copy-btn,
+    .visit-btn {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.8125rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus States for Accessibility */
+.copy-btn:focus-visible,
+.visit-btn:focus-visible {
+    outline: 2px solid var(--primary, #2563EB);
+    outline-offset: 2px;
+}
+
+/* Optional: Add a subtle glow effect on focus */
+.url-text:focus {
+    outline: none;
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Optional: Tooltip styling */
+.website-link-container [data-tooltip] {
+    position: relative;
+}
+
+.website-link-container [data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-dark, #0F172A);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 0.5rem;
+    z-index: 10;
+}

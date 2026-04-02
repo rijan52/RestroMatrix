@@ -21,7 +21,7 @@ const Drivers = ({ url }) => {
     const fetchDrivers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${url}/api/driver/all`);
+            const response = await axios.get(`${url}/api/driver/all?restaurantId=${restaurantId}`);
             if (response.data.success) {
                 setDrivers(response.data.data || []);
             } else {
@@ -38,10 +38,10 @@ const Drivers = ({ url }) => {
     };
 
     useEffect(() => {
-        if (url) {
+        if (url && restaurantId) {
             fetchDrivers();
         }
-    }, [url]);
+    }, [url, restaurantId]);
 
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
@@ -110,6 +110,9 @@ const Drivers = ({ url }) => {
             toast.error("Failed to delete driver");
         }
     };
+
+    // Only show drivers for the current restaurant
+    const filteredDrivers = drivers.filter(driver => driver.restaurantId === restaurantId);
 
     return (
         <div className='drivers-container'>

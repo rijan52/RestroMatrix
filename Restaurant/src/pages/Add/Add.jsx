@@ -47,7 +47,7 @@ const Add = ({ url }) => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`${url}/api/category/list`);
+            const response = await axios.get(`${url}/api/category/list?restaurantId=${restaurantId}`);
             if (response.data.success) {
                 setCategories(response.data.data);
                 // If no data.category is set, use the first category
@@ -170,16 +170,17 @@ const Add = ({ url }) => {
         }
     };
 
-    return (
-        <div className='add'>
+   return (
+    <div className='add'>
+        <div className="add-container">
             <div className="add-header">
                 <h2>{editMode ? 'Edit Food Item' : 'Add New Food Item'}</h2>
                 <p className="add-subtitle">{editMode ? 'Update the food details' : 'Add a new item to your menu'}</p>
             </div>
 
-            <form className='add-form flex-col' onSubmit={onSubmitHandler}>
-
-                <div className="add-img-upload flex-col">
+            <form className='add-form' onSubmit={onSubmitHandler}>
+                {/* All your existing form fields remain the same */}
+                <div className="add-img-upload">
                     <p>Upload Image</p>
                     <label htmlFor="image">
                         <img
@@ -196,7 +197,7 @@ const Add = ({ url }) => {
                     />
                 </div>
 
-                <div className="add-product-name flex-col">
+                <div className="add-product-name">
                     <p>Product name</p>
                     <input
                         onChange={onChangeHandler}
@@ -208,7 +209,7 @@ const Add = ({ url }) => {
                     />
                 </div>
 
-                <div className="add-product-description flex-col">
+                <div className="add-product-description">
                     <p>Product description</p>
                     <textarea
                         onChange={onChangeHandler}
@@ -221,35 +222,22 @@ const Add = ({ url }) => {
                 </div>
 
                 <div className="add-category-price">
-                    <div className="add-category flex-col">
+                    <div className="add-category">
                         <p>Product category</p>
                         <select
                             name="category"
                             value={data.category}
                             onChange={onChangeHandler}
                         >
-                            {categories.length > 0 ? (
-                                categories.map((cat, index) => (
-                                    <option key={cat._id || index} value={cat.name}>
-                                        {cat.name}
-                                    </option>
-                                ))
-                            ) : (
-                                <>
-                                    <option value="Appetizer">Appetizer</option>
-                                    <option value="Fried Items">Fried Items</option>
-                                    <option value="Noodles">Noodles</option>
-                                    <option value="Chilly Items">Chilly Items</option>
-                                    <option value="Cheesy">Cheesy</option>
-                                    <option value="Main Course">Main Course</option>
-                                    <option value="Salad">Salad</option>
-                                    <option value="Desert">Desert</option>
-                                </>
-                            )}
+                            {categories.map((cat, index) => (
+                                <option key={cat._id || index} value={cat.name}>
+                                    {cat.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
-                    <div className="add-price flex-col">
+                    <div className="add-price">
                         <p>Product price</p>
                         <input
                             onChange={onChangeHandler}
@@ -272,7 +260,8 @@ const Add = ({ url }) => {
                 </div>
             </form>
         </div>
-    );
+    </div>
+);
 };
 
 export default Add;

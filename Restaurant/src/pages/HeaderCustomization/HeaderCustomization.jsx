@@ -24,7 +24,9 @@ const HeaderCustomization = ({ url }) => {
     const fetchHeaderSettings = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get(`${url}/api/restaurant-profile`);
+            const response = await axios.get(`${url}/api/restaurant-profile`, {
+                params: { restaurantId }
+            });
 
             if (!response.data.success) {
                 toast.error(response.data.message || 'Failed to load header settings');
@@ -61,7 +63,7 @@ const HeaderCustomization = ({ url }) => {
 
     useEffect(() => {
         fetchHeaderSettings();
-    }, [url]);
+    }, [url, restaurantId]);
 
     useEffect(() => {
         return () => {
@@ -99,6 +101,7 @@ const HeaderCustomization = ({ url }) => {
         }
 
         const payload = new FormData();
+        payload.append('restaurantId', restaurantId);
         payload.append('headerTitle', formData.headerTitle);
         payload.append('headerContent', formData.headerContent);
         payload.append('headerButtonText', formData.headerButtonText);

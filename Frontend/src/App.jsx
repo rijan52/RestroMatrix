@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 
 import { Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
@@ -17,11 +17,11 @@ import Payment from "./pages/Payment/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure/PaymentFailure";
 import OrderConfirmation from "./pages/OrderConfirmation/OrderConfirmation";
+import { StoreContext } from "./context/StoreContext";
 
 // Protected Route Component
 const ProtectedDriverRoute = ({ children }) => {
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
+  const { role, token } = useContext(StoreContext);
   if (role !== "driver" || !token) {
     return <Navigate to="/" replace />;
   }
@@ -29,8 +29,7 @@ const ProtectedDriverRoute = ({ children }) => {
 };
 
 const ProtectedCheckoutRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const { token, role } = useContext(StoreContext);
   const location = useLocation();
 
   if (!token || role === "driver") {
@@ -42,14 +41,8 @@ const ProtectedCheckoutRoute = ({ children }) => {
 
 
 const App = () => {
-  const [showLogin, setShowLogin] = useState(false)
-  const [isDriverLoggedIn, setIsDriverLoggedIn] = useState(false)
+  const { showLogin, setShowLogin } = useContext(StoreContext)
   const location = useLocation()
-
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    setIsDriverLoggedIn(role === "driver");
-  }, [location])
 
   const isDriverPage = location.pathname === "/driver-tracking"
   const isTrackingPage = location.pathname === "/live-tracking"

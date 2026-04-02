@@ -11,7 +11,7 @@ import { initiateOrderPayment } from '../../services/orderService'
 import { useParams } from 'react-router-dom';
 
 const PlaceOrder = () => {
-  const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext)
+  const { getTotalCartAmount, token, food_list, cartItems, url, clearCart, fetchCartData } = useContext(StoreContext)
   const { restaurantId } = useParams();
 
   const [data, setData] = useState({
@@ -101,6 +101,10 @@ const PlaceOrder = () => {
 
       if (response.data.success) {
         console.log('Order placed successfully:', response.data.orderId);
+
+        // Order is persisted, so clear local/persisted cart immediately.
+        await clearCart();
+        await fetchCartData();
 
         // Order placed successfully, now initiate eSewa payment
         const orderId = response.data.orderId;

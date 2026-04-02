@@ -142,8 +142,9 @@ const registerDriver = async (req, res) => {
 
 const getAllDrivers = async (req, res) => {
     try {
-
-        const drivers = await driverModel.find().select("-password");
+        const { restaurantId } = req.query;
+        const filter = restaurantId ? { restaurantId } : {};
+        const drivers = await driverModel.find(filter).select("-password");
 
         res.json({
             success: true,

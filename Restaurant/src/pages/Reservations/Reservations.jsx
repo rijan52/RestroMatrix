@@ -10,7 +10,7 @@ const Reservations = ({ url }) => {
 
   const fetchReservations = async () => {
     try {
-      const response = await axios.get(`${url}/api/reservation/list`);
+      const response = await axios.get(`${url}/api/reservation/list?restaurantId=${restaurantId}`);
       if (response.data.success) {
         setReservations(response.data.data);
       } else {
@@ -59,8 +59,10 @@ const Reservations = ({ url }) => {
   };
 
   useEffect(() => {
-    fetchReservations();
-  }, []);
+    if (restaurantId) {
+      fetchReservations();
+    }
+  }, [restaurantId]);
 
   return (
     <div className="reservations">

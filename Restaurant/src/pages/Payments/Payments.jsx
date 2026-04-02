@@ -14,7 +14,7 @@ const Payments = ({ url }) => {
 
     const fetchSplitPaymentsWithFallback = async () => {
         try {
-            const splitResponse = await axios.get(`${url}/api/bills/payments/split`);
+            const splitResponse = await axios.get(`${url}/api/bills/payments/split?restaurantId=${restaurantId}`);
             if (splitResponse?.data?.success) {
                 return splitResponse.data.data || [];
             }
@@ -24,7 +24,7 @@ const Payments = ({ url }) => {
                 throw error;
             }
 
-            const billsResponse = await axios.get(`${url}/api/bills/list?limit=100`);
+            const billsResponse = await axios.get(`${url}/api/bills/list?restaurantId=${restaurantId}&limit=100`);
             if (!billsResponse?.data?.success) return [];
 
             const bills = billsResponse.data.data || [];
@@ -66,7 +66,7 @@ const Payments = ({ url }) => {
         setLoading(true);
         try {
             const [ordersResponse, splitData] = await Promise.all([
-                axios.get(`${url}/api/order/list`),
+                axios.get(`${url}/api/order/list?restaurantId=${restaurantId}`),
                 fetchSplitPaymentsWithFallback(),
             ]);
 
@@ -145,8 +145,10 @@ const Payments = ({ url }) => {
     };
 
     useEffect(() => {
-        fetchPayments();
-    }, []);
+        if (restaurantId) {
+            fetchPayments();
+        }
+    }, [restaurantId]);
 
     const summary = useMemo(() => {
         const onlineTotal = onlinePayments.reduce((sum, payment) => sum + payment.amount, 0);

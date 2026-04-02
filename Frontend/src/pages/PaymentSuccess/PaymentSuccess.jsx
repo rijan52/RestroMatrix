@@ -1,9 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './PaymentResult.css';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getBill } from '../../services/billService';
+import { StoreContext } from '../../context/StoreContext';
 
 const PaymentSuccess = () => {
+    const { clearCart, fetchCartData } = useContext(StoreContext);
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const [bill, setBill] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const transactionId = searchParams.get('transaction_uuid');
+    const orderId = searchParams.get('orderId');
+    const paymentSuccess = searchParams.get('payment_success');
+    const isPaymentConfirmed = paymentSuccess && paymentSuccess !== 'false' && paymentSuccess !== '0';
+
+    // transaction_uuid format we generate: <billId>_<timestamp>_<random>
+    const parts = transactionId?.split('_');
+    const billId = parts && parts.length >= 2 ? parts[0] : null;
+
+    // Clear cart immediately on success callback so UI never shows stale items.
+    useEffect(() => {
+        if (!isPaymentConfirmed) return;
+
+        const clearAndRefreshCart = async () => {
+            await clearCart();
+            await fetchCartData();
+        };
+
+        clearAndRefreshCart();
+    }, [isPaymentConfirmed, clearCart, fetchCartData]);
+
     // Auto-redirect to My Orders with correct restaurantId and params
     useEffect(() => {
         if (!loading && bill) {
@@ -16,18 +44,7 @@ const PaymentSuccess = () => {
                 navigate(`/restaurant/${restaurantId}/myorders?${params.toString()}`, { replace: true });
             }
         }
-    }, [loading, bill]);
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-    const [bill, setBill] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    const transactionId = searchParams.get('transaction_uuid');
-    const orderId = searchParams.get('orderId');
-    const paymentSuccess = searchParams.get('payment_success');
-    // transaction_uuid format we generate: <billId>_<timestamp>_<random>
-    const parts = transactionId?.split('_');
-    const billId = parts && parts.length >= 2 ? parts[0] : null;
+    }, [loading, bill, paymentSuccess, transactionId, orderId, navigate]);
     // Helper to get restaurantId from bill or fallback
     const getRestaurantId = () => {
         if (bill && bill.restaurantId) return bill.restaurantId;

@@ -53,12 +53,12 @@ const LoginPopup = ({ setShowLogin, isPageMode = false }) => {
     const response = await axios.post(newUrl, data);
     if (response.data.success) {
       setToken(response.data.token);
-      localStorage.setItem("token", response.data.token)
+      sessionStorage.setItem("token", response.data.token);
 
       // Save role
       const userRole = response.data.role || "customer";
       setRole(userRole);
-      localStorage.setItem("role", userRole)
+      sessionStorage.setItem("role", userRole);
 
       // Redirect driver to driver dashboard
       if (userRole === "driver") {

@@ -1,5 +1,6 @@
 import categoryModel from "../models/categoryModel.js";
 import fs from "fs";
+import mongoose from "mongoose";
 
 // Add category
 const addCategory = async (req, res) => {

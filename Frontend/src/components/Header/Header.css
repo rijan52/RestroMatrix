@@ -1,91 +1,309 @@
+/* Modern Header Styles - Bluish Theme */
 .header {
-    height: min(520px, 70vw);
-    margin: 0;
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
     position: relative;
-    border-radius: 0;
-    overflow: hidden;
-    box-shadow: 0 24px 48px rgba(37, 99, 235, 0.25);
-}
-
-.header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(110deg, rgba(29, 78, 216, 0.35) 0%, rgba(29, 78, 216, 0.08) 55%, transparent 100%);
-}
-
-.header::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(400px 240px at 15% 20%, rgba(37, 99, 235, 0.2), transparent 70%);
-}
-
-.header-content {
-    position: absolute;
+    width: 100%;
+    min-height: 85vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
-    flex-direction: column;
-    align-items: start;
-    gap: 18px;
-    max-width: 52%;
-    top: 12%;
-    left: 6%;
-    animation: riseUp 1s ease;
-    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    overflow: hidden;
 }
 
+/* Overlay for better text readability */
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.7) 0%,
+        rgba(15, 23, 42, 0.5) 50%,
+        rgba(15, 23, 42, 0.7) 100%
+    );
+    z-index: 1;
+}
+
+/* Animated background effect */
+@keyframes slowZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.05);
+    }
+}
+
+.header {
+    animation: slowZoom 20s ease-out infinite alternate;
+}
+
+/* Header Content */
+.header-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    color: white;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Title Styles */
 .header-content h2 {
-    font-family: var(--display-font);
-    font-weight: 700;
-    color: #ffffff;
-    font-size: clamp(32px, 4vw, 52px);
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0 0 1rem 0;
     letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--primary-light, #DBEAFE) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
+/* Description Styles */
 .header-content p {
-    font-size: clamp(14px, 1.2vw, 18px);
-    color: rgba(255, 255, 255, 0.85);
-    max-width: 90%;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0 0 2rem 0;
+    opacity: 0.95;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Button Styles */
 .header-content button {
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    color: white;
     border: none;
+    border-radius: 50px;
+    font-size: 1rem;
     font-weight: 600;
-    padding: 12px 26px;
-    background-color: #ffffff;
-    color: var(--ink);
-    font-size: 15px;
-    border-radius: var(--radius-pill);
     cursor: pointer;
-    transition: 0.2s ease;
-    box-shadow: 0 12px 24px rgba(15, 27, 45, 0.25);
+    transition: all 0.3s ease;
+    font-family: inherit;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Button Ripple Effect */
+.header-content button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
 
 .header-content button:hover {
-    transform: translateY(-2px);
-    background-color: #f1f6fb;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
 
-@media (max-width: 1050px) {
-    .header-content {
-        max-width: 65%;
+.header-content button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.header-content button:active {
+    transform: translateY(0);
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.scroll-indicator span {
+    width: 20px;
+    height: 20px;
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(45deg);
+}
+
+.scroll-indicator p {
+    color: white;
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(10px);
     }
 }
 
-@media (max-width: 750px) {
-    .header {
-        height: 70vw;
-        border-radius: 22px;
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
     }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-    .header-content {
-        max-width: 80%;
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .header-content h2 {
+        font-size: 3rem;
     }
 
     .header-content p {
-        display: none;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        min-height: 70vh;
+    }
+
+    .header-content {
+        padding: 1.5rem;
+    }
+
+    .header-content h2 {
+        font-size: 2.5rem;
+    }
+
+    .header-content p {
+        font-size: 0.9375rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .header-content button {
+        padding: 0.75rem 1.75rem;
+        font-size: 0.9375rem;
+    }
+
+    .scroll-indicator {
+        bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        min-height: 60vh;
+    }
+
+    .header-content h2 {
+        font-size: 1.75rem;
+    }
+
+    .header-content p {
+        font-size: 0.875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .header-content button {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .scroll-indicator span {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Optional: Add a decorative wave at the bottom */
+.header-wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    z-index: 2;
+}
+
+.header-wave svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 50px;
+}
+
+/* Optional: Floating particles effect */
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20vh) translateX(50px);
+        opacity: 0;
+    }
+}
+
+/* Optional: Loading state for header image */
+.header-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 3;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
     }
 }

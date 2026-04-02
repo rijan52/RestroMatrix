@@ -160,7 +160,7 @@ const LiveTracking = () => {
         });
 
         socketRef.current.on("connect", () => {
-            console.log("✅ Socket connected to live tracking");
+            console.log("Socket connected to live tracking");
 
             // Join order room to receive driver location updates
             socketRef.current.emit('join-order-room', {
@@ -171,15 +171,15 @@ const LiveTracking = () => {
         });
 
         socketRef.current.on("driver-location-updated", (data) => {
-            console.log("📍 Received driver-location-updated event:", data);
+            console.log("Received driver-location-updated event:", data);
 
             if (!mapRef.current) {
-                console.log("⚠️ Map not ready, buffering driver location");
+                console.log("Map not ready, buffering driver location");
                 return;
             }
 
             const { latitude, longitude } = data;
-            console.log("✅ Updating driver location:", latitude, longitude);
+            console.log("Updating driver location:", latitude, longitude);
             setDriverLocation({ lat: latitude, lng: longitude });
 
             // Update or create driver marker
@@ -190,10 +190,10 @@ const LiveTracking = () => {
             });
 
             if (driverMarkerRef.current) {
-                console.log("🔄 Updating existing driver marker");
+                console.log("Updating existing driver marker");
                 driverMarkerRef.current.setLatLng([latitude, longitude]);
             } else {
-                console.log("🆕 Creating new driver marker");
+                console.log("Creating new driver marker");
                 driverMarkerRef.current = L.marker([latitude, longitude], { icon: driverIcon })
                     .addTo(mapRef.current)
                     .bindPopup(`🚗 Driver: ${order.driverName || "In Transit"}`);
@@ -226,11 +226,11 @@ const LiveTracking = () => {
         });
 
         socketRef.current.on("delivery-status-updated", (data) => {
-            console.log("📦 Delivery status:", data);
+            console.log("Delivery status:", data);
         });
 
         socketRef.current.on("connect_error", (error) => {
-            console.error("❌ Socket connection error:", error);
+            console.error("Socket connection error:", error);
         });
 
         return () => {
@@ -249,7 +249,7 @@ const LiveTracking = () => {
     useEffect(() => {
         if (!socketRef.current || !customerLocation || !order?._id) return;
 
-        console.log("📡 Starting customer location broadcast for order:", order._id);
+        console.log(" Starting customer location broadcast for order:", order._id);
 
         // Send customer location every 5 seconds
         const locationInterval = setInterval(() => {
@@ -278,15 +278,15 @@ const LiveTracking = () => {
     }, [customerLocation, order]);
 
     if (loading) {
-        return <div className="live-tracking"><p>Loading order details...</p></div>;
+        return <div className="live-tracking live-tracking-state"><p>Loading order details...</p></div>;
     }
 
     if (error) {
-        return <div className="live-tracking"><p style={{ color: 'red' }}>{error}</p></div>;
+        return <div className="live-tracking live-tracking-state"><p style={{ color: 'red' }}>{error}</p></div>;
     }
 
     if (!order) {
-        return <div className="live-tracking"><p>Order not found</p></div>;
+        return <div className="live-tracking live-tracking-state"><p>Order not found</p></div>;
     }
 
     const getProgressSteps = (status) => {

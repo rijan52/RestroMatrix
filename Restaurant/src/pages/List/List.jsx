@@ -131,7 +131,7 @@ const List = ({ url }) => {
   }
 
   return (
-    <div className='list add flex-col'>
+    <div className='list'>
       <div className="list-header">
         <h2>All Food Items</h2>
         <p className="list-subtitle">Manage your food items</p>

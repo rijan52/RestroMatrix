@@ -6,6 +6,10 @@ const paymentSchema = new mongoose.Schema({
         ref: 'Bill',
         required: true
     },
+    restaurantId: {
+        type: String,
+        required: true
+    },
     amount: {
         type: Number,
         required: true,
@@ -71,6 +75,7 @@ const paymentSchema = new mongoose.Schema({
 
 // Index for quick lookups
 paymentSchema.index({ billId: 1 });
+paymentSchema.index({ restaurantId: 1 });
 paymentSchema.index({ status: 1 });
 paymentSchema.index({ createdAt: -1 });
 

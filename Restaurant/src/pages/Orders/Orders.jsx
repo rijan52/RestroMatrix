@@ -13,11 +13,33 @@ const Orders = ({ url }) => {
   const [pendingStatuses, setPendingStatuses] = useState({});
   const [drivers, setDrivers] = useState([]);
 
+  const normalizeRestaurantId = (value) => {
+    if (value && typeof value === "object") {
+      return String(value._id || value.id || "");
+    }
+    return String(value || "");
+  };
+
+  const getDriverPhone = (driver) =>
+    driver?.phone || driver?.driverPhone || driver?.contactNumber || "No phone";
+
   const fetchAllDrivers = async () => {
+    if (!restaurantId) {
+      setDrivers([]);
+      return;
+    }
+
     try {
-      const response = await axios.get(`${url}/api/driver/all`);
+      const response = await axios.get(`${url}/api/driver/all`, {
+        params: { restaurantId },
+      });
       if (response.data.success) {
-        setDrivers(response.data.data || []);
+        const filteredDrivers = (response.data.data || []).filter(
+          (driver) =>
+            normalizeRestaurantId(driver.restaurantId) ===
+            normalizeRestaurantId(restaurantId)
+        );
+        setDrivers(filteredDrivers);
       }
     } catch (error) {
       console.error("Error fetching drivers:", error);
@@ -152,7 +174,7 @@ const Orders = ({ url }) => {
     fetchAllOrders();
     fetchWalkInSessions();
     fetchAllDrivers();
-  }, []);
+  }, [restaurantId]);
 
   const sortedOrders = [...orders].sort((a, b) => {
     const aDate = new Date(a.date || 0).getTime();
@@ -161,6 +183,9 @@ const Orders = ({ url }) => {
   });
 
   const filteredOrders = sortedOrders.filter((order) => {
+    // Only show orders for the current restaurant
+    if (order.restaurantId !== restaurantId) return false;
+
     if (filter === "all") return true;
 
     const isWalkIn = Boolean(order.tableNumber) || order.source === "qr";
@@ -170,7 +195,7 @@ const Orders = ({ url }) => {
   });
 
   return (
-    <div className="order add">
+    <div className="order">
       <h3>Order Page</h3>
 
       <div className="order-filters">
@@ -285,7 +310,7 @@ const Orders = ({ url }) => {
                       {drivers.map((driver) => (
                         <option key={driver._id} value={driver.name}>
                           {driver.name} -{" "}
-                          {driver.driverPhone ? driver.driverPhone : "No phone"}
+                          {getDriverPhone(driver)}
                         </option>
                       ))}
                     </select>

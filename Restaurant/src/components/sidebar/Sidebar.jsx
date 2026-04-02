@@ -4,45 +4,80 @@ import { NavLink, useParams } from 'react-router-dom'
 
 const Sidebar = () => {
     const { restaurantId } = useParams();
+
+    const menuSections = [
+        {
+            title: 'Dashboard',
+            items: [
+                { path: 'dashboard', label: 'Overview', tooltip: 'Overview' },
+            ],
+        },
+        {
+            title: 'Order Management',
+            items: [
+                { path: 'orders', label: 'Orders', tooltip: 'Orders' },
+                { path: 'reservations', label: 'Reservations', tooltip: 'Reservations' },
+            ],
+        },
+        {
+            title: 'Product Management',
+            items: [
+                { path: 'add', label: 'Add Product', tooltip: 'Add Product' },
+                { path: 'list', label: 'Product List', tooltip: 'Product List' },
+                { path: 'category', label: 'Categories', tooltip: 'Categories' },
+            ],
+        },
+        {
+            title: 'Delivery Management',
+            items: [
+                { path: 'drivers', label: 'Drivers', tooltip: 'Drivers' },
+            ],
+        },
+        {
+            title: 'Finance & Payments',
+            items: [
+                { path: 'payments', label: 'Payments', tooltip: 'Payments' },
+                { path: 'bill-qr', label: 'Invoice / QR Billing', tooltip: 'Invoice / QR Billing' },
+            ],
+        },
+        {
+            title: 'Restaurant Settings',
+            items: [
+                { path: 'profile', label: 'Restaurant Profile', tooltip: 'Restaurant Profile' },
+                { path: 'website-link', label: 'Website Configuration', tooltip: 'Website Configuration' },
+                { path: 'header-customization', label: 'Header Customization', tooltip: 'Header Customization' },
+            ],
+        },
+    ];
+
     return (
         <div className='sidebar'>
+           
+
             <div className="sidebar-options">
-                <NavLink to={`/restaurant/${restaurantId}/dashboard`} className="sidebar-option">
-                    <p>Dashboard</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/orders`} className="sidebar-option">
-                    <p>Orders</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/add`} className="sidebar-option">
-                    <p>Add Items</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/list`} className="sidebar-option">
-                    <p>List Items</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/category`} className="sidebar-option">
-                    <p>Manage Categories</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/reservations`} className="sidebar-option">
-                    <p>Reservations</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/drivers`} className="sidebar-option">
-                    <p>Manage Drivers</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/bill-qr`} className="sidebar-option">
-                    <p>Bill QR Generator</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/payments`} className="sidebar-option">
-                    <p>Payments</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/profile`} className="sidebar-option">
-                    <p>Restaurant Profile</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/header-customization`} className="sidebar-option">
-                    <p>Header Customization</p>
-                </NavLink>
-                <NavLink to={`/restaurant/${restaurantId}/website-link`} className="sidebar-option">
-                    <p>Website Link</p>
-                </NavLink>
+                {menuSections.map((section) => (
+                    <section className="sidebar-section" key={section.title}>
+                        <p className="sidebar-section-title">{section.title}</p>
+                        <div className="sidebar-section-items">
+                            {section.items.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={`/restaurant/${restaurantId}/${item.path}`}
+                                    className="sidebar-option"
+                                    data-tooltip={item.tooltip}
+                                >
+                                    <p>{item.label}</p>
+                                </NavLink>
+                            ))}
+                        </div>
+                    </section>
+                ))}
+            </div>
+
+            <div className="sidebar-footer">
+                <div className="logout-btn">
+                    <p>Logout</p>
+                </div>
             </div>
         </div>
     )

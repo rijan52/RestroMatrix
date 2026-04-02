@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './OrderConfirmation.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useContext } from 'react';
+import { StoreContext } from '../../context/StoreContext';
 
 const OrderConfirmation = () => {
     const { orderId } = useParams();
@@ -9,7 +11,7 @@ const OrderConfirmation = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const token = localStorage.getItem('token');
+    const { token } = useContext(StoreContext);
 
     useEffect(() => {
         const fetchOrder = async () => {

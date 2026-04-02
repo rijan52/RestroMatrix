@@ -109,8 +109,7 @@ const Landing = () => {
                         <p>Streamline orders, control menus, enable QR table ordering, and track analytics from one professional dashboard.</p>
                         <div className="hero-buttons">
                             <Link to="/login" className="get-started">Get Started</Link>
-                            <Link to="/login" className="admin-login">Restaurant Login</Link>
-                            <Link to="/register" className="admin-register">Register Restaurant</Link>
+                           
                         </div>
                     </div>
 

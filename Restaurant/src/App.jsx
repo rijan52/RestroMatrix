@@ -1,7 +1,7 @@
 import React from 'react'
-import Navbar from './components/navbar/navbar'
-import Sidebar from './components/sidebar/sidebar'
-import { Route, Routes, Navigate, Outlet, useParams } from 'react-router-dom'
+import Navbar from './components/navbar/Navbar'
+import Sidebar from './components/sidebar/Sidebar'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import Add from './pages/Add/Add'
 import List from './pages/List/List'
 import Category from './pages/Category/Category'
@@ -14,15 +14,12 @@ import Profile from './pages/Profile/Profile'
 import HeaderCustomization from './pages/HeaderCustomization/HeaderCustomization'
 import RestaurantLogin from './pages/Login/Login'
 import Register from './pages/Register/Register'
-import WebsiteLink from './pages/WebsiteLink'
+import WebsiteLink from './pages/Website-link/WebsiteLink'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Dashboard from './pages/Dashboard/Dashboard'
 
-// Dummy Dashboard page
-const Dashboard = () => {
-  const { restaurantId } = useParams();
-  return <div>Welcome to Dashboard for Restaurant {restaurantId}</div>;
-};
+
 
 
 const App = () => {
@@ -43,7 +40,6 @@ const App = () => {
 
 // Layout for all restaurant routes
 const RestaurantLayout = ({ url }) => {
-  const { restaurantId } = useParams();
   return (
     <div>
       <Navbar />
@@ -51,7 +47,7 @@ const RestaurantLayout = ({ url }) => {
       <div className="app-content">
         <Sidebar />
         <Routes>
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard url={url} />} />
           <Route path="add" element={<Add url={url} />} />
           <Route path="list" element={<List url={url} />} />
           <Route path="category" element={<Category url={url} />} />

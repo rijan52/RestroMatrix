@@ -404,6 +404,7 @@ const initiateEsewaPayment = async (req, res) => {
 
         const payment = new paymentModel({
             billId,
+            restaurantId: bill.restaurantId,
             amount,
             method: 'esewa',
             transactionId,
@@ -907,8 +908,15 @@ const getPayment = async (req, res) => {
 // List all successful split payments for admin reports
 const getSplitPayments = async (req, res) => {
     try {
+        const { restaurantId } = req.query;
+        const filter = { status: 'SUCCESS' };
+
+        if (restaurantId) {
+            filter.restaurantId = restaurantId;
+        }
+
         const payments = await paymentModel
-            .find({ status: 'SUCCESS' })
+            .find(filter)
             .populate('billId', 'tableNumber totalAmount paidAmount remainingAmount status')
             .sort({ createdAt: -1 });
 

@@ -27,8 +27,12 @@ const MyOrders = () => {
         }
     }
 
-    const handleTrackOrder = (orderId) => {
-        navigate(`/live-tracking?orderId=${orderId}`);
+    const handleTrackOrder = (orderId, restaurantId) => {
+        if (restaurantId) {
+            navigate(`/live-tracking?orderId=${orderId}&restaurantId=${restaurantId}`);
+        } else {
+            navigate(`/live-tracking?orderId=${orderId}`);
+        }
     }
 
     useEffect(() => {
@@ -59,7 +63,7 @@ const MyOrders = () => {
                         <p><span>&#x25cf;</span><b>{order.status}</b></p>
                         <div className="order-actions">
                             {order.status === "Out for delivery" ? (
-                                <button onClick={() => handleTrackOrder(order._id)}>Track Order</button>
+                                <button onClick={() => handleTrackOrder(order._id, order.restaurantId)}>Track Order</button>
                             ) : (
                                 <button disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>Track Order</button>
                             )}

@@ -6,7 +6,7 @@ import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef(null)
-  const { getTotalCartAmount, token, setToken, restaurantLogo } = useContext(StoreContext)
+  const { getTotalCartAmount, token, setToken, setRole, restaurantLogo } = useContext(StoreContext)
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +33,11 @@ const Navbar = ({ setShowLogin }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
     setToken("");
+    setRole("");
     setProfileOpen(false);
     navigate(base || "/");
   };
