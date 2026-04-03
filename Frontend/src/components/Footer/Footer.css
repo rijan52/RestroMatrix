@@ -28,7 +28,6 @@
     width: 120px;
     height: auto;
     object-fit: contain;
-    filter: brightness(0) invert(1);
     transition: transform 0.3s ease;
 }
 
@@ -146,6 +145,18 @@
     padding-top: 1rem;
 }
 
+.footer-bottom-brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 0.75rem;
+}
+
+.footer-logo-small {
+    width: 72px;
+    max-height: 48px;
+}
+
 /* Responsive Design */
 @media (max-width: 900px) {
     .footer-content {
@@ -246,6 +257,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

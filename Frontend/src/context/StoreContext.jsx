@@ -15,6 +15,26 @@ const normalizeCartData = (rawCart = {}) => {
   }, {});
 };
 
+const resolveRestaurantId = () => {
+  try {
+    const currentPath = window.location.pathname || "";
+    const currentMatch = currentPath.match(/\/restaurant\/([^/]+)/);
+    if (currentMatch?.[1]) {
+      return currentMatch[1];
+    }
+
+    const lastPath = window.localStorage.getItem("lastRestaurantPath") || "";
+    const lastMatch = lastPath.match(/\/restaurant\/([^/]+)/);
+    if (lastMatch?.[1]) {
+      return lastMatch[1];
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [isCartHydrated, setIsCartHydrated] = useState(false);
@@ -24,6 +44,10 @@ const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [role, setRole] = useState(() => sessionStorage.getItem("role") || "");
   const [restaurantLogo, setRestaurantLogo] = useState(assets.logo);
+  const [restaurantContact, setRestaurantContact] = useState({
+    phoneNumber: "",
+    email: "",
+  });
   const [headerSettings, setHeaderSettings] = useState({
     title: "Order your favourite food here",
     content:
@@ -130,7 +154,20 @@ const StoreContextProvider = (props) => {
 
   const fetchRestaurantProfile = async () => {
     try {
-      const response = await axios.get(url + "/api/restaurant-profile");
+      const restaurantId = resolveRestaurantId();
+
+      if (!restaurantId) {
+        setRestaurantLogo(assets.logo);
+        setRestaurantContact({
+          phoneNumber: "",
+          email: "",
+        });
+        return;
+      }
+
+      const response = await axios.get(url + "/api/restaurant-profile", {
+        params: { restaurantId },
+      });
       if (response.data?.success) {
         const profileData = response.data?.data || {};
 
@@ -139,6 +176,11 @@ const StoreContextProvider = (props) => {
         } else {
           setRestaurantLogo(assets.logo);
         }
+
+        setRestaurantContact({
+          phoneNumber: profileData.phoneNumber || "",
+          email: profileData.email || "",
+        });
 
         setHeaderSettings({
           title: profileData.headerTitle || "Order your favourite food here",
@@ -156,10 +198,18 @@ const StoreContextProvider = (props) => {
         });
       } else {
         setRestaurantLogo(assets.logo);
+        setRestaurantContact({
+          phoneNumber: "",
+          email: "",
+        });
       }
     } catch (error) {
       console.log("Error loading restaurant profile:", error);
       setRestaurantLogo(assets.logo);
+      setRestaurantContact({
+        phoneNumber: "",
+        email: "",
+      });
     }
   }
   useEffect(() => {
@@ -231,6 +281,7 @@ const StoreContextProvider = (props) => {
     role,
     setRole,
     restaurantLogo,
+    restaurantContact,
     headerSettings,
     fetchRestaurantProfile,
     url,

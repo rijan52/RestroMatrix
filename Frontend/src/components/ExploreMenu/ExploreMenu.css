@@ -33,8 +33,9 @@
 .explore-menu-list {
     display: flex;
     gap: 1.5rem;
+    justify-content: center;
     overflow-x: auto;
-    padding: 1rem 0.5rem 2rem 0.5rem;
+    padding: 1rem 0 2rem 0;
     scroll-behavior: smooth;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
@@ -109,7 +110,7 @@
     color: var(--primary, #2563EB);
 }
 
-.explore-menu-list-item img.active + p {
+.explore-menu-list-item img.active+p {
     color: var(--primary, #2563EB);
 }
 
@@ -189,6 +190,7 @@
         opacity: 0;
         transform: scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -200,24 +202,60 @@
 }
 
 /* Staggered animation for categories */
-.explore-menu-list-item:nth-child(1) { animation-delay: 0.05s; }
-.explore-menu-list-item:nth-child(2) { animation-delay: 0.1s; }
-.explore-menu-list-item:nth-child(3) { animation-delay: 0.15s; }
-.explore-menu-list-item:nth-child(4) { animation-delay: 0.2s; }
-.explore-menu-list-item:nth-child(5) { animation-delay: 0.25s; }
-.explore-menu-list-item:nth-child(6) { animation-delay: 0.3s; }
-.explore-menu-list-item:nth-child(7) { animation-delay: 0.35s; }
-.explore-menu-list-item:nth-child(8) { animation-delay: 0.4s; }
-.explore-menu-list-item:nth-child(9) { animation-delay: 0.45s; }
-.explore-menu-list-item:nth-child(10) { animation-delay: 0.5s; }
-.explore-menu-list-item:nth-child(11) { animation-delay: 0.55s; }
-.explore-menu-list-item:nth-child(12) { animation-delay: 0.6s; }
+.explore-menu-list-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.explore-menu-list-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.explore-menu-list-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.explore-menu-list-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.explore-menu-list-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.explore-menu-list-item:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.explore-menu-list-item:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.explore-menu-list-item:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.explore-menu-list-item:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.explore-menu-list-item:nth-child(10) {
+    animation-delay: 0.5s;
+}
+
+.explore-menu-list-item:nth-child(11) {
+    animation-delay: 0.55s;
+}
+
+.explore-menu-list-item:nth-child(12) {
+    animation-delay: 0.6s;
+}
 
 /* Optional: Add a shimmer effect on hover */
 @keyframes shimmer {
     0% {
         background-position: -200% 0;
     }
+
     100% {
         background-position: 200% 0;
     }
@@ -353,10 +391,13 @@
 
 /* Optional: Scroll hint animation */
 @keyframes scrollHint {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateX(0);
         opacity: 0.5;
     }
+
     50% {
         transform: translateX(10px);
         opacity: 1;

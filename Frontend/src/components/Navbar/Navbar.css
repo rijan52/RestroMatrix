@@ -6,7 +6,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 1rem 1.1rem 1rem 1rem;
     background: var(--card, #FFFFFF);
     border-bottom: 1px solid var(--border, #E2E8F0);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -76,7 +76,7 @@
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .navbar-right img {
@@ -118,10 +118,13 @@
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         opacity: 1;
     }
+
     50% {
         transform: scale(1.2);
         opacity: 0.8;
@@ -370,9 +373,12 @@
 
 /* Animation for cart badge */
 @keyframes bounce {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.3);
     }
