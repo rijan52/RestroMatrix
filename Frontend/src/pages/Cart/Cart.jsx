@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { StoreContext } from '../../context/StoreContext';
 import './Cart.css'
 import { useNavigate, useParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ const Cart = () => {
   const { cartItems, food_list, addToCart, removeFromCart, getTotalCartAmount, token } = useContext(StoreContext);
   const navigate = useNavigate();
   const { restaurantId } = useParams();
+  const [checkoutError, setCheckoutError] = useState('');
 
   // Save last visited restaurant path for redirect logic
   useEffect(() => {
@@ -17,6 +18,12 @@ const Cart = () => {
   }, [restaurantId]);
 
   const handleProceedToCheckout = () => {
+    if (getTotalCartAmount() === 0) {
+      setCheckoutError('Your cart is empty. Please add items before checkout.');
+      return;
+    }
+
+    setCheckoutError('');
     const orderPath = restaurantId ? `/restaurant/${restaurantId}/order` : '/order';
     if (!token) {
       localStorage.setItem('postLoginRedirect', orderPath)
@@ -32,6 +39,12 @@ const Cart = () => {
       window.localStorage.setItem('lastRestaurantPath', window.location.pathname);
     }
   }, [restaurantId]);
+
+  useEffect(() => {
+    if (getTotalCartAmount() > 0 && checkoutError) {
+      setCheckoutError('');
+    }
+  }, [cartItems, checkoutError, getTotalCartAmount]);
 
   return (
     <div className='cart'>
@@ -89,6 +102,7 @@ const Cart = () => {
             </div>
           </div>
           <button onClick={handleProceedToCheckout}>PROCEED TO CHECKOUT</button>
+          {checkoutError && <p className="cart-checkout-error">{checkoutError}</p>}
 
         </div>
         <div className="cart-promocode">

@@ -3,7 +3,7 @@ import axios from "axios";
 import { StoreContext } from "../context/StoreContext.jsx";
 
 const Cart = () => {
-    const { cartItems, foodList, getCartTotal, createOrder, tableNumber, apiUrl } = useContext(StoreContext);
+    const { cartItems, foodList, getCartTotal, createOrder, tableNumber, restaurantId, apiUrl } = useContext(StoreContext);
     const [status, setStatus] = useState("");
     const [isPlacing, setIsPlacing] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState("");
@@ -11,8 +11,8 @@ const Cart = () => {
     const [isLoadingOrder, setIsLoadingOrder] = useState(false);
 
     const sessionStorageKey = useMemo(() => {
-        return tableNumber ? `walkin_session_${tableNumber}` : "";
-    }, [tableNumber]);
+        return tableNumber ? `walkin_session_${restaurantId || "default"}_${tableNumber}` : "";
+    }, [restaurantId, tableNumber]);
 
     const cartLines = useMemo(() => {
         return foodList
@@ -39,6 +39,13 @@ const Cart = () => {
             }
 
             const session = response.data.data;
+            if (restaurantId && session.restaurantId && session.restaurantId !== restaurantId) {
+                localStorage.removeItem(sessionStorageKey);
+                setActiveSessionId("");
+                setActiveOrder(null);
+                return;
+            }
+
             if (session.status === "closed") {
                 localStorage.removeItem(sessionStorageKey);
                 setActiveSessionId("");
@@ -57,7 +64,7 @@ const Cart = () => {
                 setIsLoadingOrder(false);
             }
         }
-    }, [apiUrl, sessionStorageKey, tableNumber]);
+    }, [apiUrl, restaurantId, sessionStorageKey, tableNumber]);
 
     useEffect(() => {
         if (!tableNumber || !sessionStorageKey) {

@@ -12,6 +12,9 @@ const walkInSessionSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        restaurantId: {
+            type: String,
+        },
         // Array of items ordered at this table
         items: [
             {

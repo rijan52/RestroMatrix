@@ -72,6 +72,7 @@ export const getSessionDetails = async (req, res) => {
             data: {
                 sessionId: session.sessionId,
                 tableNumber: session.tableNumber,
+                restaurantId: session.restaurantId,
                 items: session.items,
                 totalBillAmount: session.totalBillAmount,
                 totalPaidAmount: session.totalPaidAmount,
@@ -379,7 +380,14 @@ export const handleWalkInPaymentFailure = async (req, res) => {
  */
 export const createWalkInSession = async (req, res) => {
     try {
-        const { tableNumber, items, totalBillAmount } = req.body;
+        const { restaurantId, tableNumber, items, totalBillAmount } = req.body;
+
+        if (!restaurantId) {
+            return res.status(400).json({
+                success: false,
+                message: "Restaurant ID is required",
+            });
+        }
 
         if (!tableNumber) {
             return res.status(400).json({
@@ -428,6 +436,7 @@ export const createWalkInSession = async (req, res) => {
 
         const newSession = new walkInSessionModel({
             sessionId,
+            restaurantId,
             tableNumber,
             items: normalizedItems,
             totalBillAmount,
@@ -442,6 +451,7 @@ export const createWalkInSession = async (req, res) => {
             data: {
                 sessionId: newSession.sessionId,
                 tableNumber: newSession.tableNumber,
+                restaurantId: newSession.restaurantId,
                 totalBillAmount: newSession.totalBillAmount,
             },
         });
@@ -460,8 +470,15 @@ export const createWalkInSession = async (req, res) => {
  */
 export const listWalkInSessions = async (req, res) => {
     try {
+        const { restaurantId } = req.query;
+        const filter = {};
+
+        if (restaurantId) {
+            filter.restaurantId = restaurantId;
+        }
+
         const sessions = await walkInSessionModel
-            .find({})
+            .find(filter)
             .sort({ updatedAt: -1 });
 
         // Format sessions to match order display format
@@ -469,6 +486,7 @@ export const listWalkInSessions = async (req, res) => {
             _id: session._id,
             sessionId: session.sessionId,
             tableNumber: session.tableNumber,
+            restaurantId: session.restaurantId,
             items: session.items,
             totalBillAmount: session.totalBillAmount,
             totalPaidAmount: session.totalPaidAmount,

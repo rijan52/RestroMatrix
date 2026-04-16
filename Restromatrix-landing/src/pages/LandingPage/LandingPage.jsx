@@ -80,6 +80,8 @@ const steps = [
     },
 ];
 
+const RESTAURANT_LOGIN_URL = "http://localhost:5174/login";
+
 const Landing = () => {
     return (
         <div className="landing-page">
@@ -90,12 +92,12 @@ const Landing = () => {
                         <a href="#home">Home</a>
                         <a href="#features">Features</a>
                         <a href="#how-it-works">How it works</a>
-                        <Link to="/login">Login</Link>
+                        <a href={RESTAURANT_LOGIN_URL}>Login</a>
                         <Link to="/register">Register</Link>
                     </nav>
                     <div className="header-actions">
                         <Link to="/register" className="header-register">Register Restaurant</Link>
-                        <Link to="/login" className="header-login">Restaurant Login</Link>
+                        <a href={RESTAURANT_LOGIN_URL} className="header-login">Restaurant Login</a>
                     </div>
                 </div>
             </header>
@@ -108,8 +110,8 @@ const Landing = () => {
                         <h1>Manage Your Restaurant Smarter</h1>
                         <p>Streamline orders, control menus, enable QR table ordering, and track analytics from one professional dashboard.</p>
                         <div className="hero-buttons">
-                            <Link to="/login" className="get-started">Get Started</Link>
-                           
+                            <a href={RESTAURANT_LOGIN_URL} className="get-started">Get Started</a>
+
                         </div>
                     </div>
 
@@ -172,7 +174,7 @@ const Landing = () => {
                     </div>
                     <div className="cta-actions">
                         <Link to="/register">Register Restaurant</Link>
-                        <Link to="/login" className="cta-login">Open Restaurant Panel</Link>
+                        <a href={RESTAURANT_LOGIN_URL} className="cta-login">Open Restaurant Panel</a>
                     </div>
                 </section>
             </main>

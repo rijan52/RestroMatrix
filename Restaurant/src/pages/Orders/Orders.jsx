@@ -20,6 +20,9 @@ const Orders = ({ url }) => {
     return String(value || "");
   };
 
+  const isSameRestaurant = (recordRestaurantId, currentRestaurantId) =>
+    normalizeRestaurantId(recordRestaurantId) === normalizeRestaurantId(currentRestaurantId);
+
   const getDriverPhone = (driver) =>
     driver?.phone || driver?.driverPhone || driver?.contactNumber || "No phone";
 
@@ -52,8 +55,6 @@ const Orders = ({ url }) => {
       const response = await axios.get(`${url}/api/order/list`);
 
       if (response.data.success) {
-        setOrders(response.data.data);
-
         const names = {};
         response.data.data.forEach((order) => {
           if (order.driverName) {
@@ -62,33 +63,32 @@ const Orders = ({ url }) => {
         });
 
         setDriverNames(names);
+        return response.data.data || [];
       } else {
         toast.error("Error fetching orders");
+        return [];
       }
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch orders");
+      return [];
     }
   };
 
   const fetchWalkInSessions = async () => {
     try {
-      const response = await axios.get(`${url}/api/walkin/list`);
+      const response = await axios.get(`${url}/api/walkin/list`, {
+        params: restaurantId ? { restaurantId } : undefined,
+      });
 
       if (response.data.success) {
-        // Merge walk-in sessions with online orders
-        setOrders((prevOrders) => {
-          // Filter out any existing walk-in orders
-          const onlineOrders = prevOrders.filter(
-            (order) => !order.source || order.source !== "walkin"
-          );
-          const walkInOrders = response.data.data || [];
-          return [...onlineOrders, ...walkInOrders];
-        });
+        return response.data.data || [];
       }
+
+      return [];
     } catch (error) {
       console.error("Error fetching walk-in sessions:", error);
-      // Don't show error toast for this, it's supplementary data
+      return [];
     }
   };
 
@@ -171,8 +171,20 @@ const Orders = ({ url }) => {
   };
 
   useEffect(() => {
-    fetchAllOrders();
-    fetchWalkInSessions();
+    const loadOrders = async () => {
+      const [onlineOrders, walkInOrders] = await Promise.all([
+        fetchAllOrders(),
+        fetchWalkInSessions(),
+      ]);
+
+      const mergedOrders = [...onlineOrders, ...walkInOrders].filter((order) =>
+        isSameRestaurant(order.restaurantId, restaurantId)
+      );
+
+      setOrders(mergedOrders);
+    };
+
+    loadOrders();
     fetchAllDrivers();
   }, [restaurantId]);
 
@@ -184,11 +196,11 @@ const Orders = ({ url }) => {
 
   const filteredOrders = sortedOrders.filter((order) => {
     // Only show orders for the current restaurant
-    if (order.restaurantId !== restaurantId) return false;
+    if (!isSameRestaurant(order.restaurantId, restaurantId)) return false;
 
     if (filter === "all") return true;
 
-    const isWalkIn = Boolean(order.tableNumber) || order.source === "qr";
+    const isWalkIn = Boolean(order.tableNumber) || order.source === "walkin";
     const isOnline = Boolean(order.address) && !isWalkIn;
 
     return filter === "online" ? isOnline : isWalkIn;

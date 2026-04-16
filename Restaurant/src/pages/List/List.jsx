@@ -16,9 +16,25 @@ const List = ({ url }) => {
 
   const walkInUrl = useMemo(() => {
     const configuredUrl = import.meta.env.VITE_CUSTOMER_WALKIN_URL;
-    if (configuredUrl) return configuredUrl;
 
-    const configuredBaseUrl = import.meta.env.VITE_CUSTOMER_WALKIN_BASE_URL || 'http://localhost:5176';
+    const appendRestaurantId = (urlValue) => {
+      if (!urlValue) return '';
+
+      const resolvedUrl = new URL(urlValue, window.location.origin);
+      if (restaurantId) {
+        resolvedUrl.searchParams.set('restaurantId', restaurantId);
+      }
+      return resolvedUrl.toString();
+    };
+
+    if (configuredUrl) return appendRestaurantId(configuredUrl);
+
+    const walkInProtocol = import.meta.env.VITE_CUSTOMER_WALKIN_PROTOCOL || window.location.protocol;
+    const walkInHost = import.meta.env.VITE_CUSTOMER_WALKIN_HOST || window.location.hostname || 'localhost';
+    const walkInPort = import.meta.env.VITE_CUSTOMER_WALKIN_PORT || '5176';
+    const configuredBaseUrl =
+      import.meta.env.VITE_CUSTOMER_WALKIN_BASE_URL ||
+      `${walkInProtocol}//${walkInHost}${walkInPort ? `:${walkInPort}` : ''}`;
     const configuredRoute = import.meta.env.VITE_CUSTOMER_WALKIN_ROUTE || '/menu';
 
     const normalizedBaseUrl = configuredBaseUrl.endsWith('/')
@@ -28,8 +44,8 @@ const List = ({ url }) => {
       ? configuredRoute
       : `/${configuredRoute}`;
 
-    return `${normalizedBaseUrl}${normalizedRoute}`;
-  }, []);
+    return appendRestaurantId(`${normalizedBaseUrl}${normalizedRoute}`);
+  }, [restaurantId]);
 
   const fetchList = async () => {
     const response = await axios.get(`${url}/api/food/list`, {

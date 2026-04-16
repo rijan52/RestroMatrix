@@ -74,9 +74,10 @@ const Dashboard = ({ url }) => {
 
     setLoading(true);
     try {
-      const [ordersResponse, reservationsResponse, productsResponse, billsResponse] =
+      const [ordersResponse, walkInResponse, reservationsResponse, productsResponse, billsResponse] =
         await Promise.all([
           axios.get(`${apiBaseUrl}/api/order/list`, { params: { restaurantId } }),
+          axios.get(`${apiBaseUrl}/api/walkin/list`, { params: { restaurantId } }),
           axios.get(`${apiBaseUrl}/api/reservation/list`, { params: { restaurantId } }),
           axios.get(`${apiBaseUrl}/api/food/list`, { params: { restaurantId } }),
           axios.get(`${apiBaseUrl}/api/bills/list`, {
@@ -85,17 +86,18 @@ const Dashboard = ({ url }) => {
         ]);
 
       const incomingOrders = ordersResponse?.data?.success ? ordersResponse.data.data || [] : [];
+      const incomingWalkIns = walkInResponse?.data?.success ? walkInResponse.data.data || [] : [];
       const incomingReservations =
         reservationsResponse?.data?.success ? reservationsResponse.data.data || [] : [];
       const incomingProducts =
         productsResponse?.data?.success ? productsResponse.data.data || [] : [];
       const incomingBills = billsResponse?.data?.success ? billsResponse.data.data || [] : [];
 
-      setOrders(
-        incomingOrders.filter((order) =>
-          isSameRestaurant(order.restaurantId, restaurantId)
-        )
+      const mergedOrders = [...incomingOrders, ...incomingWalkIns].filter((order) =>
+        isSameRestaurant(order.restaurantId, restaurantId)
       );
+
+      setOrders(mergedOrders);
       setReservations(
         incomingReservations.filter((reservation) =>
           isSameRestaurant(reservation.restaurantId, restaurantId)
