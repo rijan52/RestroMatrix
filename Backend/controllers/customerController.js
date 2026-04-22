@@ -7,10 +7,10 @@ const createToken = (id, restaurantId) => {
     return jwt.sign({ id, restaurantId }, process.env.JWT_SECRET);
 };
 
-// ✅ Customer Login (FIXED for SaaS)
+// Customer Login (FIXED for SaaS)
 const loginCustomer = async (req, res) => {
     const { email, password } = req.body;
-    const { restaurantId } = req.params; // 👈 from URL
+    const { restaurantId } = req.params; 
 
     try {
         const customer = await customerModel.findOne({ email, restaurantId });
@@ -38,13 +38,13 @@ const loginCustomer = async (req, res) => {
     }
 };
 
-// ✅ Customer Register (FIXED for SaaS)
+// Customer Register (FIXED for SaaS)
 const registerCustomer = async (req, res) => {
     const { name, email, password, phone } = req.body;
     const { restaurantId } = req.params; // 👈 NEVER from frontend body
 
     try {
-        // ✅ Check per restaurant
+        // Check per restaurant
         const exist = await customerModel.findOne({ email, restaurantId });
         if (exist) {
             return res.json({ success: false, message: "Customer already exists" });
@@ -67,7 +67,7 @@ const registerCustomer = async (req, res) => {
             password: hashedPassword,
             phone: phone || null,
             role: "customer",
-            restaurantId // ✅ always from backend
+            restaurantId // always from backend
         });
 
         const customer = await newCustomer.save();
@@ -86,10 +86,10 @@ const registerCustomer = async (req, res) => {
     }
 };
 
-// ✅ Get all customers (FILTERED)
+// Get all customers (FILTERED)
 const getAllCustomers = async (req, res) => {
     try {
-        const { restaurantId } = req.user; // 👈 from auth middleware
+        const { restaurantId } = req.user; // from auth middleware
 
         const customers = await customerModel
             .find({ restaurantId })
@@ -103,7 +103,7 @@ const getAllCustomers = async (req, res) => {
     }
 };
 
-// ✅ Get by ID (SECURE)
+// Get by ID (SECURE)
 const getCustomerById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -125,7 +125,7 @@ const getCustomerById = async (req, res) => {
     }
 };
 
-// ✅ Update (SECURE)
+// Update (SECURE)
 const updateCustomer = async (req, res) => {
     try {
         const { id } = req.params;

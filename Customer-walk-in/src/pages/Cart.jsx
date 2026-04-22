@@ -140,7 +140,7 @@ const Cart = () => {
                     {currentOrderItems.map((item, index) => (
                         <div key={`${item.name}-${index}`} className="summary-row">
                             <span>{item.name} x {item.quantity}</span>
-                            <span>${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</span>
+                            <span>Rs{(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</span>
                         </div>
                     ))}
                     <div className="summary-row summary-total" style={{ marginTop: 8 }}>
@@ -162,8 +162,8 @@ const Cart = () => {
                                     <strong>{item.name}</strong>
                                     <p className="section-subtitle">Qty {item.quantity}</p>
                                 </div>
-                                <span className="price">${(item.price * item.quantity).toFixed(2)}</span>
-                            </div>
+                                <span className="price">Rs{(item.price * item.quantity).toFixed(2)}</span>
+                            </div> 
                         ))
                     )}
                 </div>
@@ -175,11 +175,11 @@ const Cart = () => {
                     </div>
                     <div className="summary-row">
                         <span>Subtotal</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>Rs {total.toFixed(2)}</span>
                     </div>
                     <div className="summary-row summary-total">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>Rs {total.toFixed(2)}</span>
                     </div>
                     <button
                         className="primary-btn"

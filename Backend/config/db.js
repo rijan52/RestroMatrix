@@ -22,7 +22,7 @@ export const connectDB = async () => {
   const fallbackUri = process.env.MONGODB_URL_FALLBACK;
 
   if (!primaryUri) {
-    console.error("❌ MONGODB_URL is missing in environment variables");
+    console.error("MONGODB_URL is missing in environment variables");
     return;
   }
 
@@ -40,9 +40,9 @@ export const connectDB = async () => {
       // Wait queue timeout
       waitQueueTimeoutMS: 10000,
     });
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
   } catch (error) {
-    console.error("❌ Error connecting to MongoDB:", error.message);
+    console.error("Error connecting to MongoDB:", error.message);
 
     const isSrvDnsError =
       String(error.message).includes("querySrv") ||
@@ -60,10 +60,10 @@ export const connectDB = async () => {
           minPoolSize: 2,
           waitQueueTimeoutMS: 10000,
         });
-        console.log("✅ Connected to MongoDB via fallback URI");
+        console.log("Connected to MongoDB via fallback URI");
         return;
       } catch (fallbackError) {
-        console.error("❌ Fallback MongoDB connection failed:", fallbackError.message);
+        console.error("Fallback MongoDB connection failed:", fallbackError.message);
       }
     }
 
