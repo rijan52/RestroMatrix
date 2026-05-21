@@ -1,0 +1,470 @@
+/* Modern Profile Page Styles - Bluish Theme */
+.profile-page {
+    flex: 1;
+    padding: 32px;
+    color: var(--text-dark, #0F172A);
+    background: var(--background, #F8FAFC);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-card {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    background: var(--card, #FFFFFF);
+    border: 1px solid var(--border, #E2E8F0);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease-out;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+}
+
+/* Header Section */
+.profile-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--text-dark, #0F172A) 0%, var(--primary, #2563EB) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.profile-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-light, #64748B);
+    margin: 0 0 2rem 0;
+    text-align: center;
+}
+
+/* Loading State */
+.profile-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light, #64748B);
+    font-size: 0.875rem;
+}
+
+/* Form Styles */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+/* Logo Upload Section */
+.profile-logo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    text-align: center;
+}
+
+.profile-logo-field label:first-child {
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-logo-upload {
+    cursor: pointer;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--border, #E2E8F0);
+    background: var(--background, #F8FAFC);
+    width: 120px;
+    height: 120px;
+    transition: all 0.3s ease;
+}
+
+.profile-logo-upload:hover {
+    border-color: var(--primary, #2563EB);
+    background: rgba(37, 99, 235, 0.03);
+    transform: translateY(-2px);
+}
+
+.profile-logo-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.profile-logo-upload:hover img {
+    transform: scale(1.05);
+}
+
+/* Profile Grid Layout */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+/* Form Fields */
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-field label {
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-field input,
+.profile-field textarea {
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border, #E2E8F0);
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    background: var(--background, #F8FAFC);
+    color: var(--text-dark, #0F172A);
+    transition: all 0.2s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.profile-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.profile-field input:focus,
+.profile-field textarea:focus {
+    outline: none;
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--card, #FFFFFF);
+}
+
+.profile-field input::placeholder,
+.profile-field textarea::placeholder {
+    color: var(--text-light, #64748B);
+    opacity: 0.7;
+}
+
+/* Full width fields */
+.profile-field:has(textarea) {
+    grid-column: span 2;
+}
+
+/* Submit Button */
+.profile-form button[type="submit"] {
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    margin-top: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-form button[type="submit"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.profile-form button[type="submit"]:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.profile-form button[type="submit"]:hover:not(:disabled)::before {
+    width: 300px;
+    height: 300px;
+}
+
+.profile-form button[type="submit"]:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.profile-form button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading State for Button */
+.profile-form button[type="submit"].loading {
+    position: relative;
+    color: transparent;
+}
+
+.profile-form button[type="submit"].loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Custom Scrollbar for Textareas */
+.profile-field textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-field textarea::-webkit-scrollbar-track {
+    background: var(--border, #E2E8F0);
+    border-radius: 3px;
+}
+
+.profile-field textarea::-webkit-scrollbar-thumb {
+    background: var(--primary, #2563EB);
+    border-radius: 3px;
+}
+
+/* Helper Text */
+.field-helper {
+    font-size: 0.75rem;
+    color: var(--text-light, #64748B);
+    margin-top: 0.25rem;
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-page {
+        padding: 24px;
+    }
+
+    .profile-card {
+        padding: 1.5rem;
+    }
+
+    .profile-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .profile-field:has(textarea) {
+        grid-column: span 1;
+    }
+
+    .profile-field input,
+    .profile-field textarea {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .profile-logo-upload {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-page {
+        padding: 16px;
+    }
+
+    .profile-card {
+        padding: 1.25rem;
+    }
+
+    .profile-card h2 {
+        font-size: 1.25rem;
+    }
+
+    .profile-subtitle {
+        font-size: 0.8125rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-form {
+        gap: 1.25rem;
+    }
+
+    .profile-field label {
+        font-size: 0.8125rem;
+    }
+
+    .profile-field input,
+    .profile-field textarea {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .profile-form button[type="submit"] {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    .profile-logo-upload {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* Focus States for Accessibility */
+.profile-field input:focus-visible,
+.profile-field textarea:focus-visible,
+.profile-form button[type="submit"]:focus-visible {
+    outline: 2px solid var(--primary, #2563EB);
+    outline-offset: 2px;
+}
+
+/* Optional: Image Upload Hint */
+.image-upload-hint {
+    font-size: 0.75rem;
+    color: var(--text-light, #64748B);
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+/* Optional: Password Strength Indicator */
+.password-strength {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.password-strength.weak {
+    color: #EF4444;
+}
+
+.password-strength.medium {
+    color: #F59E0B;
+}
+
+.password-strength.strong {
+    color: #10B981;
+}
+
+/* Optional: Success Animation */
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.profile-form.submitting {
+    animation: successPulse 0.3s ease-in-out;
+}
+
+/* Optional: Form Section Divider */
+.form-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border, #E2E8F0), transparent);
+    margin: 0.5rem 0 1rem;
+}
+
+/* Optional: Tooltip for Form Fields */
+.field-tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 0.5rem;
+    cursor: help;
+}
+
+.field-tooltip::before {
+    content: '?';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: var(--border, #E2E8F0);
+    color: var(--text-light, #64748B);
+    border-radius: 50%;
+    font-size: 0.6875rem;
+    font-weight: 700;
+}
+
+.field-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-dark, #0F172A);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 0.5rem;
+    z-index: 10;
+}
+
+/* Optional: Read-only field styling */
+.profile-field input:read-only {
+    background: var(--background, #F8FAFC);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Optional: Required field indicator */
+.profile-field label.required::after {
+    content: '*';
+    color: #EF4444;
+    margin-left: 0.25rem;
+}

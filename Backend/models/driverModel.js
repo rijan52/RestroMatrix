@@ -53,8 +53,12 @@ const driverSchema = new mongoose.Schema(
                 type: Number,
                 default: null
             }
+        },
+        restaurantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'restaurantprofile',
+            required: true
         }
-
     },
     {
         timestamps: true,

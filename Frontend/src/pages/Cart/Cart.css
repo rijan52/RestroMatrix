@@ -183,6 +183,13 @@
   transform: translateY(0);
 }
 
+.cart-checkout-error {
+  margin: -8px 0 0 0;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .cart-promocode {
   flex: 1;
   display: flex;

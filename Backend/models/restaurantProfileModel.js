@@ -36,6 +36,11 @@ const restaurantProfileSchema = new mongoose.Schema(
             trim: true,
             default: "",
         },
+        password: {
+            type: String,
+            trim: true,
+            default: "",
+        },
         headerTitle: {
             type: String,
             trim: true,

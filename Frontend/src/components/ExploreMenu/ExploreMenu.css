@@ -1,156 +1,422 @@
+/* Modern Explore Menu Styles - Bluish Theme */
 .explore-menu {
+    padding: 2rem 0;
     width: 100%;
-    padding: 56px 6%;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
+/* Header Section */
 .explore-menu h1 {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #0f172a;
-    margin: 0;
+    margin: 0 0 1rem 0;
+    background: linear-gradient(135deg, var(--text-dark, #0F172A) 0%, var(--primary, #2563EB) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -0.02em;
+    text-align: center;
 }
-
 
 .explore-menu-text {
-    max-width: 720px;
     font-size: 1rem;
-    line-height: 1.7;
-    color: #64748b;
-    margin: 0;
+    color: var(--text-light, #64748B);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
 }
 
+/* Categories List */
 .explore-menu-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: 22px;
-    margin-top: 12px;
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 1rem 0 2rem 0;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* Custom scrollbar for categories */
+.explore-menu-list::-webkit-scrollbar {
+    height: 6px;
+}
+
+.explore-menu-list::-webkit-scrollbar-track {
+    background: var(--border, #E2E8F0);
+    border-radius: 10px;
+}
+
+.explore-menu-list::-webkit-scrollbar-thumb {
+    background: var(--primary, #2563EB);
+    border-radius: 10px;
+}
+
+.explore-menu-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover, #1D4ED8);
+}
+
+/* Category Item */
 .explore-menu-list-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 18px 14px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 22px;
+    gap: 0.75rem;
     cursor: pointer;
-    transition: all 0.28s ease;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-}
-
-.explore-menu-list-item:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
-    border-color: #cbd5e1;
-}
-
-.explore-menu-list-item img {
-    width: 82px;
-    height: 82px;
-    object-fit: cover;
-    border-radius: 50%;
-    padding: 6px;
-    background: #f8fafc;
-    border: 2px solid transparent;
-    transition: all 0.28s ease;
-}
-
-.explore-menu-list-item img.active {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
-    transform: scale(1.05);
-}
-
-.explore-menu-list-item p {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #1e293b;
+    transition: all 0.3s ease;
+    min-width: 100px;
     text-align: center;
 }
 
-.explore-menu hr {
-    width: 100%;
-    border: none;
-    border-top: 1px solid #e2e8f0;
-    margin-top: 14px;
+.explore-menu-list-item:hover {
+    transform: translateY(-4px);
 }
 
-@media (max-width: 992px) {
+.explore-menu-list-item img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border, #E2E8F0);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.explore-menu-list-item img:hover {
+    transform: scale(1.05);
+    border-color: var(--primary-light, #DBEAFE);
+}
+
+.explore-menu-list-item img.active {
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 0 4px 12px rgba(37, 99, 235, 0.2);
+    transform: scale(1.02);
+}
+
+.explore-menu-list-item p {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+.explore-menu-list-item:hover p {
+    color: var(--primary, #2563EB);
+}
+
+.explore-menu-list-item img.active+p {
+    color: var(--primary, #2563EB);
+}
+
+/* Divider */
+.explore-menu hr {
+    margin: 1.5rem 0 0 0;
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--border, #E2E8F0), transparent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
     .explore-menu {
-        padding: 48px 5%;
+        padding: 1.5rem 1rem;
     }
 
     .explore-menu h1 {
         font-size: 2rem;
     }
 
-    .explore-menu-list {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 18px;
-    }
-}
-
-@media (max-width: 768px) {
-    .explore-menu {
-        padding: 40px 5%;
-        gap: 14px;
-    }
-
-    .explore-menu h1 {
-        font-size: 1.75rem;
-    }
-
     .explore-menu-text {
-        font-size: 0.95rem;
-        line-height: 1.6;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .explore-menu-list {
+        gap: 1rem;
+        padding: 0.5rem 0.25rem 1.5rem 0.25rem;
     }
 
     .explore-menu-list-item {
-        padding: 16px 10px;
-        border-radius: 18px;
+        min-width: 80px;
     }
 
     .explore-menu-list-item img {
-        width: 72px;
-        height: 72px;
+        width: 70px;
+        height: 70px;
+        border-width: 2px;
     }
 
     .explore-menu-list-item p {
-        font-size: 0.9rem;
+        font-size: 0.75rem;
     }
 }
 
 @media (max-width: 480px) {
-    .explore-menu {
-        padding: 34px 4%;
-    }
-
     .explore-menu h1 {
         font-size: 1.5rem;
     }
 
     .explore-menu-text {
-        font-size: 0.9rem;
+        font-size: 0.8125rem;
     }
 
     .explore-menu-list {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
+        gap: 0.75rem;
+    }
+
+    .explore-menu-list-item {
+        min-width: 70px;
     }
 
     .explore-menu-list-item img {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
     }
 
     .explore-menu-list-item p {
-        font-size: 0.82rem;
+        font-size: 0.6875rem;
     }
+}
+
+/* Animation for category items */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.explore-menu-list-item {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+/* Staggered animation for categories */
+.explore-menu-list-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.explore-menu-list-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.explore-menu-list-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.explore-menu-list-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.explore-menu-list-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.explore-menu-list-item:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.explore-menu-list-item:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.explore-menu-list-item:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.explore-menu-list-item:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.explore-menu-list-item:nth-child(10) {
+    animation-delay: 0.5s;
+}
+
+.explore-menu-list-item:nth-child(11) {
+    animation-delay: 0.55s;
+}
+
+.explore-menu-list-item:nth-child(12) {
+    animation-delay: 0.6s;
+}
+
+/* Optional: Add a shimmer effect on hover */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.explore-menu-list-item img.active {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Optional: Active category indicator */
+.explore-menu-list-item .active-indicator {
+    width: 4px;
+    height: 4px;
+    background: var(--primary, #2563EB);
+    border-radius: 50%;
+    margin-top: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.explore-menu-list-item:focus-visible {
+    outline: 2px solid var(--primary, #2563EB);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+/* Optional: Add a loading skeleton for categories */
+.category-skeleton {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 0.5rem;
+}
+
+.skeleton-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 100px;
+}
+
+.skeleton-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, var(--border, #E2E8F0) 25%, var(--background, #F8FAFC) 50%, var(--border, #E2E8F0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+    width: 60px;
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--border, #E2E8F0) 25%, var(--background, #F8FAFC) 50%, var(--border, #E2E8F0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Optional: Category count badge */
+.category-count {
+    font-size: 0.6875rem;
+    color: var(--text-light, #64748B);
+    margin-top: 0.25rem;
+}
+
+/* Optional: Tooltip for category names on hover */
+.explore-menu-list-item[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-dark, #0F172A);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 0.5rem;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Optional: Scroll buttons for categories */
+.scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--card, #FFFFFF);
+    border: 1px solid var(--border, #E2E8F0);
+    color: var(--primary, #2563EB);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.scroll-button:hover {
+    background: var(--primary, #2563EB);
+    color: white;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.scroll-button-left {
+    left: 0;
+}
+
+.scroll-button-right {
+    right: 0;
+}
+
+/* Optional: Empty state for categories */
+.no-categories {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light, #64748B);
+    background: var(--card, #FFFFFF);
+    border-radius: 16px;
+    border: 1px solid var(--border, #E2E8F0);
+}
+
+.no-categories p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Optional: Scroll hint animation */
+@keyframes scrollHint {
+
+    0%,
+    100% {
+        transform: translateX(0);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translateX(10px);
+        opacity: 1;
+    }
+}
+
+.scroll-hint {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent, var(--card, #FFFFFF));
+    padding: 1rem 2rem 1rem 1rem;
+    pointer-events: none;
+}
+
+.scroll-hint::after {
+    content: '→';
+    font-size: 1.25rem;
+    color: var(--primary, #2563EB);
+    animation: scrollHint 1.5s ease-in-out infinite;
 }

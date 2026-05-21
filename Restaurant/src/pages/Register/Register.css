@@ -1,0 +1,505 @@
+/* Professional Register Page Styles - Premium Bluish Theme */
+.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #E8F0FE 0%, #F0F4F8 50%, #F8FAFC 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
+
+/* Animated background decoration */
+.register-page::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 70%);
+    top: -300px;
+    right: -200px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.register-page::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, rgba(56, 189, 248, 0) 70%);
+    bottom: -250px;
+    left: -200px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Register Form Card */
+.register-form {
+    background: var(--card, #FFFFFF);
+    border-radius: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.register-form:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Header Section */
+.register-form h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 2rem 2rem 0.5rem 2rem;
+    background: linear-gradient(135deg, var(--text-dark, #0F172A) 0%, var(--primary, #2563EB) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+/* 2-Column Layout */
+.form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+/* Left Column - Form Fields */
+.form-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Form Group Styles */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.form-group input {
+    padding: 0.875rem 1rem;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    font-size: 0.9375rem;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    color: var(--text-dark, #0F172A);
+}
+
+.form-group input:hover {
+    border-color: #CBD5E1;
+}
+
+.form-group input:focus {
+    border-color: var(--primary, #2563EB);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    background: #FFFFFF;
+}
+
+.form-group input::placeholder {
+    color: #94A3B8;
+    font-weight: 400;
+}
+
+/* Right Column - Benefits Section */
+.form-right {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(56, 189, 248, 0.03) 100%);
+    border-radius: 24px;
+    padding: 1.75rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-right::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.benefits-header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+.benefits-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark, #0F172A);
+    margin-bottom: 0.5rem;
+}
+
+.benefits-header p {
+    font-size: 0.8125rem;
+    color: var(--text-light, #64748B);
+}
+
+.benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.benefit-item:hover {
+    background: rgba(37, 99, 235, 0.05);
+    transform: translateX(5px);
+}
+
+.benefit-content h4 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-dark, #0F172A);
+    margin-bottom: 0.25rem;
+}
+
+.benefit-content p {
+    font-size: 0.8125rem;
+    color: var(--text-light, #64748B);
+    line-height: 1.4;
+}
+
+/* Stats Card */
+.stats-card {
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.stats-label {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Submit Container */
+.submit-container {
+    padding: 0 2rem 2rem 2rem;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem 1rem;
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--primary-hover, #1D4ED8) 100%);
+    color: white;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+button[type="submit"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.5s, height 0.5s;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-hover, #1D4ED8) 0%, var(--primary, #2563EB) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+button[type="submit"]:hover:not(:disabled)::before {
+    width: 400px;
+    height: 400px;
+}
+
+button[type="submit"]:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loading State */
+button[type="submit"]:disabled {
+    position: relative;
+    color: transparent;
+}
+
+button[type="submit"]:disabled::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Login Link */
+.login-link {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E2E8F0;
+}
+
+.login-link p {
+    color: var(--text-light, #64748B);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.login-link a {
+    color: var(--primary, #2563EB);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.login-link a:hover {
+    color: var(--primary-hover, #1D4ED8);
+    text-decoration: underline;
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-form {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus States */
+.form-group input:focus-visible,
+button[type="submit"]:focus-visible,
+.login-link a:focus-visible {
+    outline: 2px solid var(--primary, #2563EB);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .register-page {
+        padding: 1.5rem;
+    }
+
+    .form-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .register-form h2 {
+        font-size: 1.5rem;
+        margin: 1.5rem 1.5rem 0 1.5rem;
+    }
+
+    .submit-container {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    .form-right {
+        order: -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .register-page {
+        padding: 1rem;
+    }
+
+    .register-form {
+        border-radius: 28px;
+    }
+
+    .register-form h2 {
+        font-size: 1.375rem;
+        margin: 1.25rem 1.25rem 0 1.25rem;
+    }
+
+    .form-container {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .form-group label {
+        font-size: 0.75rem;
+    }
+
+    .form-group input {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .benefits-header h3 {
+        font-size: 1.125rem;
+    }
+
+    .benefits-header p {
+        font-size: 0.75rem;
+    }
+
+    .benefit-content h4 {
+        font-size: 0.875rem;
+    }
+
+    .benefit-content p {
+        font-size: 0.75rem;
+    }
+
+    .stats-number {
+        font-size: 2rem;
+    }
+
+    button[type="submit"] {
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .register-form h2 {
+        font-size: 1.25rem;
+    }
+
+    .form-container {
+        padding: 1rem;
+    }
+
+    .form-right {
+        padding: 1.25rem;
+    }
+
+    .benefits-list {
+        gap: 1rem;
+    }
+
+    .benefit-item {
+        padding: 0.625rem;
+    }
+
+    .stats-card {
+        padding: 1.25rem;
+    }
+}
+
+/* Optional: Password Strength Indicator */
+.password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.password-strength.weak {
+    color: #EF4444;
+}
+
+.password-strength.medium {
+    color: #F59E0B;
+}
+
+.password-strength.strong {
+    color: #10B981;
+}
+
+/* Optional: Form Field Icons */
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper .field-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+}
+
+.input-wrapper input {
+    padding-left: 2.5rem;
+}
+
+/* Optional: Tooltip for benefits */
+.benefit-item {
+    position: relative;
+}

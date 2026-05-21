@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useState } from "react";
 import axios from "axios";
 import "./TableReservation.css";
 import { StoreContext } from "../../context/StoreContext";
+import { useParams } from "react-router-dom";
 
 const defaultForm = {
     name: "",
@@ -16,6 +17,7 @@ const defaultForm = {
 
 const TableReservation = () => {
     const { url } = useContext(StoreContext);
+    const { restaurantId } = useParams();
     const [form, setForm] = useState(defaultForm);
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +37,7 @@ const TableReservation = () => {
         setIsSubmitting(true);
         try {
             const response = await axios.post(`${url}/api/reservation/create`, {
+                restaurantId,
                 ...form,
                 guests: Number(form.guests)
             });

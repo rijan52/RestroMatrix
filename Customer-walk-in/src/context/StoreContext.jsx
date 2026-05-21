@@ -5,6 +5,10 @@ export const StoreContext = createContext(null);
 
 const StoreContextProvider = ({ children }) => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4001";
+    const [restaurantId] = useState(() => {
+        if (typeof window === "undefined") return "";
+        return new URLSearchParams(window.location.search).get("restaurantId") || "";
+    });
     const [foodList, setFoodList] = useState([]);
     const [cartItems, setCartItems] = useState({});
     const [tableNumber, setTableNumber] = useState("");
@@ -12,14 +16,16 @@ const StoreContextProvider = ({ children }) => {
 
     const fetchMenu = useCallback(async () => {
         try {
-            const response = await axios.get(`${apiUrl}/api/food/list`);
+            const response = await axios.get(`${apiUrl}/api/food/list`, {
+                params: restaurantId ? { restaurantId } : undefined
+            });
             if (response.data?.success) {
                 setFoodList(response.data.data || []);
             }
         } finally {
             setIsLoadingMenu(false);
         }
-    }, [apiUrl]);
+    }, [apiUrl, restaurantId]);
 
     useEffect(() => {
         fetchMenu();
@@ -80,6 +86,7 @@ const StoreContextProvider = ({ children }) => {
             throw new Error("Cart is empty");
         }
         const response = await axios.post(`${apiUrl}/api/walkin/session/create`, {
+            restaurantId,
             tableNumber,
             items,
             totalBillAmount
@@ -89,7 +96,7 @@ const StoreContextProvider = ({ children }) => {
         }
         clearCart();
         return response.data.data?.sessionId;
-    }, [apiUrl, buildOrderItems, getCartTotal, tableNumber]);
+    }, [apiUrl, buildOrderItems, getCartTotal, restaurantId, tableNumber]);
 
     const contextValue = useMemo(() => {
         return {
@@ -97,6 +104,7 @@ const StoreContextProvider = ({ children }) => {
             foodList,
             cartItems,
             tableNumber,
+            restaurantId,
             setTableNumber,
             isLoadingMenu,
             addToCart,
@@ -109,6 +117,7 @@ const StoreContextProvider = ({ children }) => {
         foodList,
         cartItems,
         tableNumber,
+        restaurantId,
         isLoadingMenu,
         addToCart,
         removeFromCart,

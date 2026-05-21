@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix Frontend\" \"npm run dev --prefix Restaurant\" \"npm run dev --prefix driver\" \"npm run dev --prefix Customer-walk-in\" \"npm run dev --prefix Restromatrix-landing\""
+  }
+} 

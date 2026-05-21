@@ -1,0 +1,457 @@
+/* Modern Orders Page Styles - Bluish Theme */
+.order {
+    flex: 1;
+    padding: 32px;
+    color: var(--text-dark, #0F172A);
+    background: var(--background, #F8FAFC);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+.order h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--text-dark, #0F172A) 0%, var(--primary, #2563EB) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+/* Filter Buttons */
+.order-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.order-filter-btn {
+    padding: 0.625rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1.5px solid var(--border, #E2E8F0);
+    background: var(--card, #FFFFFF);
+    color: var(--text-light, #64748B);
+    font-family: inherit;
+}
+
+.order-filter-btn:hover {
+    border-color: var(--primary, #2563EB);
+    color: var(--primary, #2563EB);
+    transform: translateY(-2px);
+}
+
+.order-filter-btn.active {
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.order-filter-btn.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -2px rgba(37, 99, 235, 0.3);
+}
+
+/* Orders List */
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Order Item Card */
+.order-item {
+    background: var(--card, #FFFFFF);
+    border: 1px solid var(--border, #E2E8F0);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 0.8fr 0.8fr 1.2fr;
+    gap: 1rem;
+    align-items: start;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-light, #DBEAFE);
+}
+
+/* Order Item Food Items */
+.order-item-food {
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.order-item-name {
+    font-weight: 700;
+    color: var(--primary, #2563EB);
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+}
+
+.order-item-address {
+    color: var(--text-light, #64748B);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.order-item-address p {
+    margin: 0;
+}
+
+.order-item-phone {
+    color: var(--text-dark, #0F172A);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.order-item-time {
+    color: var(--text-light, #64748B);
+    font-size: 0.75rem;
+    display: inline-block;
+    background: var(--background, #F8FAFC);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    width: fit-content;
+}
+
+/* Order Stats */
+.order-item p:not(.order-item-food):not(.order-item-name):not(.order-item-address p):not(.order-item-phone):not(.order-item-time) {
+    font-weight: 600;
+    color: var(--text-dark, #0F172A);
+    font-size: 1rem;
+}
+
+/* Status Container */
+.order-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.order-status-container select {
+    padding: 0.625rem 1rem;
+    border: 1.5px solid var(--border, #E2E8F0);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--card, #FFFFFF);
+    color: var(--text-dark, #0F172A);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.order-status-container select:focus {
+    outline: none;
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.order-status-container select:hover {
+    border-color: var(--primary, #2563EB);
+}
+
+/* Driver Assignment Section */
+.driver-assignment {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border, #E2E8F0);
+}
+
+.driver-select {
+    padding: 0.625rem 1rem;
+    border: 1.5px solid var(--border, #E2E8F0);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    background: var(--card, #FFFFFF);
+    color: var(--text-dark, #0F172A);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.driver-select:focus {
+    outline: none;
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.assign-btn {
+    padding: 0.625rem 1rem;
+    background: linear-gradient(135deg, var(--primary, #2563EB) 0%, var(--accent, #38BDF8) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.assign-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.assign-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.assign-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.assign-btn:active {
+    transform: translateY(0);
+}
+
+/* Status Badge Colors */
+.order-status-container select option[value="Food Processing"] {
+    color: #F59E0B;
+}
+
+.order-status-container select option[value="Out for delivery"] {
+    color: #3B82F6;
+}
+
+.order-status-container select option[value="Delivered"] {
+    color: #10B981;
+}
+
+.order-status-container select option[value="active"] {
+    color: #10B981;
+}
+
+.order-status-container select option[value="closed"] {
+    color: #6B7280;
+}
+
+/* Empty State */
+.order-list:empty::before {
+    content: "No orders found";
+    display: block;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light, #64748B);
+    font-size: 1rem;
+    background: var(--card, #FFFFFF);
+    border-radius: 20px;
+    border: 1px solid var(--border, #E2E8F0);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .order-item {
+        grid-template-columns: 1.5fr 0.8fr 0.8fr 1.2fr;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .order {
+        padding: 24px;
+    }
+
+    .order-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .order-status-container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .order-status-container select {
+        width: auto;
+        min-width: 180px;
+    }
+
+    .driver-assignment {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex: 1;
+    }
+
+    .driver-select {
+        flex: 1;
+    }
+
+    .assign-btn {
+        width: auto;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 640px) {
+    .order {
+        padding: 16px;
+    }
+
+    .order h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-filters {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .order-item {
+        padding: 1.25rem;
+    }
+
+    .order-status-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .order-status-container select {
+        width: 100%;
+    }
+
+    .driver-assignment {
+        flex-direction: column;
+    }
+
+    .assign-btn {
+        width: 100%;
+    }
+}
+
+/* Animation for new orders */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.order-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Loading state for orders */
+.orders-loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light, #64748B);
+}
+
+.orders-loading::after {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--border, #E2E8F0);
+    border-top-color: var(--primary, #2563EB);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 0.5rem;
+}
+
+/* Status update animation */
+@keyframes statusUpdate {
+    0% {
+        background: rgba(37, 99, 235, 0.1);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+.order-item.status-updated {
+    animation: statusUpdate 0.5s ease-out;
+}
+
+/* Custom scrollbar for orders list */
+.order-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.order-list::-webkit-scrollbar-track {
+    background: var(--background, #F8FAFC);
+    border-radius: 3px;
+}
+
+.order-list::-webkit-scrollbar-thumb {
+    background: var(--primary-light, #DBEAFE);
+    border-radius: 3px;
+}
+
+.order-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary, #2563EB);
+}
+
+/* Tooltip for driver assignment */
+.driver-select option[value=""] {
+    color: var(--text-light, #64748B);
+}
+
+/* Focus states for accessibility */
+.order-filter-btn:focus-visible,
+.order-status-container select:focus-visible,
+.driver-select:focus-visible,
+.assign-btn:focus-visible {
+    outline: 2px solid var(--primary, #2563EB);
+    outline-offset: 2px;
+}
+
+/* Optional: Add a gradient border for active orders */
+.order-item[data-status="Food Processing"] {
+    border-left: 3px solid #F59E0B;
+}
+
+.order-item[data-status="Out for delivery"] {
+    border-left: 3px solid #3B82F6;
+}
+
+.order-item[data-status="Delivered"] {
+    border-left: 3px solid #10B981;
+}

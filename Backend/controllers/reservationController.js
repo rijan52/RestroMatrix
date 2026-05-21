@@ -1,14 +1,15 @@
 import reservationModel from "../models/reservationModel.js";
 
 const createReservation = async (req, res) => {
-  const { name, phone, email, date, time, guests, seating, notes } = req.body;
+  const { restaurantId, name, phone, email, date, time, guests, seating, notes } = req.body;
 
-  if (!name || !phone || !email || !date || !time || !guests || !seating) {
+  if (!restaurantId || !name || !phone || !email || !date || !time || !guests || !seating) {
     return res.json({ success: false, message: "Missing required fields" });
   }
 
   try {
     const reservation = new reservationModel({
+      restaurantId,
       name,
       phone,
       email,
@@ -29,7 +30,9 @@ const createReservation = async (req, res) => {
 
 const listReservations = async (req, res) => {
   try {
-    const reservations = await reservationModel.find({}).sort({ createdAt: -1 });
+    const { restaurantId } = req.query;
+    const filter = restaurantId ? { restaurantId } : {};
+    const reservations = await reservationModel.find(filter).sort({ createdAt: -1 });
     res.json({ success: true, data: reservations });
   } catch (error) {
     console.log(error);

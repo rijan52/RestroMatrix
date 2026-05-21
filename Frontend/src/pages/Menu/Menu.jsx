@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import "./Menu.css";
 import ExploreMenu from "../../components/ExploreMenu/ExploreMenu";
 import FoodDisplay from "../../components/FoodDisplay/FoodDisplay";
 
 const Menu = () => {
     const [category, setCategory] = useState("All");
+    const { restaurantId } = useParams();
 
     return (
         <section className="menu-page">
@@ -31,15 +32,15 @@ const Menu = () => {
                         <p className="menu-card-value">Fri - Sat</p>
                         <p className="menu-card-muted">11:00 AM - 11:30 PM</p>
                     </div>
-                    <Link to="/reservation" className="menu-cta">
+                    <Link to={`/restaurant/${restaurantId}/reservation`} className="menu-cta">
                         Reserve a table
                     </Link>
                 </div>
             </div>
 
             <div className="menu-content">
-                <ExploreMenu category={category} setCategory={setCategory} />
-                <FoodDisplay category={category} />
+                <ExploreMenu category={category} setCategory={setCategory} restaurantId={restaurantId} />
+                <FoodDisplay category={category} restaurantId={restaurantId} />
             </div>
         </section>
     );

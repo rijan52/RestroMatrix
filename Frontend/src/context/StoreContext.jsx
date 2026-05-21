@@ -5,13 +5,49 @@ import assets from "../assets/assets"
 
 export const StoreContext = createContext(null)
 
+const normalizeCartData = (rawCart = {}) => {
+  return Object.entries(rawCart).reduce((acc, [itemId, quantity]) => {
+    const parsedQty = Number(quantity) || 0;
+    if (parsedQty > 0) {
+      acc[itemId] = parsedQty;
+    }
+    return acc;
+  }, {});
+};
+
+const resolveRestaurantId = () => {
+  try {
+    const currentPath = window.location.pathname || "";
+    const currentMatch = currentPath.match(/\/restaurant\/([^/]+)/);
+    if (currentMatch?.[1]) {
+      return currentMatch[1];
+    }
+
+    const lastPath = window.localStorage.getItem("lastRestaurantPath") || "";
+    const lastMatch = lastPath.match(/\/restaurant\/([^/]+)/);
+    if (lastMatch?.[1]) {
+      return lastMatch[1];
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
+  const [isCartHydrated, setIsCartHydrated] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const url = "http://localhost:4000";
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => sessionStorage.getItem("token") || "");
   const [food_list, setFoodList] = useState([]);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(() => sessionStorage.getItem("role") || "");
   const [restaurantLogo, setRestaurantLogo] = useState(assets.logo);
+  const [restaurantContact, setRestaurantContact] = useState({
+    phoneNumber: "",
+    email: "",
+  });
   const [headerSettings, setHeaderSettings] = useState({
     title: "Order your favourite food here",
     content:
@@ -25,10 +61,34 @@ const StoreContextProvider = (props) => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
+    if (!isCartHydrated) {
+      return;
+    }
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-  }, [cartItems]);
+  }, [cartItems, isCartHydrated]);
+
+  useEffect(() => {
+    if (token) {
+      sessionStorage.setItem("token", token);
+    } else {
+      sessionStorage.removeItem("token");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (role) {
+      sessionStorage.setItem("role", role);
+    } else {
+      sessionStorage.removeItem("role");
+    }
+  }, [role]);
 
   const addToCart = async (itemId) => {
+    if (!token) {
+      setShowLogin(true);
+      return;
+    }
+
     if (!cartItems[itemId]) {
       setCartItems((prev) => ({ ...prev, [itemId]: 1 }))
     }
@@ -49,10 +109,13 @@ const StoreContextProvider = (props) => {
   const getTotalCartAmount = () => {
     let totalAmount = 0;
     for (const item in cartItems) {
-      if (cartItems[item] > 0) {
-        let itemInfo = food_list.find((product) => product._id === item)
-        totalAmount += itemInfo.price * cartItems[item];
-      }
+      const quantity = Number(cartItems[item]) || 0;
+      if (quantity <= 0) continue;
+
+      const itemInfo = food_list.find((product) => product._id === item);
+      if (!itemInfo || typeof itemInfo.price !== "number") continue;
+
+      totalAmount += itemInfo.price * quantity;
 
     }
     return totalAmount;
@@ -63,9 +126,48 @@ const StoreContextProvider = (props) => {
     setFoodList(response.data.data)
   }
 
+  const fetchCartData = async () => {
+    if (!token) {
+      setCartItems({});
+      localStorage.removeItem("cartItems");
+      sessionStorage.removeItem("cartItems");
+      return;
+    }
+
+    try {
+      const response = await axios.get(url + "/api/cart/get", { headers: { token } });
+      if (response.data?.success) {
+        const normalizedCart = normalizeCartData(response.data.cartData || {});
+        setCartItems(normalizedCart);
+        localStorage.setItem("cartItems", JSON.stringify(normalizedCart));
+      }
+    } catch (error) {
+      console.log("Error fetching cart:", error);
+    }
+  }
+
+  const clearCart = async () => {
+    setCartItems({});
+    localStorage.removeItem("cartItems");
+    sessionStorage.removeItem("cartItems");
+  }
+
   const fetchRestaurantProfile = async () => {
     try {
-      const response = await axios.get(url + "/api/restaurant-profile");
+      const restaurantId = resolveRestaurantId();
+
+      if (!restaurantId) {
+        setRestaurantLogo(assets.logo);
+        setRestaurantContact({
+          phoneNumber: "",
+          email: "",
+        });
+        return;
+      }
+
+      const response = await axios.get(url + "/api/restaurant-profile", {
+        params: { restaurantId },
+      });
       if (response.data?.success) {
         const profileData = response.data?.data || {};
 
@@ -74,6 +176,11 @@ const StoreContextProvider = (props) => {
         } else {
           setRestaurantLogo(assets.logo);
         }
+
+        setRestaurantContact({
+          phoneNumber: profileData.phoneNumber || "",
+          email: profileData.email || "",
+        });
 
         setHeaderSettings({
           title: profileData.headerTitle || "Order your favourite food here",
@@ -91,61 +198,54 @@ const StoreContextProvider = (props) => {
         });
       } else {
         setRestaurantLogo(assets.logo);
+        setRestaurantContact({
+          phoneNumber: "",
+          email: "",
+        });
       }
     } catch (error) {
       console.log("Error loading restaurant profile:", error);
       setRestaurantLogo(assets.logo);
+      setRestaurantContact({
+        phoneNumber: "",
+        email: "",
+      });
     }
   }
-  const loadCartData = async (tokenValue) => {
-    try {
-      const response = await axios.get(url + "/api/cart/get", { headers: { token: tokenValue } });
-      if (response.data.success && response.data.cartData && Object.keys(response.data.cartData).length > 0) {
-        // Only use backend cart if it has items
-        setCartItems(response.data.cartData);
-      }
-      // If backend cart is empty, keep the localStorage cart that was already loaded
-    } catch (error) {
-      console.log("Error loading cart from backend:", error);
-      // Keep localStorage cart on error
-    }
-  }
-
-
   useEffect(() => {
     // Load cart from localStorage first
     const savedCart = localStorage.getItem("cartItems");
     if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch {
+        setCartItems({});
+      }
     }
+    setIsCartHydrated(true);
 
-    if (localStorage.getItem("token")) {
-      setToken(localStorage.getItem("token"));
-    }
-    if (localStorage.getItem("role")) {
-      setRole(localStorage.getItem("role"));
-    }
+    // Clean up legacy persistent auth keys.
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
     async function loadData() {
       await fetchFoodList();
       await fetchRestaurantProfile();
-      if (localStorage.getItem("token")) {
-        const tokenValue = localStorage.getItem("token");
-        setToken(tokenValue);
-        await loadCartData(tokenValue);
+      if (token) {
+        await fetchCartData();
       }
     }
     loadData();
   }, [])
 
-  // Sync cart to backend whenever it changes and user is logged in
+  // Always load canonical cart from backend when auth state changes.
   useEffect(() => {
-    if (token && Object.keys(cartItems).length > 0) {
-      // Sync each item to backend
-      Object.entries(cartItems).forEach(([itemId, quantity]) => {
-        if (quantity > 0) {
-          axios.post(url + "/api/cart/add", { itemId }, { headers: { token } }).catch(err => console.log(err));
-        }
-      });
+    if (token) {
+      fetchCartData();
+    } else {
+      setCartItems({});
+      localStorage.removeItem("cartItems");
+      sessionStorage.removeItem("cartItems");
     }
   }, [token])
 
@@ -171,12 +271,17 @@ const StoreContextProvider = (props) => {
     food_list,
     cartItems,
     setCartItems,
+    showLogin,
+    setShowLogin,
     addToCart,
     removeFromCart,
+    clearCart,
+    fetchCartData,
     getTotalCartAmount,
     role,
     setRole,
     restaurantLogo,
+    restaurantContact,
     headerSettings,
     fetchRestaurantProfile,
     url,

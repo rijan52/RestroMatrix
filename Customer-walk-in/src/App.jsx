@@ -6,10 +6,23 @@ import Cart from "./pages/Cart.jsx";
 import TableModal from "./components/TableModal.jsx";
 
 const App = () => {
-  const { cartItems, tableNumber, setTableNumber } = useContext(StoreContext);
+  const { cartItems, tableNumber, restaurantId, setTableNumber } = useContext(StoreContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const tableParam = searchParams.get("table");
-  const tableQuery = tableNumber ? `?table=${encodeURIComponent(tableNumber)}` : "";
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (restaurantId) {
+      params.set("restaurantId", restaurantId);
+    }
+
+    if (tableNumber) {
+      params.set("table", tableNumber);
+    }
+
+    const serialized = params.toString();
+    return serialized ? `?${serialized}` : "";
+  }, [restaurantId, tableNumber]);
 
   const cartCount = useMemo(() => {
     return Object.values(cartItems).reduce((total, qty) => total + qty, 0);
@@ -22,7 +35,15 @@ const App = () => {
   }, [tableParam, tableNumber, setTableNumber]);
 
   const handleTableSubmit = (value) => {
-    setSearchParams({ table: value });
+    const nextParams = new URLSearchParams();
+
+    if (restaurantId) {
+      nextParams.set("restaurantId", restaurantId);
+    }
+
+    nextParams.set("table", value);
+
+    setSearchParams(nextParams);
     setTableNumber(value);
   };
 
@@ -37,8 +58,8 @@ const App = () => {
           </div>
         </div>
         <nav className="topnav">
-          <Link to={`/menu${tableQuery}`} className="nav-link">Menu</Link>
-          <Link to={`/cart${tableQuery}`} className="nav-link">
+          <Link to={`/menu${queryString}`} className="nav-link">Menu</Link>
+          <Link to={`/cart${queryString}`} className="nav-link">
             Cart
             <span className="cart-pill">{cartCount}</span>
           </Link>

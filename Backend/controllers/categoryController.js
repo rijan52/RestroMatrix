@@ -1,14 +1,22 @@
 import categoryModel from "../models/categoryModel.js";
+import foodModel from "../models/foodModel.js";
 import fs from "fs";
+import mongoose from "mongoose";
 
 // Add category
 const addCategory = async (req, res) => {
     let image_filename = `${req.file.filename}`;
 
+    // Check for restaurantId
+    if (!req.body.restaurantId) {
+        return res.status(400).json({ success: false, message: "restaurantId is required" });
+    }
+
     const category = new categoryModel({
         name: req.body.name,
         description: req.body.description || "",
-        image: image_filename
+        image: image_filename,
+        restaurantId: req.body.restaurantId
     });
 
     try {
@@ -27,7 +35,11 @@ const addCategory = async (req, res) => {
 // Get all categories
 const listCategories = async (req, res) => {
     try {
-        const categories = await categoryModel.find({});
+        const filter = {};
+        if (req.query.restaurantId) {
+            filter.restaurantId = req.query.restaurantId;
+        }
+        const categories = await categoryModel.find(filter);
         res.json({ success: true, data: categories });
     } catch (error) {
         console.log(error);
@@ -92,8 +104,32 @@ const removeCategory = async (req, res) => {
             });
         }
 
+        // Remove all food items under this category for the same restaurant
+        const foodsToDelete = await foodModel.find({
+            category: category.name,
+            restaurantId: category.restaurantId
+        });
+
+        for (const food of foodsToDelete) {
+            const foodImagePath = `uploads/${food.image}`;
+            if (fs.existsSync(foodImagePath)) {
+                fs.unlink(foodImagePath, (err) => {
+                    if (err) console.log("Error deleting food image:", err);
+                });
+            }
+        }
+
+        await foodModel.deleteMany({
+            category: category.name,
+            restaurantId: category.restaurantId
+        });
+
         await categoryModel.findByIdAndDelete(categoryId);
-        res.json({ success: true, message: "Category Removed Successfully" });
+        res.json({
+            success: true,
+            message: "Category Removed Successfully",
+            deletedFoodCount: foodsToDelete.length
+        });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error removing category" });

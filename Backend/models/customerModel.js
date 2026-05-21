@@ -18,6 +18,11 @@ const customerSchema = new mongoose.Schema({
             default: null
         }
     },
+     restaurantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'restaurantprofile',
+        required: true
+      },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 }, { minimize: false })

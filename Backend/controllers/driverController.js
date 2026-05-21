@@ -65,7 +65,15 @@ const loginDriver = async (req, res) => {
 const registerDriver = async (req, res) => {
     try {
 
-        const { name, email, password, phone, vehicle, vehicleNumber } = req.body;
+
+        const { name, email, password, phone, vehicle, vehicleNumber, restaurantId } = req.body;
+
+        if (!restaurantId) {
+            return res.json({
+                success: false,
+                message: "restaurantId is required"
+            });
+        }
 
         if (!name || !email || !password || !phone || !vehicle || !vehicleNumber) {
             return res.json({
@@ -106,7 +114,8 @@ const registerDriver = async (req, res) => {
             password: hashedPassword,
             phone,
             vehicle,
-            vehicleNumber
+            vehicleNumber,
+            restaurantId
         });
 
         const driver = await newDriver.save();
@@ -133,8 +142,9 @@ const registerDriver = async (req, res) => {
 
 const getAllDrivers = async (req, res) => {
     try {
-
-        const drivers = await driverModel.find().select("-password");
+        const { restaurantId } = req.query;
+        const filter = restaurantId ? { restaurantId } : {};
+        const drivers = await driverModel.find(filter).select("-password");
 
         res.json({
             success: true,
