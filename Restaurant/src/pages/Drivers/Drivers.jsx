@@ -9,6 +9,10 @@ const Drivers = ({ url }) => {
     const [drivers, setDrivers] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(false);
+    const driverLoginUrl = restaurantId
+        ? `http://localhost:5175/login?restaurantId=${restaurantId}`
+        : 'http://localhost:5175/login';
+    const [showCopySuccess, setShowCopySuccess] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -111,6 +115,20 @@ const Drivers = ({ url }) => {
         }
     };
 
+    const handleCopyDriverLink = async () => {
+        try {
+            await navigator.clipboard.writeText(driverLoginUrl);
+            setShowCopySuccess(true);
+            setTimeout(() => setShowCopySuccess(false), 2000);
+        } catch (error) {
+            toast.error('Failed to copy driver link');
+        }
+    };
+
+    const handleOpenDriverLink = () => {
+        window.open(driverLoginUrl, '_blank');
+    };
+
     // Only show drivers for the current restaurant
     const filteredDrivers = drivers.filter(driver => driver.restaurantId === restaurantId);
 
@@ -118,12 +136,41 @@ const Drivers = ({ url }) => {
         <div className='drivers-container'>
             <div className='drivers-header'>
                 <h1>Driver Management</h1>
-                <button
-                    className='add-driver-btn'
-                    onClick={() => setShowForm(!showForm)}
-                >
-                    {showForm ? "Cancel" : "+ Add New Driver"}
-                </button>
+                <div className='drivers-header-actions'>
+                    <button
+                        className='add-driver-btn'
+                        onClick={() => setShowForm(!showForm)}
+                    >
+                        {showForm ? "Cancel" : "+ Add New Driver"}
+                    </button>
+                </div>
+            </div>
+
+            <div className='driver-link-card'>
+                <div className='driver-link-header'>
+                    <h2>Driver Login Link</h2>
+                    <p className='driver-link-subtitle'>
+                        Share this link with drivers to open the delivery portal.
+                    </p>
+                </div>
+
+                <div className='url-display'>
+                    <span className='url-label'>Driver Portal URL</span>
+                    <div className='url-text'>{driverLoginUrl}</div>
+                </div>
+
+                <div className='driver-link-actions'>
+                    <button onClick={handleCopyDriverLink} className='copy-btn'>
+                        Copy Link
+                    </button>
+                    <button onClick={handleOpenDriverLink} className='visit-btn'>
+                        Open Login
+                    </button>
+                </div>
+
+                {showCopySuccess && (
+                    <div className='copy-success'>Link copied to clipboard!</div>
+                )}
             </div>
 
             {showForm && (

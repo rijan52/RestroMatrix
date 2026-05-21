@@ -1,4 +1,5 @@
 import categoryModel from "../models/categoryModel.js";
+import foodModel from "../models/foodModel.js";
 import fs from "fs";
 import mongoose from "mongoose";
 
@@ -103,8 +104,32 @@ const removeCategory = async (req, res) => {
             });
         }
 
+        // Remove all food items under this category for the same restaurant
+        const foodsToDelete = await foodModel.find({
+            category: category.name,
+            restaurantId: category.restaurantId
+        });
+
+        for (const food of foodsToDelete) {
+            const foodImagePath = `uploads/${food.image}`;
+            if (fs.existsSync(foodImagePath)) {
+                fs.unlink(foodImagePath, (err) => {
+                    if (err) console.log("Error deleting food image:", err);
+                });
+            }
+        }
+
+        await foodModel.deleteMany({
+            category: category.name,
+            restaurantId: category.restaurantId
+        });
+
         await categoryModel.findByIdAndDelete(categoryId);
-        res.json({ success: true, message: "Category Removed Successfully" });
+        res.json({
+            success: true,
+            message: "Category Removed Successfully",
+            deletedFoodCount: foodsToDelete.length
+        });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error removing category" });

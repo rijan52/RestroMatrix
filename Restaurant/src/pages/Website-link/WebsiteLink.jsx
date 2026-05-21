@@ -51,7 +51,7 @@ const WebsiteLink = () => {
                         className="visit-btn"
                         data-tooltip="Open in new tab"
                     >
-                        🔗 Visit Website
+                        Visit Website
                     </button>
                 </div>
 

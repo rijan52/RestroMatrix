@@ -52,7 +52,7 @@ const Sidebar = () => {
 
     return (
         <div className='sidebar'>
-           
+
 
             <div className="sidebar-options">
                 {menuSections.map((section) => (

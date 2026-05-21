@@ -526,7 +526,7 @@ const extractEsewaPaymentData = (queryParams) => {
         if (!decodedStr) {
             throw new Error('Decoded string is empty');
         }
-        console.log('✓ Base64 decoded successfully');
+        console.log('Base64 decoded successfully');
     } catch (error) {
         throw new Error(`Failed to decode Base64 data: ${error.message}`);
     }

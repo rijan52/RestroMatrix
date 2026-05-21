@@ -15,9 +15,57 @@ const BillQR = ({ url }) => {
     const [billData, setBillData] = useState(null);
     const [unpaidBills, setUnpaidBills] = useState([]);
     const [loadingUnpaidBills, setLoadingUnpaidBills] = useState(false);
+    const [walkInSessions, setWalkInSessions] = useState([]);
+    const [loadingWalkInSessions, setLoadingWalkInSessions] = useState(false);
+    const [tableNotFound, setTableNotFound] = useState(false);
     const qrRef = useRef();
 
     const getPaymentLink = (billId) => `http://localhost:5173/pay/${billId}`;
+
+    const fetchWalkInSessions = async () => {
+        setLoadingWalkInSessions(true);
+        try {
+            const response = await axios.get(`${url}/api/walkin/list`, {
+                params: { restaurantId }
+            });
+            if (response.data?.success) {
+                setWalkInSessions(response.data.data || []);
+            } else {
+                setWalkInSessions([]);
+            }
+        } catch (error) {
+            console.error('Failed to load walk-in sessions:', error);
+            setWalkInSessions([]);
+        } finally {
+            setLoadingWalkInSessions(false);
+        }
+    };
+
+    const handleTableNumberChange = (e) => {
+        const value = e.target.value;
+        setTableNumber(value);
+        setTableNotFound(false);
+
+        if (value) {
+            // Find walk-in session for this table
+            const session = walkInSessions.find(
+                (s) => s.tableNumber === value || s.tableNumber === String(value)
+            );
+
+            if (session && session.totalBillAmount) {
+                setTotalAmount(session.totalBillAmount.toString());
+                setTableNotFound(false);
+            } else {
+                // Clear the amount if no session found
+                setTotalAmount('');
+                if (value && walkInSessions.length > 0) {
+                    setTableNotFound(true);
+                }
+            }
+        } else {
+            setTotalAmount('');
+        }
+    };
 
     const fetchUnpaidBills = async () => {
         setLoadingUnpaidBills(true);
@@ -42,6 +90,7 @@ const BillQR = ({ url }) => {
 
     useEffect(() => {
         fetchUnpaidBills();
+        fetchWalkInSessions();
     }, []);
 
     // Generate Bill and QR
@@ -165,9 +214,14 @@ const BillQR = ({ url }) => {
                                     type="number"
                                     min="1"
                                     value={tableNumber}
-                                    onChange={(e) => setTableNumber(e.target.value)}
+                                    onChange={handleTableNumberChange}
                                     placeholder="Enter table number"
                                 />
+                                {tableNotFound && (
+                                    <p className="error-message">
+                                        No walk-in order found for this table
+                                    </p>
+                                )}
                             </div>
 
                             <div className="form-group">
@@ -179,8 +233,12 @@ const BillQR = ({ url }) => {
                                     step="0.01"
                                     value={totalAmount}
                                     onChange={(e) => setTotalAmount(e.target.value)}
-                                    placeholder="Enter total amount"
+                                    placeholder="Amount will auto-fill from table order"
+                                    readOnly={totalAmount !== '' && walkInSessions.length > 0}
                                 />
+                                {loadingWalkInSessions && (
+                                    <p className="info-message">Loading table orders...</p>
+                                )}
                             </div>
 
                             <button type="submit" disabled={loading} className="btn-generate">
@@ -193,14 +251,14 @@ const BillQR = ({ url }) => {
                                 <div className="guide-icon"></div>
                                 <div>
                                     <h4>Table Number</h4>
-                                    <p>Identify which table this bill is for</p>
+                                    <p>Enter the table number to fetch the order total</p>
                                 </div>
                             </div>
                             <div className="guide-item">
                                 <div className="guide-icon"></div>
                                 <div>
                                     <h4>Bill Amount</h4>
-                                    <p>Enter the total bill amount in NPR</p>
+                                    <p>Auto-filled from the walk-in order</p>
                                 </div>
                             </div>
                             <div className="guide-item">

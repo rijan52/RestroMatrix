@@ -6,8 +6,7 @@ const Cart = () => {
     const { cartItems, foodList, getCartTotal, createOrder, tableNumber, restaurantId, apiUrl } = useContext(StoreContext);
     const [status, setStatus] = useState("");
     const [isPlacing, setIsPlacing] = useState(false);
-    const [activeSessionId, setActiveSessionId] = useState("");
-    const [activeOrder, setActiveOrder] = useState(null);
+    const [activeOrders, setActiveOrders] = useState([]);
     const [isLoadingOrder, setIsLoadingOrder] = useState(false);
 
     const sessionStorageKey = useMemo(() => {
@@ -25,36 +24,34 @@ const Cart = () => {
 
     const total = getCartTotal();
 
-    const loadSession = useCallback(async (sessionId, options = {}) => {
-        if (!sessionId || !tableNumber || !sessionStorageKey) return;
+    const loadActiveOrders = useCallback(async (options = {}) => {
+        if (!tableNumber || !restaurantId) return;
 
         if (!options.silent) {
             setIsLoadingOrder(true);
         }
 
         try {
-            const response = await axios.get(`${apiUrl}/api/walkin/session/${sessionId}`);
-            if (!response.data?.success || !response.data?.data) {
+            const response = await axios.get(`${apiUrl}/api/walkin/list`, {
+                params: { restaurantId }
+            });
+
+            if (!response.data?.success) {
+                setActiveOrders([]);
                 return;
             }
 
-            const session = response.data.data;
-            if (restaurantId && session.restaurantId && session.restaurantId !== restaurantId) {
-                localStorage.removeItem(sessionStorageKey);
-                setActiveSessionId("");
-                setActiveOrder(null);
-                return;
-            }
+            const sessions = Array.isArray(response.data.data) ? response.data.data : [];
+            const matchingSessions = sessions.filter((session) => {
+                return String(session.tableNumber) === String(tableNumber) && session.status !== "closed";
+            });
 
-            if (session.status === "closed") {
-                localStorage.removeItem(sessionStorageKey);
-                setActiveSessionId("");
-                setActiveOrder(null);
-                return;
-            }
+            setActiveOrders(matchingSessions);
 
-            setActiveSessionId(sessionId);
-            setActiveOrder(session);
+            const latestSession = matchingSessions[0];
+            if (latestSession?.sessionId && sessionStorageKey) {
+                localStorage.setItem(sessionStorageKey, latestSession.sessionId);
+            }
         } catch {
             if (!options.silent) {
                 setStatus("Unable to load your current order.");
@@ -67,27 +64,19 @@ const Cart = () => {
     }, [apiUrl, restaurantId, sessionStorageKey, tableNumber]);
 
     useEffect(() => {
-        if (!tableNumber || !sessionStorageKey) {
-            setActiveSessionId("");
-            setActiveOrder(null);
+        if (!tableNumber || !restaurantId) {
+            setActiveOrders([]);
             return;
         }
 
-        const storedSessionId = localStorage.getItem(sessionStorageKey);
-        if (!storedSessionId) {
-            setActiveSessionId("");
-            setActiveOrder(null);
-            return;
-        }
-
-        loadSession(storedSessionId);
+        loadActiveOrders();
 
         const intervalId = setInterval(() => {
-            loadSession(storedSessionId, { silent: true });
+            loadActiveOrders({ silent: true });
         }, 10000);
 
         return () => clearInterval(intervalId);
-    }, [loadSession, sessionStorageKey, tableNumber]);
+    }, [loadActiveOrders, restaurantId, tableNumber]);
 
     const handlePlaceOrder = async () => {
         setIsPlacing(true);
@@ -97,7 +86,7 @@ const Cart = () => {
             if (sessionStorageKey) {
                 localStorage.setItem(sessionStorageKey, sessionId);
             }
-            await loadSession(sessionId);
+            await loadActiveOrders();
             setStatus("Order placed successfully. You can track it below until it is completed.");
         } catch (error) {
             setStatus(error?.message || "Unable to create session.");
@@ -106,11 +95,9 @@ const Cart = () => {
         }
     };
 
-    const currentOrderItems = activeOrder?.items || [];
-    const currentOrderTotal = Number(activeOrder?.totalBillAmount || 0);
-    const currentOrderStatusLabel = activeOrder?.status === "closed"
-        ? "Completed"
-        : "Active";
+    const activeOrderTotal = activeOrders.reduce((total, order) => {
+        return total + Number(order?.totalBillAmount || 0);
+    }, 0);
 
     return (
         <section>
@@ -123,29 +110,46 @@ const Cart = () => {
                 <div className="status-card">Loading your current order...</div>
             ) : null}
 
-            {activeOrder ? (
+            {activeOrders.length > 0 ? (
                 <div className="cart-panel" style={{ marginBottom: 16 }}>
                     <div className="summary-row">
-                        <strong>Current order</strong>
-                        <span>{currentOrderStatusLabel}</span>
+                        <strong>Active current orders</strong>
+                        <span>{activeOrders.length}</span>
                     </div>
-                    <div className="summary-row">
-                        <span>Session</span>
-                        <span>{activeOrder.sessionId}</span>
-                    </div>
-                    <div className="summary-row" style={{ marginTop: 8 }}>
-                        <span>Items</span>
-                        <span>{currentOrderItems.length}</span>
-                    </div>
-                    {currentOrderItems.map((item, index) => (
-                        <div key={`${item.name}-${index}`} className="summary-row">
-                            <span>{item.name} x {item.quantity}</span>
-                            <span>Rs{(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</span>
-                        </div>
-                    ))}
-                    <div className="summary-row summary-total" style={{ marginTop: 8 }}>
-                        <span>Total</span>
-                        <span>Rs {currentOrderTotal.toFixed(2)}</span>
+                    {activeOrders.map((order, orderIndex) => {
+                        const items = Array.isArray(order.items) ? order.items : [];
+                        const orderTotal = Number(order.totalBillAmount || 0);
+
+                        return (
+                            <div key={order.sessionId || orderIndex} style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                                <div className="summary-row">
+                                    <strong>Session</strong>
+                                    <span>{order.sessionId}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Status</span>
+                                    <span>{order.status === "fully_paid" ? "Completed" : "Active"}</span>
+                                </div>
+                                <div className="summary-row" style={{ marginTop: 8 }}>
+                                    <span>Items</span>
+                                    <span>{items.length}</span>
+                                </div>
+                                {items.map((item, index) => (
+                                    <div key={`${order.sessionId}-${item.name}-${index}`} className="summary-row">
+                                        <span>{item.name} x {item.quantity}</span>
+                                        <span>Rs{(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                                <div className="summary-row summary-total" style={{ marginTop: 8 }}>
+                                    <span>Order total</span>
+                                    <span>Rs {orderTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    <div className="summary-row summary-total" style={{ marginTop: 12 }}>
+                        <span>All active orders total</span>
+                        <span>Rs {activeOrderTotal.toFixed(2)}</span>
                     </div>
                 </div>
             ) : null}
@@ -163,7 +167,7 @@ const Cart = () => {
                                     <p className="section-subtitle">Qty {item.quantity}</p>
                                 </div>
                                 <span className="price">Rs{(item.price * item.quantity).toFixed(2)}</span>
-                            </div> 
+                            </div>
                         ))
                     )}
                 </div>

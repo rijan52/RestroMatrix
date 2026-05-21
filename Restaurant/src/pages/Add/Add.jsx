@@ -17,7 +17,7 @@ const Add = ({ url }) => {
         name: "",
         description: "",
         price: "",
-        category: "Salad"
+        category: ""
     });
 
     const navigate = useNavigate();
@@ -49,11 +49,21 @@ const Add = ({ url }) => {
         try {
             const response = await axios.get(`${url}/api/category/list?restaurantId=${restaurantId}`);
             if (response.data.success) {
-                setCategories(response.data.data);
-                // If no data.category is set, use the first category
-                if (!data.category && response.data.data.length > 0) {
-                    setData(prev => ({ ...prev, category: response.data.data[0].name }));
-                }
+                const fetchedCategories = response.data.data || [];
+                setCategories(fetchedCategories);
+
+                setData(prev => {
+                    if (fetchedCategories.length === 0) {
+                        return { ...prev, category: "" };
+                    }
+
+                    const hasValidCategory = fetchedCategories.some(cat => cat.name === prev.category);
+                    if (!prev.category || !hasValidCategory) {
+                        return { ...prev, category: fetchedCategories[0].name };
+                    }
+
+                    return prev;
+                });
             }
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -70,6 +80,11 @@ const Add = ({ url }) => {
 
     const onSubmitHandler = async (event) => {
         event.preventDefault();
+
+        if (!data.category) {
+            toast.error("No category available. Please create a category first.");
+            return;
+        }
 
         if (editMode) {
             // Edit existing food
@@ -100,7 +115,7 @@ const Add = ({ url }) => {
                     name: "",
                     description: "",
                     price: "",
-                    category: "Salad"
+                    category: categories.length > 0 ? categories[0].name : ""
                 });
                 setImage(false);
                 toast.success(response.data.message)
@@ -138,7 +153,7 @@ const Add = ({ url }) => {
                     name: "",
                     description: "",
                     price: "",
-                    category: "Salad"
+                    category: categories.length > 0 ? categories[0].name : ""
                 });
                 setImage(false);
                 setEditMode(false);
@@ -159,7 +174,7 @@ const Add = ({ url }) => {
             name: "",
             description: "",
             price: "",
-            category: "Salad"
+            category: categories.length > 0 ? categories[0].name : ""
         });
         setImage(false);
         setEditMode(false);
@@ -170,98 +185,103 @@ const Add = ({ url }) => {
         }
     };
 
-   return (
-    <div className='add'>
-        <div className="add-container">
-            <div className="add-header">
-                <h2>{editMode ? 'Edit Food Item' : 'Add New Food Item'}</h2>
-                <p className="add-subtitle">{editMode ? 'Update the food details' : 'Add a new item to your menu'}</p>
-            </div>
+    return (
+        <div className='add'>
+            <div className="add-container">
+                <div className="add-header">
+                    <h2>{editMode ? 'Edit Food Item' : 'Add New Food Item'}</h2>
+                    <p className="add-subtitle">{editMode ? 'Update the food details' : 'Add a new item to your menu'}</p>
+                </div>
 
-            <form className='add-form' onSubmit={onSubmitHandler}>
-                {/* All your existing form fields remain the same */}
-                <div className="add-img-upload">
-                    <p>Upload Image</p>
-                    <label htmlFor="image">
-                        <img
-                            src={image ? URL.createObjectURL(image) : (editMode && originalImage ? `${url}/images/${originalImage}` : assets.addIcon)}
-                            alt="Food item"
+                <form className='add-form' onSubmit={onSubmitHandler}>
+                    {/* All your existing form fields remain the same */}
+                    <div className="add-img-upload">
+                        <p>Upload Image</p>
+                        <label htmlFor="image">
+                            <img
+                                src={image ? URL.createObjectURL(image) : (editMode && originalImage ? `${url}/images/${originalImage}` : assets.addIcon)}
+                                alt="Food item"
+                            />
+                        </label>
+                        <input
+                            onChange={(e) => setImage(e.target.files[0])}
+                            type="file"
+                            id="image"
+                            hidden
+                            required={!editMode}
                         />
-                    </label>
-                    <input
-                        onChange={(e) => setImage(e.target.files[0])}
-                        type="file"
-                        id="image"
-                        hidden
-                        required={!editMode}
-                    />
-                </div>
-
-                <div className="add-product-name">
-                    <p>Product name</p>
-                    <input
-                        onChange={onChangeHandler}
-                        value={data.name}
-                        type="text"
-                        name="name"
-                        placeholder="Type here"
-                        required
-                    />
-                </div>
-
-                <div className="add-product-description">
-                    <p>Product description</p>
-                    <textarea
-                        onChange={onChangeHandler}
-                        value={data.description}
-                        name="description"
-                        rows="6"
-                        placeholder="Write content here"
-                        required
-                    />
-                </div>
-
-                <div className="add-category-price">
-                    <div className="add-category">
-                        <p>Product category</p>
-                        <select
-                            name="category"
-                            value={data.category}
-                            onChange={onChangeHandler}
-                        >
-                            {categories.map((cat, index) => (
-                                <option key={cat._id || index} value={cat.name}>
-                                    {cat.name}
-                                </option>
-                            ))}
-                        </select>
                     </div>
 
-                    <div className="add-price">
-                        <p>Product price</p>
+                    <div className="add-product-name">
+                        <p>Product name</p>
                         <input
                             onChange={onChangeHandler}
-                            value={data.price}
-                            type="number"
-                            name="price"
-                            placeholder="Rs20"
+                            value={data.name}
+                            type="text"
+                            name="name"
+                            placeholder="Type here"
                             required
                         />
                     </div>
-                </div>
 
-                <div className="add-buttons">
-                    <button type="submit" className="add-btn">
-                        {editMode ? 'Update' : 'Add'}
-                    </button>
-                    <button type="button" className="cancel-btn" onClick={handleCancel}>
-                        Cancel
-                    </button>
-                </div>
-            </form>
+                    <div className="add-product-description">
+                        <p>Product description</p>
+                        <textarea
+                            onChange={onChangeHandler}
+                            value={data.description}
+                            name="description"
+                            rows="6"
+                            placeholder="Write content here"
+                            required
+                        />
+                    </div>
+
+                    <div className="add-category-price">
+                        <div className="add-category">
+                            <p>Product category</p>
+                            <select
+                                name="category"
+                                value={data.category}
+                                onChange={onChangeHandler}
+                                disabled={categories.length === 0}
+                                required
+                            >
+                                <option value="" disabled>
+                                    {categories.length === 0 ? 'No category' : 'Select category'}
+                                </option>
+                                {categories.map((cat, index) => (
+                                    <option key={cat._id || index} value={cat.name}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="add-price">
+                            <p>Product price</p>
+                            <input
+                                onChange={onChangeHandler}
+                                value={data.price}
+                                type="number"
+                                name="price"
+                                placeholder="Rs20"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="add-buttons">
+                        <button type="submit" className="add-btn">
+                            {editMode ? 'Update' : 'Add'}
+                        </button>
+                        <button type="button" className="cancel-btn" onClick={handleCancel}>
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-);
+    );
 };
 
 export default Add;

@@ -95,6 +95,14 @@
     opacity: 0.7;
 }
 
+.form-group input:read-only {
+    background: var(--background, #F8FAFC);
+    color: var(--text-dark, #0F172A);
+    cursor: not-allowed;
+    border-color: var(--primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 /* Generate Button */
 .btn-generate {
     width: 100%;
@@ -498,12 +506,48 @@
     border-radius: 16px;
 }
 
+/* Message Styles */
+.error-message {
+    color: #DC2626;
+    font-size: 0.875rem;
+    margin: 0.5rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: rgba(220, 38, 38, 0.1);
+    border-left: 3px solid #DC2626;
+    border-radius: 4px;
+    animation: slideDown 0.3s ease-out;
+}
+
+.info-message {
+    color: #2563EB;
+    font-size: 0.875rem;
+    margin: 0.5rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: rgba(37, 99, 235, 0.1);
+    border-left: 3px solid #2563EB;
+    border-radius: 4px;
+    animation: slideDown 0.3s ease-out;
+}
+
 /* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
